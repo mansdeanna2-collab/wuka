@@ -33,6 +33,13 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
+    // When returning from player to home/category/search, let the component handle scroll restoration
+    // This works together with keep-alive's activated/deactivated hooks in HomeView
+    if (from.name === 'player' && (to.name === 'home' || to.name === 'category' || to.name === 'search')) {
+      // Return undefined to prevent automatic scroll, let HomeView's activated hook handle it
+      return
+    }
+    
     if (savedPosition) {
       return savedPosition
     } else {

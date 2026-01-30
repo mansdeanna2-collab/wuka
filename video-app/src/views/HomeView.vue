@@ -87,7 +87,8 @@ export default {
       errorMessage: '',
       page: 1,
       limit: 20,
-      hasMore: true
+      hasMore: true,
+      savedScrollPosition: 0
     }
   },
   watch: {
@@ -103,6 +104,18 @@ export default {
   },
   mounted() {
     this.init()
+  },
+  activated() {
+    // Restore scroll position when component is activated (from keep-alive cache)
+    this.$nextTick(() => {
+      if (this.savedScrollPosition > 0) {
+        window.scrollTo(0, this.savedScrollPosition)
+      }
+    })
+  },
+  deactivated() {
+    // Save scroll position when component is deactivated (before navigating away)
+    this.savedScrollPosition = window.scrollY || document.documentElement.scrollTop || 0
   },
   methods: {
     async init() {
