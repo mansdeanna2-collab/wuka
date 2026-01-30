@@ -761,6 +761,7 @@
         }
 
         // Format image source - convert base64 to data URL if needed
+        // Returns empty string if content is not a valid image source
         function formatImageSource(content) {
             if (!content || typeof content !== 'string') return '';
             // Already a data URL
@@ -772,7 +773,18 @@
             if (mimeType) {
                 return toDataUrl(content, mimeType);
             }
-            return content;
+            return '';
+        }
+
+        // Format and escape image source for use in HTML attributes
+        // Data URLs don't need escaping (only contain base64-safe chars)
+        function formatAndEscapeImageSource(content) {
+            const formatted = formatImageSource(content);
+            if (!formatted) return '';
+            // Data URLs don't need HTML escaping
+            if (formatted.startsWith('data:')) return formatted;
+            // Regular URLs need escaping
+            return escapeHtml(formatted);
         }
 
         // Maximum size for reading text response (5MB)
@@ -1012,11 +1024,13 @@
             }
 
             const html = `<div class="video-grid" id="videoGrid">
-                ${filteredVideos.map((video, index) => `
+                ${filteredVideos.map((video, index) => {
+                    const imageSrc = formatAndEscapeImageSource(video.vod_pic);
+                    return `
                     <div class="video-card" data-index="${index}" role="button" tabindex="0" aria-label="播放 ${escapeHtml(video.vod_name || '未知标题')}">
                         <div class="video-thumbnail">
-                            ${video.vod_pic && isValidImageSource(video.vod_pic) ? 
-                                `<img data-src="${escapeHtml(formatImageSource(video.vod_pic))}" alt="${escapeHtml(video.vod_name || '')}" onerror="handleImageError(this)" loading="lazy">` : 
+                            ${imageSrc ? 
+                                `<img data-src="${imageSrc}" alt="${escapeHtml(video.vod_name || '')}" onerror="handleImageError(this)" loading="lazy">` : 
                                 '<div class="placeholder">🎬</div>'}
                             <div class="play-icon"></div>
                         </div>
@@ -1028,7 +1042,7 @@
                             </div>
                         </div>
                     </div>
-                `).join('')}
+                `;}).join('')}
             </div>`;
 
             container.innerHTML = html;
