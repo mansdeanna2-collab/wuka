@@ -3,8 +3,13 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Copy package files
+# Install bash (required for postinstall script)
+RUN apk add --no-cache bash
+
+# Copy package files and postinstall dependencies
 COPY package*.json ./
+COPY patches ./patches
+COPY scripts ./scripts
 
 # Install dependencies
 RUN npm ci
