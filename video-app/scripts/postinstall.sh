@@ -1,6 +1,16 @@
 #!/bin/bash
 # Post-install script to apply patches and fix Java version compatibility
 
+set -e  # Exit on any error
+
+# Cleanup function for trap
+cleanup() {
+    if [ -n "$TEMP_DIR" ] && [ -d "$TEMP_DIR" ]; then
+        rm -rf "$TEMP_DIR"
+    fi
+}
+trap cleanup EXIT
+
 # Apply patches with patch-package
 npx patch-package
 
@@ -12,21 +22,29 @@ if [ -f "$TEMPLATE_PATH" ]; then
     TEMP_DIR=$(mktemp -d)
     
     # Extract the template
-    tar -xzf "$TEMPLATE_PATH" -C "$TEMP_DIR"
-    
-    # Fix Java version in build.gradle (change VERSION_21 to VERSION_17)
-    if [ -f "$TEMP_DIR/build.gradle" ]; then
-        sed -i 's/JavaVersion\.VERSION_21/JavaVersion.VERSION_17/g' "$TEMP_DIR/build.gradle"
+    if ! tar -xzf "$TEMPLATE_PATH" -C "$TEMP_DIR"; then
+        echo "Error: Failed to extract template"
+        exit 1
     fi
     
-    # Recreate the tar.gz
-    (cd "$TEMP_DIR" && tar -czf capacitor-cordova-android-plugins.tar.gz build.gradle src)
+    # Fix Java version in build.gradle (change VERSION_21 to VERSION_17)
+    # Use portable sed syntax that works on both Linux and macOS
+    if [ -f "$TEMP_DIR/build.gradle" ]; then
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' 's/JavaVersion\.VERSION_21/JavaVersion.VERSION_17/g' "$TEMP_DIR/build.gradle"
+        else
+            sed -i 's/JavaVersion\.VERSION_21/JavaVersion.VERSION_17/g' "$TEMP_DIR/build.gradle"
+        fi
+    fi
+    
+    # Recreate the tar.gz with all original contents
+    if ! (cd "$TEMP_DIR" && tar -czf capacitor-cordova-android-plugins.tar.gz ./*); then
+        echo "Error: Failed to create modified template"
+        exit 1
+    fi
     
     # Replace the original
     cp "$TEMP_DIR/capacitor-cordova-android-plugins.tar.gz" "$TEMPLATE_PATH"
-    
-    # Cleanup
-    rm -rf "$TEMP_DIR"
     
     echo "✓ Fixed Java version in capacitor-cordova-android-plugins template"
 fi
