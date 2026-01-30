@@ -19,6 +19,8 @@
 │   └── requirements.txt
 ├── video_database.py   # 数据库模块 (MySQL/SQLite)
 ├── video_collector.py  # 视频采集脚本
+├── deploy.py           # Docker自动部署脚本
+├── docker-compose.yml  # Docker Compose配置
 └── video_viewer.html   # 旧版 HTML 播放器
 ```
 
@@ -32,8 +34,48 @@
 - ✅ 响应式设计，适配手机和平板
 - ✅ REST API 接口
 - ✅ 支持 MySQL 和 SQLite 数据库
+- ✅ Docker 一键自动部署 (Ubuntu 22)
 
-## 快速开始
+## 🚀 Docker 一键部署 (推荐)
+
+适用于 **Ubuntu 22.04 LTS**，自动检测并安装所有依赖。
+
+### 一键部署
+
+```bash
+# 克隆项目
+git clone <repository-url>
+cd <project-directory>
+
+# 运行自动部署脚本 (需要sudo权限)
+sudo python3 deploy.py
+```
+
+部署脚本会自动:
+- 检测并安装 Docker (如未安装)
+- 检测并安装 Docker Compose (如未安装)
+- 构建前端和后端镜像
+- 启动所有服务
+
+### 部署命令
+
+```bash
+sudo python3 deploy.py              # 完整部署
+sudo python3 deploy.py --check      # 仅检查依赖
+sudo python3 deploy.py --no-build   # 不重新构建镜像
+sudo python3 deploy.py --stop       # 停止应用
+sudo python3 deploy.py --restart    # 重启应用
+sudo python3 deploy.py --logs       # 查看日志
+sudo python3 deploy.py --clean      # 清理所有容器和镜像
+```
+
+### 访问应用
+
+部署完成后:
+- 前端: http://localhost:8080
+- API: http://localhost:5000/api
+
+## 手动安装
 
 ### 1. 安装前端依赖
 
@@ -66,6 +108,24 @@ npm run dev
 ```
 
 访问 http://localhost:3000 查看应用。
+
+## Docker 手动部署
+
+如果不使用自动部署脚本，可以手动使用 Docker Compose:
+
+```bash
+# 构建并启动
+docker compose up -d --build
+
+# 查看状态
+docker compose ps
+
+# 查看日志
+docker compose logs -f
+
+# 停止
+docker compose down
+```
 
 ## 打包为移动端 App
 
