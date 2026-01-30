@@ -13,6 +13,8 @@ html, body {
   color: #fff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent horizontal scroll */
+  overflow-x: hidden;
 }
 
 /* Safe area support for mobile devices */
@@ -33,9 +35,21 @@ img {
   height: auto;
 }
 
+/* Touch highlight removal for mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Better touch targets for mobile */
+button, a, select, input[type="file"] {
+  min-height: 44px;
+  cursor: pointer;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -49,6 +63,14 @@ img {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 212, 255, 0.8);
+}
+
+/* Hide scrollbar on mobile but allow scrolling */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
 }
 
 /* Loading animation */
@@ -76,6 +98,10 @@ img {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
 }
 
 .btn-primary {
@@ -88,6 +114,10 @@ img {
   box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
 }
 
+.btn-primary:active {
+  transform: translateY(0);
+}
+
 .btn-secondary {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
@@ -96,4 +126,44 @@ img {
 
 .btn-secondary:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* Mobile responsive button adjustments */
+@media (max-width: 480px) {
+  .btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+  
+  .loading-spinner {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* Utility classes for responsive hiding */
+.hide-mobile {
+  display: block;
+}
+
+.show-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+  
+  .show-mobile {
+    display: block !important;
+  }
+}
+
+/* Prevent text selection on interactive elements */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }

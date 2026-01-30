@@ -1,6 +1,12 @@
 <template>
-  <div class="video-player" ref="playerContainer">
-    <div class="player-wrapper">
+  <div class="video-player" ref="playerContainer" :class="{ 'is-fullscreen': isFullscreen }">
+    <div 
+      class="player-wrapper"
+      @touchstart="onTouchStart"
+      @touchmove="onTouchMove"
+      @touchend="onTouchEnd"
+      @dblclick="onDoubleClick"
+    >
       <video
         ref="videoElement"
         :src="currentSrc"
@@ -16,14 +22,16 @@
         @error="onError"
         @loadedmetadata="onLoadedMetadata"
         @timeupdate="onTimeUpdate"
+        @waiting="onWaiting"
+        @canplay="onCanPlay"
       >
         您的浏览器不支持视频播放
       </video>
       
       <!-- Loading overlay -->
-      <div v-if="loading" class="loading-overlay">
+      <div v-if="loading || buffering" class="loading-overlay">
         <div class="loading-spinner"></div>
-        <p>加载中...</p>
+        <p>{{ buffering ? '缓冲中...' : '加载中...' }}</p>
       </div>
       
       <!-- Error overlay -->
@@ -31,6 +39,35 @@
         <div class="error-icon">⚠️</div>
         <p>{{ errorMessage }}</p>
         <button class="btn btn-primary" @click="retry">重试</button>
+      </div>
+      
+      <!-- Gesture feedback overlay -->
+      <div v-if="gestureText" class="gesture-overlay">
+        <span class="gesture-text">{{ gestureText }}</span>
+      </div>
+    </div>
+    
+    <!-- Custom control bar -->
+    <div class="control-bar">
+      <div class="control-row">
+        <!-- Playback speed -->
+        <div class="control-group">
+          <label>倍速</label>
+          <select v-model="playbackRate" @change="changePlaybackRate" class="speed-select">
+            <option value="0.5">0.5x</option>
+            <option value="0.75">0.75x</option>
+            <option value="1">1x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+        
+        <!-- Fullscreen button -->
+        <button class="control-btn fullscreen-btn" @click="toggleFullscreen" :title="isFullscreen ? '退出全屏' : '全屏'">
+          <span v-if="!isFullscreen">⛶</span>
+          <span v-else>⛶</span>
+        </button>
       </div>
     </div>
     
@@ -72,11 +109,21 @@ export default {
   data() {
     return {
       loading: true,
+      buffering: false,
       error: false,
       errorMessage: '',
       episodes: [],
       currentEpisode: 0,
-      currentSrc: ''
+      currentSrc: '',
+      playbackRate: '1',
+      isFullscreen: false,
+      // Gesture support
+      touchStartX: 0,
+      touchStartY: 0,
+      touchStartTime: 0,
+      isSeeking: false,
+      gestureText: '',
+      gestureTimeout: null
     }
   },
   watch: {
@@ -85,6 +132,18 @@ export default {
       handler(newSrc) {
         this.parseSource(newSrc)
       }
+    }
+  },
+  mounted() {
+    // Listen for fullscreen changes
+    document.addEventListener('fullscreenchange', this.handleFullscreenChange)
+    document.addEventListener('webkitfullscreenchange', this.handleFullscreenChange)
+  },
+  beforeUnmount() {
+    document.removeEventListener('fullscreenchange', this.handleFullscreenChange)
+    document.removeEventListener('webkitfullscreenchange', this.handleFullscreenChange)
+    if (this.gestureTimeout) {
+      clearTimeout(this.gestureTimeout)
     }
   },
   methods: {
@@ -136,6 +195,7 @@ export default {
     
     onPlay() {
       this.loading = false
+      this.buffering = false
       this.$emit('play')
     },
     
@@ -153,6 +213,7 @@ export default {
     
     onError(e) {
       this.loading = false
+      this.buffering = false
       this.error = true
       this.errorMessage = '视频加载失败，请稍后重试'
       this.$emit('error', e)
@@ -160,6 +221,14 @@ export default {
     
     onLoadedMetadata() {
       this.loading = false
+    },
+    
+    onWaiting() {
+      this.buffering = true
+    },
+    
+    onCanPlay() {
+      this.buffering = false
     },
     
     onTimeUpdate() {
@@ -180,6 +249,123 @@ export default {
       }
     },
     
+    // Playback rate control
+    changePlaybackRate() {
+      if (this.$refs.videoElement) {
+        this.$refs.videoElement.playbackRate = parseFloat(this.playbackRate)
+      }
+    },
+    
+    // Fullscreen control
+    async toggleFullscreen() {
+      const container = this.$refs.playerContainer
+      
+      try {
+        if (!this.isFullscreen) {
+          if (container.requestFullscreen) {
+            await container.requestFullscreen()
+          } else if (container.webkitRequestFullscreen) {
+            await container.webkitRequestFullscreen()
+          } else if (this.$refs.videoElement.webkitEnterFullscreen) {
+            // iOS Safari
+            await this.$refs.videoElement.webkitEnterFullscreen()
+          }
+        } else {
+          if (document.exitFullscreen) {
+            await document.exitFullscreen()
+          } else if (document.webkitExitFullscreen) {
+            await document.webkitExitFullscreen()
+          }
+        }
+      } catch (err) {
+        console.error('Fullscreen error:', err)
+      }
+    },
+    
+    handleFullscreenChange() {
+      this.isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement)
+    },
+    
+    // Touch gesture handlers
+    onTouchStart(e) {
+      if (e.touches.length === 1) {
+        this.touchStartX = e.touches[0].clientX
+        this.touchStartY = e.touches[0].clientY
+        this.touchStartTime = this.$refs.videoElement?.currentTime || 0
+        this.isSeeking = false
+      }
+    },
+    
+    onTouchMove(e) {
+      if (e.touches.length !== 1) return
+      
+      const deltaX = e.touches[0].clientX - this.touchStartX
+      const deltaY = e.touches[0].clientY - this.touchStartY
+      
+      // Horizontal swipe for seeking (more than 30px and more horizontal than vertical)
+      if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 2) {
+        this.isSeeking = true
+        const video = this.$refs.videoElement
+        if (video && video.duration) {
+          // Calculate seek time: 100px = 10 seconds
+          const seekTime = (deltaX / 100) * 10
+          const newTime = Math.max(0, Math.min(video.duration, this.touchStartTime + seekTime))
+          const diff = seekTime >= 0 ? `+${Math.round(seekTime)}s` : `${Math.round(seekTime)}s`
+          this.showGestureText(diff)
+        }
+      }
+    },
+    
+    onTouchEnd(e) {
+      if (this.isSeeking) {
+        const video = this.$refs.videoElement
+        if (video && video.duration) {
+          const deltaX = e.changedTouches[0].clientX - this.touchStartX
+          const seekTime = (deltaX / 100) * 10
+          const newTime = Math.max(0, Math.min(video.duration, this.touchStartTime + seekTime))
+          video.currentTime = newTime
+        }
+        this.isSeeking = false
+      }
+    },
+    
+    onDoubleClick(e) {
+      const container = this.$refs.playerContainer
+      const rect = container.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const width = rect.width
+      
+      const video = this.$refs.videoElement
+      if (!video) return
+      
+      // Double tap on left side: rewind 10s
+      // Double tap on right side: forward 10s
+      // Double tap in center: toggle play/pause
+      if (x < width / 3) {
+        video.currentTime = Math.max(0, video.currentTime - 10)
+        this.showGestureText('-10s')
+      } else if (x > width * 2 / 3) {
+        video.currentTime = Math.min(video.duration || 0, video.currentTime + 10)
+        this.showGestureText('+10s')
+      } else {
+        if (video.paused) {
+          video.play()
+        } else {
+          video.pause()
+        }
+      }
+    },
+    
+    showGestureText(text) {
+      this.gestureText = text
+      if (this.gestureTimeout) {
+        clearTimeout(this.gestureTimeout)
+      }
+      this.gestureTimeout = setTimeout(() => {
+        this.gestureText = ''
+      }, 800)
+    },
+    
     // Public methods
     play() {
       if (this.$refs.videoElement) {
@@ -197,6 +383,11 @@ export default {
       if (this.$refs.videoElement) {
         this.$refs.videoElement.currentTime = time
       }
+    },
+    
+    setPlaybackRate(rate) {
+      this.playbackRate = String(rate)
+      this.changePlaybackRate()
     }
   }
 }
@@ -210,10 +401,15 @@ export default {
   overflow: hidden;
 }
 
+.video-player.is-fullscreen {
+  border-radius: 0;
+}
+
 .player-wrapper {
   position: relative;
   width: 100%;
   padding-top: 56.25%; /* 16:9 aspect ratio */
+  touch-action: pan-y; /* Allow vertical scrolling but handle horizontal */
 }
 
 .player-wrapper video {
@@ -238,6 +434,12 @@ export default {
   justify-content: center;
   background: rgba(0, 0, 0, 0.8);
   color: #fff;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.error-overlay {
+  pointer-events: auto;
 }
 
 .loading-spinner {
@@ -267,6 +469,86 @@ export default {
 
 .error-overlay .btn {
   margin-top: 15px;
+}
+
+/* Gesture feedback overlay */
+.gesture-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.gesture-text {
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+/* Control bar */
+.control-bar {
+  padding: 10px 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-group label {
+  color: #888;
+  font-size: 0.85em;
+}
+
+.speed-select {
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+.speed-select option {
+  background: #1a1a2e;
+  color: #fff;
+}
+
+.control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #00d4ff;
 }
 
 .episode-list {
@@ -305,5 +587,65 @@ export default {
 .episode-btn.active {
   background: linear-gradient(90deg, #00d4ff, #7c3aed);
   border-color: transparent;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .control-bar {
+    padding: 8px 10px;
+  }
+  
+  .control-group label {
+    display: none;
+  }
+  
+  .speed-select {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+  
+  .control-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+  
+  .episode-list {
+    padding: 10px;
+  }
+  
+  .episode-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Tablet */
+@media (min-width: 481px) and (max-width: 768px) {
+  .episodes {
+    max-height: 120px;
+    overflow-y: auto;
+  }
+}
+
+/* Fullscreen mode adjustments */
+.is-fullscreen .control-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  padding: 20px 15px 15px;
+  z-index: 30;
+}
+
+.is-fullscreen .episode-list {
+  position: absolute;
+  bottom: 60px;
+  left: 0;
+  right: 0;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 25;
 }
 </style>
