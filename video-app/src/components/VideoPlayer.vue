@@ -9,8 +9,8 @@
     >
       <video
         ref="videoElement"
-        :src="currentSrc"
-        :poster="poster"
+        :src="safeEncodeURI(currentSrc)"
+        :poster="safeEncodeURI(poster)"
         controls
         playsinline
         webkit-playsinline
@@ -123,7 +123,9 @@ export default {
       touchStartTime: 0,
       isSeeking: false,
       gestureText: '',
-      gestureTimeout: null
+      gestureTimeout: null,
+      // Track if initial autoplay has been triggered
+      hasAutoplayTriggered: false
     }
   },
   watch: {
@@ -148,6 +150,9 @@ export default {
   },
   methods: {
     parseSource(src) {
+      // Reset autoplay flag when source changes
+      this.hasAutoplayTriggered = false
+      
       if (!src) {
         this.currentSrc = ''
         this.episodes = []
@@ -181,13 +186,13 @@ export default {
         this.currentSrc = this.episodes[index].url
         this.loading = true
         this.error = false
+        // Reset autoplay flag for new episode
+        this.hasAutoplayTriggered = false
         
         this.$nextTick(() => {
           if (this.$refs.videoElement) {
             this.$refs.videoElement.load()
-            if (this.autoplay) {
-              this.$refs.videoElement.play()
-            }
+            // Autoplay is now handled in onCanPlay() for consistency
           }
         })
       }
@@ -229,6 +234,13 @@ export default {
     
     onCanPlay() {
       this.buffering = false
+      // Auto-play when video is ready and autoplay is enabled (only trigger once per video load)
+      if (this.autoplay && !this.hasAutoplayTriggered && this.$refs.videoElement && this.$refs.videoElement.paused) {
+        this.hasAutoplayTriggered = true
+        this.$refs.videoElement.play().catch(err => {
+          console.log('Auto-play blocked:', err)
+        })
+      }
     },
     
     onTimeUpdate() {
@@ -397,6 +409,28 @@ export default {
     setPlaybackRate(rate) {
       this.playbackRate = String(rate)
       this.changePlaybackRate()
+    },
+    
+    // Safely encode URL, avoiding double encoding
+    safeEncodeURI(url) {
+      if (!url) return ''
+      try {
+        // Check if already encoded by trying to decode
+        const decoded = decodeURI(url)
+        // If decoding succeeds and differs from original, it was encoded
+        if (decoded !== url) {
+          return url // Already encoded
+        }
+        return encodeURI(url)
+      } catch (e) {
+        // decodeURI failed, URL may be partially encoded or invalid
+        // Try to encode, but return original if that also fails
+        try {
+          return encodeURI(url)
+        } catch (e2) {
+          return url
+        }
+      }
     }
   }
 }

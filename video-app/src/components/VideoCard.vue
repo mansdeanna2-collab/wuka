@@ -3,7 +3,7 @@
     <div class="thumbnail">
       <img 
         v-if="video.video_image" 
-        :src="video.video_image" 
+        :src="safeEncodeURI(video.video_image)" 
         :alt="video.video_title"
         @error="handleImageError"
         loading="lazy"
@@ -59,6 +59,27 @@ export default {
         return (count / 10000).toFixed(1) + '万'
       }
       return count.toString()
+    },
+    // Safely encode URL, avoiding double encoding
+    safeEncodeURI(url) {
+      if (!url) return ''
+      try {
+        // Check if already encoded by trying to decode
+        const decoded = decodeURI(url)
+        // If decoding succeeds and differs from original, it was encoded
+        if (decoded !== url) {
+          return url // Already encoded
+        }
+        return encodeURI(url)
+      } catch (e) {
+        // decodeURI failed, URL may be partially encoded or invalid
+        // Try to encode, but return original if that also fails
+        try {
+          return encodeURI(url)
+        } catch (e2) {
+          return url
+        }
+      }
     }
   }
 }
