@@ -37,6 +37,8 @@
 </template>
 
 <script>
+import { formatImageUrl } from '@/utils/imageUtils'
+
 export default {
   name: 'VideoCard',
   props: {
@@ -60,65 +62,8 @@ export default {
       }
       return count.toString()
     },
-    // Format image URL - handles base64 content, data URLs, and regular URLs
-    // Matches the robust implementation from video_viewer.html
-    formatImageUrl(url) {
-      if (!url) return ''
-      
-      // Trim whitespace for consistent detection
-      const trimmed = url.trim()
-      
-      // If already a data URL, return as-is
-      if (trimmed.startsWith('data:')) {
-        return trimmed
-      }
-      
-      // If already a valid URL (http/https), encode and return
-      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-        try {
-          const decoded = decodeURI(trimmed)
-          if (decoded !== trimmed) {
-            return trimmed // Already encoded
-          }
-          return encodeURI(trimmed)
-        } catch (e) {
-          return trimmed
-        }
-      }
-      
-      // Base64 image signatures (matching video_viewer.html)
-      const BASE64_SIGNATURES = {
-        '/9j/': 'image/jpeg',      // JPEG
-        'iVBOR': 'image/png',      // PNG  
-        'R0lGO': 'image/gif',      // GIF
-        'UklGR': 'image/webp',     // WebP (RIFF header)
-        'Qk': 'image/bmp'          // BMP
-      }
-      
-      // Check for known base64 image headers
-      for (const [signature, mimeType] of Object.entries(BASE64_SIGNATURES)) {
-        if (trimmed.startsWith(signature)) {
-          // Remove any whitespace from base64 content
-          const cleanBase64 = trimmed.replace(/\s/g, '')
-          return `data:${mimeType};base64,${cleanBase64}`
-        }
-      }
-      
-      // For other potential base64 content: must be long and contain only base64 characters
-      // This is a conservative check to avoid false positives
-      const cleanContent = trimmed.replace(/\s/g, '')
-      if (cleanContent.length > 100 && /^[A-Za-z0-9+/]+=*$/.test(cleanContent)) {
-        // Default to PNG for unknown base64 content
-        return 'data:image/png;base64,' + cleanContent
-      }
-      
-      // Otherwise, treat as regular URL and encode
-      try {
-        return encodeURI(trimmed)
-      } catch (e) {
-        return trimmed
-      }
-    }
+    // Use shared utility for formatting image URLs
+    formatImageUrl
   }
 }
 </script>
