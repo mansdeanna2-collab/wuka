@@ -412,53 +412,62 @@ export default {
     },
     
     // Format image URL - handles base64 content, data URLs, and regular URLs
+    // Matches the robust implementation from video_viewer.html
     formatImageUrl(url) {
       if (!url) return ''
       
+      // Trim whitespace for consistent detection
+      const trimmed = url.trim()
+      
       // If already a data URL, return as-is
-      if (url.startsWith('data:')) {
-        return url
+      if (trimmed.startsWith('data:')) {
+        return trimmed
       }
       
       // If already a valid URL (http/https), encode and return
-      if (url.startsWith('http://') || url.startsWith('https://')) {
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
         try {
-          const decoded = decodeURI(url)
-          if (decoded !== url) {
-            return url // Already encoded
+          const decoded = decodeURI(trimmed)
+          if (decoded !== trimmed) {
+            return trimmed // Already encoded
           }
-          return encodeURI(url)
+          return encodeURI(trimmed)
         } catch (e) {
-          return url
+          return trimmed
         }
       }
       
-      // Check for known base64 image headers first
-      // /9j/ is the base64 encoding of JPEG file signature (FFD8FF)
-      if (url.startsWith('/9j/')) {
-        return 'data:image/jpeg;base64,' + url
+      // Base64 image signatures (matching video_viewer.html)
+      const BASE64_SIGNATURES = {
+        '/9j/': 'image/jpeg',      // JPEG
+        'iVBOR': 'image/png',      // PNG  
+        'R0lGO': 'image/gif',      // GIF
+        'UklGR': 'image/webp',     // WebP (RIFF header)
+        'Qk': 'image/bmp'          // BMP
       }
-      // iVBOR is the base64 encoding of PNG file signature
-      if (url.startsWith('iVBOR')) {
-        return 'data:image/png;base64,' + url
-      }
-      // R0lGOD is the base64 encoding of GIF file signature
-      if (url.startsWith('R0lGOD')) {
-        return 'data:image/gif;base64,' + url
+      
+      // Check for known base64 image headers
+      for (const [signature, mimeType] of Object.entries(BASE64_SIGNATURES)) {
+        if (trimmed.startsWith(signature)) {
+          // Remove any whitespace from base64 content
+          const cleanBase64 = trimmed.replace(/\s/g, '')
+          return `data:${mimeType};base64,${cleanBase64}`
+        }
       }
       
       // For other potential base64 content: must be long and contain only base64 characters
       // This is a conservative check to avoid false positives
-      if (url.length > 100 && /^[A-Za-z0-9+/]+=*$/.test(url.replace(/\s/g, ''))) {
+      const cleanContent = trimmed.replace(/\s/g, '')
+      if (cleanContent.length > 100 && /^[A-Za-z0-9+/]+=*$/.test(cleanContent)) {
         // Default to PNG for unknown base64 content
-        return 'data:image/png;base64,' + url
+        return 'data:image/png;base64,' + cleanContent
       }
       
       // Otherwise, treat as regular URL and encode
       try {
-        return encodeURI(url)
+        return encodeURI(trimmed)
       } catch (e) {
-        return url
+        return trimmed
       }
     },
     
