@@ -163,7 +163,7 @@ chmod +x docker_build_app.sh
 
 - ✅ 自动检测并安装 Docker
 - ✅ 自动检测并安装 Node.js 和 npm
-- ✅ 自动检测并安装 Java JDK 17
+- ✅ 自动检测并安装 Java JDK 21
 - ✅ 自动检测并安装 Android SDK
 - ✅ 支持在 Docker 容器中完成构建
 - ✅ 支持 Ubuntu 和 macOS
