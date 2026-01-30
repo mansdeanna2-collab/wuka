@@ -1,0 +1,195 @@
+<template>
+  <div class="video-card" @click="handleClick">
+    <div class="thumbnail">
+      <img 
+        v-if="video.video_image" 
+        :src="video.video_image" 
+        :alt="video.video_title"
+        @error="handleImageError"
+        loading="lazy"
+      />
+      <div v-else class="placeholder">
+        <span>🎬</span>
+      </div>
+      <div class="play-icon">
+        <span class="play-arrow"></span>
+      </div>
+      <div v-if="video.video_duration" class="duration">
+        {{ video.video_duration }}
+      </div>
+    </div>
+    <div class="info">
+      <h3 class="title">{{ video.video_title }}</h3>
+      <div class="meta">
+        <span v-if="video.video_category" class="category">
+          {{ video.video_category }}
+        </span>
+        <span v-if="video.play_count" class="play-count">
+          {{ formatPlayCount(video.play_count) }} 次播放
+        </span>
+      </div>
+      <div v-if="video.video_coins > 0" class="coins">
+        <span class="coin-icon">🪙</span>
+        {{ video.video_coins }} 金币
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'VideoCard',
+  props: {
+    video: {
+      type: Object,
+      required: true
+    }
+  },
+  emits: ['click'],
+  methods: {
+    handleClick() {
+      this.$emit('click', this.video)
+    },
+    handleImageError(e) {
+      e.target.style.display = 'none'
+      e.target.parentElement.querySelector('.placeholder')?.style.setProperty('display', 'flex')
+    },
+    formatPlayCount(count) {
+      if (count >= 10000) {
+        return (count / 10000).toFixed(1) + '万'
+      }
+      return count.toString()
+    }
+  }
+}
+</script>
+
+<style scoped>
+.video-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.video-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border-color: #00d4ff;
+}
+
+.thumbnail {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3e 100%);
+  overflow: hidden;
+}
+
+.thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3em;
+  color: #888;
+}
+
+.play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  background: rgba(0, 212, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.3s;
+}
+
+.video-card:hover .play-icon {
+  opacity: 1;
+}
+
+.play-arrow {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 8px 0 8px 14px;
+  border-color: transparent transparent transparent #fff;
+  margin-left: 4px;
+}
+
+.duration {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.info {
+  padding: 15px;
+}
+
+.title {
+  font-size: 1em;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85em;
+  color: #8b8b8b;
+}
+
+.category {
+  background: rgba(0, 212, 255, 0.2);
+  color: #00d4ff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75em;
+}
+
+.play-count {
+  color: #888;
+  font-size: 0.8em;
+}
+
+.coins {
+  margin-top: 8px;
+  color: #ffd700;
+  font-size: 0.85em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.coin-icon {
+  font-size: 1em;
+}
+</style>
