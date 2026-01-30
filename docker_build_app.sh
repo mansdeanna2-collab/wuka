@@ -58,6 +58,15 @@ CHECK_ONLY=false
 CLEAN_BUILD=false
 
 # ============================================================================
+# 版本配置 (Version Configuration)
+# 可根据需要修改以下版本号
+# ============================================================================
+ANDROID_SDK_VERSION="11076708"  # Android 命令行工具版本号
+ANDROID_PLATFORM_VERSION="34"   # Android 平台版本
+ANDROID_BUILD_TOOLS_VERSION="34.0.0"  # Android 构建工具版本
+NODE_VERSION="20"  # Node.js 主版本号
+
+# ============================================================================
 # 辅助函数
 # ============================================================================
 
@@ -290,7 +299,13 @@ install_java_ubuntu() {
     
     # 设置 JAVA_HOME
     export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
-    echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
+    
+    # 检查是否已存在 JAVA_HOME 配置，避免重复添加
+    if ! grep -q "JAVA_HOME" ~/.bashrc 2>/dev/null; then
+        echo "" >> ~/.bashrc
+        echo "# Java JDK" >> ~/.bashrc
+        echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
+    fi
     
     print_success "Java JDK 安装完成"
 }
@@ -344,17 +359,17 @@ install_android_sdk() {
     print_step "正在安装 Android SDK 命令行工具..."
     
     local ANDROID_HOME="${HOME}/Android/Sdk"
-    local CMDLINE_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+    local CMDLINE_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_VERSION}_latest.zip"
     
     if [[ "$(detect_os)" == "macos" ]]; then
         ANDROID_HOME="${HOME}/Library/Android/sdk"
-        CMDLINE_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-mac-11076708_latest.zip"
+        CMDLINE_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-mac-${ANDROID_SDK_VERSION}_latest.zip"
     fi
     
     mkdir -p "$ANDROID_HOME/cmdline-tools"
     
     local temp_zip="/tmp/cmdline-tools.zip"
-    print_step "下载 Android 命令行工具..."
+    print_step "下载 Android 命令行工具 (版本: $ANDROID_SDK_VERSION)..."
     curl -L "$CMDLINE_TOOLS_URL" -o "$temp_zip"
     
     print_step "解压 Android 命令行工具..."
@@ -382,12 +397,14 @@ install_android_sdk() {
     fi
     
     # 接受许可证
+    print_warning "将自动接受 Android SDK 许可证 (包括 Google Play 服务等条款)"
+    print_info "许可证详情: https://developer.android.com/studio/terms"
     print_step "接受 Android SDK 许可证..."
     yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
     
     # 安装必要的 SDK 组件
-    print_step "安装 Android SDK 组件..."
-    "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+    print_step "安装 Android SDK 组件 (platform: android-$ANDROID_PLATFORM_VERSION, build-tools: $ANDROID_BUILD_TOOLS_VERSION)..."
+    "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-${ANDROID_PLATFORM_VERSION}" "build-tools;${ANDROID_BUILD_TOOLS_VERSION}"
     
     print_success "Android SDK 安装完成"
 }
@@ -472,7 +489,8 @@ check_all_dependencies() {
             if command_exists pod; then
                 print_success "CocoaPods 已安装"
             else
-                print_warning "正在安装 CocoaPods..."
+                print_warning "正在安装 CocoaPods (需要 sudo 权限)..."
+                print_info "CocoaPods 将被安装到系统 Ruby 环境中"
                 sudo gem install cocoapods
                 print_success "CocoaPods 安装完成"
             fi
@@ -672,33 +690,41 @@ build_in_docker() {
     local dockerfile_path="$PROJECT_DIR/.docker-build/Dockerfile.builder"
     mkdir -p "$PROJECT_DIR/.docker-build"
     
-    cat > "$dockerfile_path" << 'DOCKERFILE'
-FROM node:20-bullseye
+    # 注意: 以下版本号来自脚本顶部的版本配置
+    print_info "使用以下版本配置:"
+    print_info "  - Android SDK 版本: $ANDROID_SDK_VERSION"
+    print_info "  - Android 平台版本: $ANDROID_PLATFORM_VERSION"
+    print_info "  - Android 构建工具版本: $ANDROID_BUILD_TOOLS_VERSION"
+    print_info "  - Node.js 版本: $NODE_VERSION"
+    print_warning "将自动接受 Android SDK 许可证"
+    
+    cat > "$dockerfile_path" << DOCKERFILE
+FROM node:${NODE_VERSION}-bullseye
 
 # 安装必要的工具
-RUN apt-get update && apt-get install -y \
-    openjdk-17-jdk \
-    wget \
-    unzip \
-    curl \
+RUN apt-get update && apt-get install -y \\
+    openjdk-17-jdk \\
+    wget \\
+    unzip \\
+    curl \\
     && rm -rf /var/lib/apt/lists/*
 
 # 设置 JAVA_HOME
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-ENV PATH=$PATH:$JAVA_HOME/bin
+ENV PATH=\$PATH:\$JAVA_HOME/bin
 
 # 安装 Android SDK
 ENV ANDROID_HOME=/opt/android-sdk
-ENV ANDROID_SDK_ROOT=$ANDROID_HOME
-ENV PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
+ENV ANDROID_SDK_ROOT=\$ANDROID_HOME
+ENV PATH=\$PATH:\$ANDROID_HOME/cmdline-tools/latest/bin:\$ANDROID_HOME/platform-tools
 
-RUN mkdir -p $ANDROID_HOME/cmdline-tools && \
-    wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdline-tools.zip && \
-    unzip -q /tmp/cmdline-tools.zip -d $ANDROID_HOME/cmdline-tools && \
-    mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest && \
-    rm /tmp/cmdline-tools.zip && \
-    yes | sdkmanager --licenses > /dev/null 2>&1 && \
-    sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+RUN mkdir -p \$ANDROID_HOME/cmdline-tools && \\
+    wget -q https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_VERSION}_latest.zip -O /tmp/cmdline-tools.zip && \\
+    unzip -q /tmp/cmdline-tools.zip -d \$ANDROID_HOME/cmdline-tools && \\
+    mv \$ANDROID_HOME/cmdline-tools/cmdline-tools \$ANDROID_HOME/cmdline-tools/latest && \\
+    rm /tmp/cmdline-tools.zip && \\
+    yes | sdkmanager --licenses > /dev/null 2>&1 && \\
+    sdkmanager "platform-tools" "platforms;android-${ANDROID_PLATFORM_VERSION}" "build-tools;${ANDROID_BUILD_TOOLS_VERSION}"
 
 WORKDIR /app
 
@@ -732,6 +758,9 @@ DOCKERFILE
     
     print_step "从容器中提取构建产物..."
     mkdir -p "$OUTPUT_DIR"
+    
+    # 删除已存在的临时容器（如果有）
+    docker rm -f temp-builder 2>/dev/null || true
     
     # 创建临时容器并复制文件
     docker create --name temp-builder video-app-builder
