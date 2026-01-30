@@ -29,29 +29,21 @@ import logging
 from functools import wraps
 from contextlib import contextmanager
 
-# 添加模块搜索路径，以便导入video_database
-# 支持两种环境:
-# 1. Docker环境: video_database.py 挂载在 /app/video_database.py (与api_server.py同目录)
-# 2. 本地开发: video_database.py 在项目根目录 (api目录的父目录)
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-
-# 只添加可能包含video_database.py的有效路径
-# 检查是否是根目录以避免添加'/'到sys.path
-for path in [current_dir, parent_dir]:
-    if path and path != '/' and path not in sys.path:
-        sys.path.insert(0, path)
-
 from flask import Flask, jsonify, request, g
 from flask_cors import CORS
 
-# 导入视频数据库模块
+# 导入视频数据库模块 (在同一目录或父目录中)
 try:
     from video_database import VideoDatabase
 except ImportError:
-    print("错误: 无法导入 video_database 模块")
-    print("请确保 video_database.py 在正确的位置")
-    sys.exit(1)
+    # 如果同目录找不到,尝试父目录 (本地开发环境)
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    try:
+        from video_database import VideoDatabase
+    except ImportError:
+        print("错误: 无法导入 video_database 模块")
+        print("请确保 video_database.py 在正确的位置")
+        sys.exit(1)
 
 # 配置日志
 logging.basicConfig(

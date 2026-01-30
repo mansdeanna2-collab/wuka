@@ -12,7 +12,6 @@ services:
       - "5000:5000"
     volumes:
       - video-data:/app/data
-      - ./video_database.py:/app/video_database.py:ro
     environment:
       - USE_MYSQL=false
       - PYTHONUNBUFFERED=1
