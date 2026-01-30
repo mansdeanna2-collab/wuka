@@ -44,8 +44,8 @@
 
 ```bash
 # 克隆项目
-git clone <repository-url>
-cd <project-directory>
+git clone https://github.com/mansdeanna2-collab/wuka.git
+cd wuka
 
 # 运行自动部署脚本 (需要sudo权限)
 sudo python3 deploy.py
