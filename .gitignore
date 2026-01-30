@@ -40,9 +40,30 @@ Thumbs.db
 *.csv
 !package.json
 !package-lock.json
+!capacitor.config.json
+!vite.config.js
+!tsconfig.json
 
 # Logs
 *.log
 
 # Database files
 *.db
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+video-app/dist/
+
+# Mobile platforms (generated)
+video-app/android/
+video-app/ios/
+
+# Environment files
+.env
+.env.local
+.env.*.local
