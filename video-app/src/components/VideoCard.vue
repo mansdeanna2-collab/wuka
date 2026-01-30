@@ -80,21 +80,32 @@ export default {
   border-color: #00d4ff;
 }
 
+/* Touch device support - show play icon on touch */
+.video-card:active .play-icon {
+  opacity: 1;
+}
+
 .thumbnail {
   position: relative;
   width: 100%;
-  height: 180px;
+  padding-top: 56.25%; /* 16:9 aspect ratio */
   background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3e 100%);
   overflow: hidden;
 }
 
 .thumbnail img {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 .placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   display: flex;
@@ -163,6 +174,8 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
   font-size: 0.85em;
   color: #8b8b8b;
 }
@@ -191,5 +204,57 @@ export default {
 
 .coin-icon {
   font-size: 1em;
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .video-card {
+    border-radius: 10px;
+  }
+  
+  .info {
+    padding: 10px;
+  }
+  
+  .title {
+    font-size: 0.9em;
+    margin-bottom: 5px;
+  }
+  
+  .meta {
+    font-size: 0.75em;
+  }
+  
+  .category {
+    padding: 2px 8px;
+    font-size: 0.7em;
+  }
+  
+  .play-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .play-arrow {
+    border-width: 6px 0 6px 10px;
+  }
+}
+
+/* Tablet and small desktops */
+@media (min-width: 481px) and (max-width: 1024px) {
+  .info {
+    padding: 12px;
+  }
+}
+
+/* Large desktops */
+@media (min-width: 1400px) {
+  .info {
+    padding: 18px;
+  }
+  
+  .title {
+    font-size: 1.1em;
+  }
 }
 </style>

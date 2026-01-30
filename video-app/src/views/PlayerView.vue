@@ -334,4 +334,111 @@ export default {
     gap: 10px;
   }
 }
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .nav-bar {
+    padding: 8px 12px;
+  }
+  
+  .back-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  
+  .nav-bar .title {
+    font-size: 0.9em;
+    margin: 0 10px;
+  }
+  
+  .video-info {
+    padding: 12px;
+  }
+  
+  .video-title {
+    font-size: 1em;
+    margin-bottom: 10px;
+  }
+  
+  .video-meta {
+    gap: 10px;
+    font-size: 0.8em;
+  }
+  
+  .category {
+    padding: 3px 10px;
+  }
+  
+  .coins-info {
+    margin-top: 12px;
+    padding: 12px;
+    font-size: 0.9em;
+  }
+  
+  .related-section {
+    padding: 15px 12px;
+  }
+  
+  .related-section h3 {
+    font-size: 1em;
+    margin-bottom: 12px;
+  }
+  
+  .related-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .loading-state,
+  .error-state {
+    padding: 60px 15px;
+  }
+}
+
+/* Landscape mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .nav-bar {
+    padding: 5px 15px;
+  }
+  
+  .related-section {
+    padding: 15px;
+  }
+  
+  .related-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .related-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+}
+
+/* Large desktops */
+@media (min-width: 1200px) {
+  .player-container {
+    max-width: 1400px;
+    padding: 0 20px;
+  }
+  
+  .video-info {
+    padding: 25px 0;
+  }
+  
+  .video-title {
+    font-size: 1.5em;
+  }
+  
+  .related-section {
+    padding: 25px 0;
+  }
+  
+  .related-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
 </style>

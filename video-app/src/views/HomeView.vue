@@ -384,4 +384,97 @@ export default {
     gap: 15px;
   }
 }
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .home {
+    padding: 10px;
+  }
+  
+  .header {
+    padding: 20px 0;
+    margin-bottom: 20px;
+  }
+  
+  .logo {
+    font-size: 1.3em;
+  }
+  
+  .stats {
+    font-size: 0.8em;
+  }
+  
+  .controls {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .search-box {
+    min-width: 100%;
+  }
+  
+  .search-box input {
+    padding: 10px 15px;
+    font-size: 13px;
+  }
+  
+  .search-btn {
+    padding: 10px 15px;
+  }
+  
+  .controls select {
+    padding: 10px 15px;
+    font-size: 13px;
+    min-width: 100%;
+  }
+  
+  .video-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .loading-state,
+  .error-state,
+  .empty-state {
+    padding: 40px 15px;
+  }
+  
+  .error-icon,
+  .empty-icon {
+    font-size: 3em;
+  }
+  
+  .load-more {
+    padding: 20px;
+  }
+}
+
+/* Large tablets and small desktops */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .video-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+  }
+}
+
+/* Large desktops */
+@media (min-width: 1400px) {
+  .home {
+    max-width: 1600px;
+    padding: 30px;
+  }
+  
+  .header {
+    padding: 40px 0;
+  }
+  
+  .logo {
+    font-size: 2.5em;
+  }
+  
+  .video-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+  }
+}
 </style>
