@@ -194,7 +194,20 @@ python3 docker_build_apk.py --use-actions   # Show GitHub Actions instructions
 2. 在 Actions 页面触发 **Build Android APK** 工作流程
 3. 下载构建完成的 APK
 
-#### 方法 3: 命令行构建
+#### 方法 3: 使用构建脚本 (推荐)
+
+仓库根目录提供了 `build_apk.sh` 脚本，可用于完成 APK 构建：
+
+```bash
+cd build-output/android/android-project
+# 将仓库根目录的构建脚本复制到当前目录
+cp ../../../build_apk.sh .
+./build_apk.sh             # 调试版
+# 或
+./build_apk.sh --release   # 发布版
+```
+
+#### 方法 4: 直接使用 Gradle
 
 ```bash
 cd build-output/android/android-project
