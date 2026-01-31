@@ -2,6 +2,15 @@ diff --git a/node_modules/@capacitor/android/capacitor/build.gradle b/node_modul
 index caeeceb..b086a3b 100644
 --- a/node_modules/@capacitor/android/capacitor/build.gradle
 +++ b/node_modules/@capacitor/android/capacitor/build.gradle
+@@ -14,7 +14,7 @@ ext {
+ 
+ 
+ buildscript {
+-    ext.kotlin_version = project.hasProperty("kotlin_version") ? rootProject.ext.kotlin_version : '1.9.25'
++    ext.kotlin_version = project.hasProperty("kotlin_version") ? rootProject.ext.kotlin_version : '2.1.0'
+     repositories {
+         google()
+         mavenCentral()
 @@ -57,15 +57,15 @@ android {
              proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
          }
