@@ -4,6 +4,9 @@ import com.videoapp.player.data.api.ApiClient
 import com.videoapp.player.data.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 /**
  * Video repository for managing video data
@@ -11,6 +14,18 @@ import kotlinx.coroutines.withContext
 class VideoRepository {
     
     private val apiService = ApiClient.videoApiService
+    
+    /**
+     * Convert exception to user-friendly message
+     */
+    private fun getErrorMessage(e: Exception): String {
+        return when (e) {
+            is UnknownHostException -> "无法连接到服务器，请检查网络"
+            is SocketTimeoutException -> "连接超时，请稍后重试"
+            is ConnectException -> "连接被拒绝，请稍后重试"
+            else -> e.message ?: "请求失败"
+        }
+    }
     
     /**
      * Get videos with pagination
@@ -23,10 +38,10 @@ class VideoRepository {
                     val videos = response.body()?.data ?: emptyList()
                     Result.success(videos)
                 } else {
-                    Result.failure(Exception("API Error: ${response.code()}"))
+                    Result.failure(Exception("服务器错误: ${response.code()}"))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                Result.failure(Exception(getErrorMessage(e)))
             }
         }
     }
@@ -41,12 +56,12 @@ class VideoRepository {
                 if (response.isSuccessful) {
                     response.body()?.data?.let {
                         Result.success(it)
-                    } ?: Result.failure(Exception("Video not found"))
+                    } ?: Result.failure(Exception("视频不存在"))
                 } else {
-                    Result.failure(Exception("API Error: ${response.code()}"))
+                    Result.failure(Exception("服务器错误: ${response.code()}"))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                Result.failure(Exception(getErrorMessage(e)))
             }
         }
     }
@@ -62,10 +77,10 @@ class VideoRepository {
                     val videos = response.body()?.data ?: emptyList()
                     Result.success(videos)
                 } else {
-                    Result.failure(Exception("API Error: ${response.code()}"))
+                    Result.failure(Exception("服务器错误: ${response.code()}"))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                Result.failure(Exception(getErrorMessage(e)))
             }
         }
     }
@@ -81,10 +96,10 @@ class VideoRepository {
                     val videos = response.body()?.data ?: emptyList()
                     Result.success(videos)
                 } else {
-                    Result.failure(Exception("API Error: ${response.code()}"))
+                    Result.failure(Exception("服务器错误: ${response.code()}"))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                Result.failure(Exception(getErrorMessage(e)))
             }
         }
     }
@@ -100,10 +115,10 @@ class VideoRepository {
                     val videos = response.body()?.data ?: emptyList()
                     Result.success(videos)
                 } else {
-                    Result.failure(Exception("API Error: ${response.code()}"))
+                    Result.failure(Exception("服务器错误: ${response.code()}"))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                Result.failure(Exception(getErrorMessage(e)))
             }
         }
     }
@@ -118,9 +133,10 @@ class VideoRepository {
                 if (response.isSuccessful) {
                     Result.success(Unit)
                 } else {
-                    Result.failure(Exception("API Error: ${response.code()}"))
+                    Result.failure(Exception("服务器错误: ${response.code()}"))
                 }
             } catch (e: Exception) {
+                // Silently fail for play count updates
                 Result.failure(e)
             }
         }
@@ -137,10 +153,10 @@ class VideoRepository {
                     val categories = response.body()?.data ?: emptyList()
                     Result.success(categories)
                 } else {
-                    Result.failure(Exception("API Error: ${response.code()}"))
+                    Result.failure(Exception("服务器错误: ${response.code()}"))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                Result.failure(Exception(getErrorMessage(e)))
             }
         }
     }
@@ -155,12 +171,12 @@ class VideoRepository {
                 if (response.isSuccessful) {
                     response.body()?.data?.let {
                         Result.success(it)
-                    } ?: Result.failure(Exception("Statistics not available"))
+                    } ?: Result.failure(Exception("统计信息不可用"))
                 } else {
-                    Result.failure(Exception("API Error: ${response.code()}"))
+                    Result.failure(Exception("服务器错误: ${response.code()}"))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                Result.failure(Exception(getErrorMessage(e)))
             }
         }
     }

@@ -18,17 +18,29 @@ import com.videoapp.player.databinding.ActivityHomeBinding
 import com.videoapp.player.ui.adapter.CategoryAdapter
 import com.videoapp.player.ui.adapter.VideoAdapter
 import com.videoapp.player.ui.player.PlayerActivity
+import com.videoapp.player.util.GridSpacingItemDecoration
+import com.videoapp.player.util.HorizontalSpacingItemDecoration
+import com.videoapp.player.util.KeyboardUtils
+import com.videoapp.player.util.NetworkUtils
 
 /**
  * Home Activity - displays video grid with search and category filtering
  */
 class HomeActivity : AppCompatActivity() {
     
+    companion object {
+        private const val ITEM_SPACING_DP = 8
+    }
+    
     private lateinit var binding: ActivityHomeBinding
     private val viewModel: HomeViewModel by viewModels()
     
     private lateinit var videoAdapter: VideoAdapter
     private lateinit var categoryAdapter: CategoryAdapter
+    
+    private val itemSpacingPx: Int by lazy {
+        (ITEM_SPACING_DP * resources.displayMetrics.density).toInt()
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,10 +77,22 @@ class HomeActivity : AppCompatActivity() {
             layoutManager = GridLayoutManager(this@HomeActivity, spanCount)
             adapter = videoAdapter
             
+            // Add spacing decoration
+            addItemDecoration(GridSpacingItemDecoration(spanCount, itemSpacingPx, true))
+            
+            // Enable item animator for smooth updates
+            itemAnimator?.changeDuration = 150
+            
+            // Optimize for fixed size items
+            setHasFixedSize(true)
+            
             // Infinite scroll
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
+                    
+                    // Only load more when scrolling down
+                    if (dy <= 0) return
                     
                     val layoutManager = recyclerView.layoutManager as GridLayoutManager
                     val visibleItemCount = layoutManager.childCount
@@ -108,6 +132,12 @@ class HomeActivity : AppCompatActivity() {
                 false
             )
             adapter = categoryAdapter
+            
+            // Add horizontal spacing
+            addItemDecoration(HorizontalSpacingItemDecoration(itemSpacingPx, false))
+            
+            // Optimize for fixed size items
+            setHasFixedSize(true)
         }
     }
     
@@ -136,13 +166,25 @@ class HomeActivity : AppCompatActivity() {
             binding.searchEditText.text.clear()
             viewModel.loadInitialData()
         }
+        
+        // Retry button in empty view
+        binding.retryButton.setOnClickListener {
+            viewModel.refresh()
+        }
     }
     
     private fun performSearch() {
         val query = binding.searchEditText.text.toString().trim()
         if (query.isNotEmpty()) {
+            // Check network connectivity
+            if (!NetworkUtils.isNetworkAvailable(this)) {
+                Toast.makeText(this, NetworkUtils.getNetworkErrorMessage(this), Toast.LENGTH_SHORT).show()
+                return
+            }
+            
             viewModel.searchVideos(query)
             // Hide keyboard
+            KeyboardUtils.hideKeyboard(this)
             binding.searchEditText.clearFocus()
         }
     }
@@ -163,9 +205,7 @@ class HomeActivity : AppCompatActivity() {
         // Observe videos
         viewModel.videos.observe(this) { videos ->
             videoAdapter.submitList(videos)
-            
-            binding.emptyView.visibility = 
-                if (videos.isEmpty() && viewModel.isLoading.value != true) View.VISIBLE else View.GONE
+            updateEmptyView(videos.isEmpty() && viewModel.isLoading.value != true)
         }
         
         // Observe categories
@@ -194,15 +234,40 @@ class HomeActivity : AppCompatActivity() {
             // Show loading indicator for initial load
             binding.loadingView.visibility = 
                 if (isLoading && videoAdapter.itemCount == 0) View.VISIBLE else View.GONE
+            
+            // Update empty view when loading completes
+            if (!isLoading) {
+                updateEmptyView(videoAdapter.itemCount == 0)
+            }
         }
         
         // Observe errors
         viewModel.error.observe(this) { error ->
             if (error != null) {
                 Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+                // Show retry button when there's an error
+                if (videoAdapter.itemCount == 0) {
+                    showErrorState(error)
+                }
                 viewModel.clearError()
             }
         }
+    }
+    
+    private fun updateEmptyView(isEmpty: Boolean) {
+        binding.emptyView.visibility = if (isEmpty) View.VISIBLE else View.GONE
+        if (isEmpty) {
+            binding.emptyIcon.text = "📭"
+            binding.emptyText.text = getString(R.string.no_videos)
+            binding.retryButton.visibility = View.GONE
+        }
+    }
+    
+    private fun showErrorState(error: String) {
+        binding.emptyView.visibility = View.VISIBLE
+        binding.emptyIcon.text = "⚠️"
+        binding.emptyText.text = error
+        binding.retryButton.visibility = View.VISIBLE
     }
     
     private fun navigateToPlayer(video: Video) {

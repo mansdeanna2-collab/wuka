@@ -83,14 +83,18 @@ class VideoAdapter(
                     coinsBadge.visibility = View.GONE
                 }
                 
-                // Thumbnail image
+                // Thumbnail image with size optimization
                 val imageUrl = ImageUtils.formatImageUrl(video.videoImage)
                 if (imageUrl.isNotEmpty()) {
                     thumbnailImage.load(imageUrl) {
-                        crossfade(true)
+                        crossfade(300)
                         placeholder(R.drawable.ic_video_placeholder)
                         error(R.drawable.ic_video_placeholder)
                         transformations(RoundedCornersTransformation(12f))
+                        // Limit memory usage by setting size
+                        size(480, 270)
+                        // Allow hardware acceleration
+                        allowHardware(true)
                     }
                 } else {
                     thumbnailImage.setImageResource(R.drawable.ic_video_placeholder)

@@ -17,8 +17,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:show_buffering="when_playing"
         app:use_controller="true"
-        app:controller_layout_id="@layout/exo_player_control_view"
-        app:resize_mode="fit" />
+        app:resize_mode="fit"
+        app:show_timeout="3000"
+        app:hide_on_touch="true" />
 
     <!-- Player Loading Overlay -->
     <FrameLayout
@@ -67,7 +68,20 @@
             android:layout_marginTop="16dp"
             android:text="@string/video_load_failed"
             android:textColor="@color/text_primary"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:gravity="center"
+            android:paddingHorizontal="32dp" />
+
+        <Button
+            android:id="@+id/retryButton"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/retry"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:paddingHorizontal="24dp"
+            android:background="@drawable/bg_episode_button" />
 
     </LinearLayout>
 

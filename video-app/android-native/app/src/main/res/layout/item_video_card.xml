@@ -4,33 +4,44 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
     app:cardBackgroundColor="@color/surface_dark"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
+    app:cardElevation="2dp"
     app:strokeWidth="1dp"
-    app:strokeColor="@color/divider">
+    app:strokeColor="@color/divider"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Thumbnail -->
+        <!-- Thumbnail with fixed 16:9 aspect ratio -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-
-            <ImageView
-                android:id="@+id/thumbnailImage"
+            
+            <!-- Aspect ratio container -->
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                android:scaleType="centerCrop"
-                android:minHeight="100dp"
-                android:background="@color/surface_dark"
-                android:contentDescription="@string/thumbnail"
-                tools:src="@drawable/ic_video_placeholder" />
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/thumbnailImage"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:scaleType="centerCrop"
+                    android:background="@color/surface_dark"
+                    android:contentDescription="@string/thumbnail"
+                    app:layout_constraintDimensionRatio="16:9"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    tools:src="@drawable/ic_video_placeholder" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- Play Icon Overlay -->
             <ImageView
@@ -65,7 +76,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="10dp">
 
             <!-- Title -->
             <TextView
@@ -73,18 +84,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textStyle="bold"
                 android:maxLines="2"
                 android:ellipsize="end"
-                android:lineSpacingExtra="2dp"
+                android:lineSpacingMultiplier="1.2"
                 tools:text="视频标题示例" />
 
             <!-- Meta Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="6dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
@@ -93,12 +104,14 @@
                     android:id="@+id/categoryBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingHorizontal="8dp"
+                    android:paddingHorizontal="6dp"
                     android:paddingVertical="2dp"
                     android:background="@drawable/bg_category_badge"
                     android:textColor="@color/colorAccent"
-                    android:textSize="11sp"
+                    android:textSize="10sp"
                     android:visibility="gone"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     tools:text="分类"
                     tools:visibility="visible" />
 
@@ -107,9 +120,9 @@
                     android:id="@+id/playCountText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="6dp"
                     android:textColor="@color/text_hint"
-                    android:textSize="11sp"
+                    android:textSize="10sp"
                     android:visibility="gone"
                     tools:text="1.2万次播放"
                     tools:visibility="visible" />
@@ -121,9 +134,9 @@
                 android:id="@+id/coinsBadge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="4dp"
                 android:textColor="@color/gold"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:visibility="gone"
                 tools:text="🪙 10 金币"
                 tools:visibility="visible" />

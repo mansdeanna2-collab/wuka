@@ -15,12 +15,12 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.GridLayoutManager
-import coil.load
 import com.videoapp.player.R
 import com.videoapp.player.data.model.Video
 import com.videoapp.player.databinding.ActivityPlayerBinding
 import com.videoapp.player.ui.adapter.VideoAdapter
-import com.videoapp.player.util.ImageUtils
+import com.videoapp.player.util.GridSpacingItemDecoration
+import com.videoapp.player.util.NetworkUtils
 
 /**
  * Player Activity - full-screen video player with ExoPlayer
@@ -29,21 +29,33 @@ class PlayerActivity : AppCompatActivity() {
     
     companion object {
         const val EXTRA_VIDEO_ID = "video_id"
+        private const val STATE_PLAYBACK_POSITION = "playback_position"
+        private const val STATE_PLAY_WHEN_READY = "play_when_ready"
+        private const val STATE_EPISODE_INDEX = "episode_index"
     }
     
     private lateinit var binding: ActivityPlayerBinding
     private val viewModel: PlayerViewModel by viewModels()
     
     private var player: ExoPlayer? = null
+    private var playerListener: Player.Listener? = null
     private var playWhenReady = true
     private var playbackPosition = 0L
     private var currentEpisodeIndex = 0
     private var hasRecordedPlay = false
+    private var isPlayerInitialized = false
     
     private lateinit var relatedAdapter: VideoAdapter
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Restore saved state
+        savedInstanceState?.let {
+            playbackPosition = it.getLong(STATE_PLAYBACK_POSITION, 0L)
+            playWhenReady = it.getBoolean(STATE_PLAY_WHEN_READY, true)
+            currentEpisodeIndex = it.getInt(STATE_EPISODE_INDEX, 0)
+        }
         
         // Enable full-screen mode
         enableFullscreen()
@@ -87,6 +99,13 @@ class PlayerActivity : AppCompatActivity() {
             showSpeedDialog()
         }
         
+        // Retry button
+        binding.retryButton.setOnClickListener {
+            binding.errorView.visibility = View.GONE
+            binding.playerLoadingView.visibility = View.VISIBLE
+            playCurrentEpisode()
+        }
+        
         // Episode buttons container (will be populated when video loads)
         binding.episodesContainer.visibility = View.GONE
     }
@@ -101,9 +120,13 @@ class PlayerActivity : AppCompatActivity() {
             finish()
         }
         
+        val spacingPx = (4 * resources.displayMetrics.density).toInt()
+        
         binding.relatedRecyclerView.apply {
             layoutManager = GridLayoutManager(this@PlayerActivity, 3)
             adapter = relatedAdapter
+            addItemDecoration(GridSpacingItemDecoration(3, spacingPx, false))
+            setHasFixedSize(true)
         }
     }
     
@@ -113,7 +136,9 @@ class PlayerActivity : AppCompatActivity() {
             if (video != null) {
                 updateVideoInfo(video)
                 setupEpisodes()
-                initializePlayer()
+                if (!isPlayerInitialized) {
+                    initializePlayer()
+                }
             }
         }
         
@@ -205,49 +230,64 @@ class PlayerActivity : AppCompatActivity() {
     
     private fun initializePlayer() {
         if (player == null) {
+            playerListener = object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    when (playbackState) {
+                        Player.STATE_BUFFERING -> {
+                            binding.playerLoadingView.visibility = View.VISIBLE
+                        }
+                        Player.STATE_READY -> {
+                            binding.playerLoadingView.visibility = View.GONE
+                            binding.errorView.visibility = View.GONE
+                        }
+                        Player.STATE_ENDED -> {
+                            // Auto-play next episode
+                            val episodes = viewModel.getEpisodes()
+                            if (currentEpisodeIndex < episodes.size - 1) {
+                                selectEpisode(currentEpisodeIndex + 1)
+                            }
+                        }
+                        else -> {
+                            binding.playerLoadingView.visibility = View.GONE
+                        }
+                    }
+                }
+                
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    // Record play count once when video starts playing
+                    if (isPlaying && !hasRecordedPlay) {
+                        hasRecordedPlay = true
+                        viewModel.video.value?.let {
+                            viewModel.updatePlayCount(it.videoId)
+                        }
+                    }
+                }
+                
+                override fun onPlayerError(error: PlaybackException) {
+                    binding.playerLoadingView.visibility = View.GONE
+                    binding.errorView.visibility = View.VISIBLE
+                    val errorMsg = when (error.errorCode) {
+                        PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
+                        PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT ->
+                            "网络连接失败，请检查网络"
+                        PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND ->
+                            "视频文件不存在"
+                        PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED,
+                        PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED ->
+                            "视频格式不支持"
+                        else -> "视频加载失败"
+                    }
+                    binding.errorText.text = errorMsg
+                }
+            }
+            
             player = ExoPlayer.Builder(this)
+                .setHandleAudioBecomingNoisy(true)
                 .build()
                 .also { exoPlayer ->
                     binding.playerView.player = exoPlayer
-                    
-                    exoPlayer.addListener(object : Player.Listener {
-                        override fun onPlaybackStateChanged(playbackState: Int) {
-                            when (playbackState) {
-                                Player.STATE_BUFFERING -> {
-                                    binding.playerLoadingView.visibility = View.VISIBLE
-                                }
-                                Player.STATE_READY -> {
-                                    binding.playerLoadingView.visibility = View.GONE
-                                }
-                                Player.STATE_ENDED -> {
-                                    // Auto-play next episode
-                                    val episodes = viewModel.getEpisodes()
-                                    if (currentEpisodeIndex < episodes.size - 1) {
-                                        selectEpisode(currentEpisodeIndex + 1)
-                                    }
-                                }
-                                else -> {
-                                    binding.playerLoadingView.visibility = View.GONE
-                                }
-                            }
-                        }
-                        
-                        override fun onIsPlayingChanged(isPlaying: Boolean) {
-                            // Record play count once when video starts playing
-                            if (isPlaying && !hasRecordedPlay) {
-                                hasRecordedPlay = true
-                                viewModel.video.value?.let {
-                                    viewModel.updatePlayCount(it.videoId)
-                                }
-                            }
-                        }
-                        
-                        override fun onPlayerError(error: PlaybackException) {
-                            binding.playerLoadingView.visibility = View.GONE
-                            binding.errorView.visibility = View.VISIBLE
-                            binding.errorText.text = "视频加载失败: ${error.message}"
-                        }
-                    })
+                    isPlayerInitialized = true
+                    playerListener?.let { exoPlayer.addListener(it) }
                 }
         }
         
@@ -293,9 +333,23 @@ class PlayerActivity : AppCompatActivity() {
         player?.let { exoPlayer ->
             playbackPosition = exoPlayer.currentPosition
             playWhenReady = exoPlayer.playWhenReady
+            playerListener?.let { listener ->
+                exoPlayer.removeListener(listener)
+            }
             exoPlayer.release()
         }
         player = null
+        playerListener = null
+        isPlayerInitialized = false
+    }
+    
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        player?.let {
+            outState.putLong(STATE_PLAYBACK_POSITION, it.currentPosition)
+            outState.putBoolean(STATE_PLAY_WHEN_READY, it.playWhenReady)
+        }
+        outState.putInt(STATE_EPISODE_INDEX, currentEpisodeIndex)
     }
     
     private fun formatPlayCount(count: Int): String {
@@ -307,15 +361,16 @@ class PlayerActivity : AppCompatActivity() {
     
     override fun onStart() {
         super.onStart()
-        initializePlayer()
+        // Only initialize if we have video data
+        if (viewModel.video.value != null && !isPlayerInitialized) {
+            initializePlayer()
+        }
     }
     
     override fun onResume() {
         super.onResume()
         enableFullscreen()
-        if (player == null) {
-            initializePlayer()
-        }
+        player?.play()
     }
     
     override fun onPause() {
