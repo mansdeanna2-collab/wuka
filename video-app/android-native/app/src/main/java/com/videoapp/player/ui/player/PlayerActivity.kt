@@ -2,6 +2,7 @@ package com.videoapp.player.ui.player
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
@@ -296,19 +297,48 @@ class PlayerActivity : AppCompatActivity() {
     
     private fun playCurrentEpisode() {
         val episodes = viewModel.getEpisodes()
-        if (episodes.isEmpty()) return
-        
-        val episode = episodes.getOrNull(currentEpisodeIndex) ?: return
-        
-        player?.apply {
-            val mediaItem = MediaItem.fromUri(episode.url)
-            setMediaItem(mediaItem)
-            playWhenReady = this@PlayerActivity.playWhenReady
-            seekTo(playbackPosition)
-            prepare()
+        if (episodes.isEmpty()) {
+            binding.errorView.visibility = View.VISIBLE
+            binding.errorText.text = "没有可播放的视频"
+            return
         }
         
-        binding.errorView.visibility = View.GONE
+        val episode = episodes.getOrNull(currentEpisodeIndex) ?: run {
+            binding.errorView.visibility = View.VISIBLE
+            binding.errorText.text = "视频集数不存在"
+            return
+        }
+        
+        // Validate URL before attempting to play
+        if (episode.url.isBlank()) {
+            binding.errorView.visibility = View.VISIBLE
+            binding.errorText.text = "视频地址无效"
+            return
+        }
+        
+        // Check network connectivity for remote URLs
+        if ((episode.url.startsWith("http://") || episode.url.startsWith("https://")) 
+            && !NetworkUtils.isNetworkAvailable(this)) {
+            binding.errorView.visibility = View.VISIBLE
+            binding.errorText.text = getString(R.string.network_error)
+            return
+        }
+        
+        try {
+            player?.apply {
+                val mediaItem = MediaItem.fromUri(episode.url)
+                setMediaItem(mediaItem)
+                playWhenReady = this@PlayerActivity.playWhenReady
+                seekTo(playbackPosition)
+                prepare()
+            }
+            
+            binding.errorView.visibility = View.GONE
+        } catch (e: Exception) {
+            Log.e("PlayerActivity", "Failed to load video: ${e.message}", e)
+            binding.errorView.visibility = View.VISIBLE
+            binding.errorText.text = getString(R.string.video_load_failed)
+        }
     }
     
     private fun showSpeedDialog() {
@@ -370,12 +400,20 @@ class PlayerActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         enableFullscreen()
-        player?.play()
+        // Only resume playback if player exists and was playing
+        if (player != null && playWhenReady) {
+            player?.play()
+        }
     }
     
     override fun onPause() {
         super.onPause()
-        player?.pause()
+        // Save state before pausing
+        player?.let {
+            playbackPosition = it.currentPosition
+            playWhenReady = it.playWhenReady
+            it.pause()
+        }
     }
     
     override fun onStop() {
@@ -385,6 +423,7 @@ class PlayerActivity : AppCompatActivity() {
     
     override fun onDestroy() {
         super.onDestroy()
+        // Ensure player is fully released
         releasePlayer()
     }
 }

@@ -31,10 +31,33 @@
 -keepclassmembernames class kotlinx.** {
     volatile <fields>;
 }
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+-keepclassmembers class kotlinx.coroutines.** {
+    volatile <fields>;
+}
 
 # Keep data classes
 -keep class com.videoapp.player.data.model.Video { *; }
 -keep class com.videoapp.player.data.model.Category { *; }
 -keep class com.videoapp.player.data.model.VideoResponse { *; }
+-keep class com.videoapp.player.data.model.SingleVideoResponse { *; }
 -keep class com.videoapp.player.data.model.CategoryResponse { *; }
 -keep class com.videoapp.player.data.model.Statistics { *; }
+-keep class com.videoapp.player.data.model.StatisticsResponse { *; }
+
+# Coil
+-dontwarn coil.**
+-keep class coil.** { *; }
+
+# ExoPlayer / Media3
+-dontwarn androidx.media3.**
+-keep class androidx.media3.** { *; }
+-keep interface androidx.media3.** { *; }
+
+# ViewModel and LiveData
+-keep class * extends androidx.lifecycle.ViewModel { *; }
+-keep class * extends androidx.lifecycle.AndroidViewModel { *; }
+
+# PlayerViewModel Episode inner class
+-keep class com.videoapp.player.ui.player.PlayerViewModel$Episode { *; }

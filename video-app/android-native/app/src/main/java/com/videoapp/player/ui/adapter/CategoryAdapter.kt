@@ -33,7 +33,13 @@ class CategoryAdapter(
             holder.bindAllOption(position == selectedPosition)
         } else {
             val adjustedPosition = if (showAllOption) position - 1 else position
-            holder.bind(getItem(adjustedPosition), position == selectedPosition)
+            // Bounds check to prevent IndexOutOfBoundsException
+            if (adjustedPosition >= 0 && adjustedPosition < super.getItemCount()) {
+                holder.bind(getItem(adjustedPosition), position == selectedPosition)
+            } else {
+                // Fallback to "All" option if position is out of bounds
+                holder.bindAllOption(false)
+            }
         }
     }
     

@@ -2,6 +2,7 @@ package com.videoapp.player.data.repository
 
 import com.videoapp.player.data.api.ApiClient
 import com.videoapp.player.data.model.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.ConnectException
@@ -20,6 +21,7 @@ class VideoRepository {
      */
     private fun getErrorMessage(e: Exception): String {
         return when (e) {
+            is CancellationException -> throw e // Re-throw cancellation exceptions
             is UnknownHostException -> "无法连接到服务器，请检查网络"
             is SocketTimeoutException -> "连接超时，请稍后重试"
             is ConnectException -> "连接被拒绝，请稍后重试"
