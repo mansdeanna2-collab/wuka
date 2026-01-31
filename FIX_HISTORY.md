@@ -49,7 +49,7 @@ BUILD FAILED in 1m 29s
 
 ## 模板: 添加新的修复记录
 
-### 日期: YYYY-MM-DD: 问题标题
+## YYYY-MM-DD: 问题标题
 
 ### 问题描述
 [描述遇到的问题]
