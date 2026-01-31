@@ -15,6 +15,7 @@
           v-model="searchKeyword"
           type="text"
           placeholder="搜索视频..."
+          @input="onSearchInput"
           @keyup.enter="handleSearch"
         />
         <button class="search-btn" @click="handleSearch">🔍</button>
@@ -28,10 +29,9 @@
       </select>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="loading-state">
-      <div class="loading-spinner"></div>
-      <p>加载中...</p>
+    <!-- Skeleton Loading State -->
+    <div v-if="loading" class="video-grid">
+      <VideoCardSkeleton v-for="n in 8" :key="'skeleton-' + n" />
     </div>
 
     <!-- Error State -->
@@ -59,8 +59,13 @@
 
     <!-- Load More -->
     <div v-if="hasMore && !loading" class="load-more">
-      <button class="btn btn-secondary" @click="loadMore">
-        加载更多
+      <button 
+        class="btn btn-secondary" 
+        @click="loadMore"
+        :disabled="loadingMore"
+      >
+        <span v-if="loadingMore" class="loading-spinner small"></span>
+        {{ loadingMore ? '加载中...' : '加载更多' }}
       </button>
     </div>
   </div>
@@ -68,6 +73,7 @@
 
 <script>
 import VideoCard from '@/components/VideoCard.vue'
+import VideoCardSkeleton from '@/components/VideoCardSkeleton.vue'
 import { videoApi } from '@/api'
 import { 
   saveScrollPosition, 
@@ -79,7 +85,18 @@ import {
 export default {
   name: 'HomeView',
   components: {
-    VideoCard
+    VideoCard,
+    VideoCardSkeleton
+  },
+  beforeRouteLeave(to, from, next) {
+    // Also save scroll position when leaving via router navigation
+    // This ensures position is saved even in scenarios where deactivated isn't called first
+    if (to.name === 'player') {
+      const routePath = from.fullPath
+      const scrollY = getCurrentScrollPosition()
+      saveScrollPosition(routePath, scrollY)
+    }
+    next()
   },
   data() {
     return {
@@ -89,13 +106,16 @@ export default {
       searchKeyword: '',
       selectedCategory: '',
       loading: true,
+      loadingMore: false,
       error: false,
       errorMessage: '',
       page: 1,
       limit: 20,
       hasMore: true,
       // Flag to track if we should restore scroll position
-      shouldRestoreScroll: false
+      shouldRestoreScroll: false,
+      // Debounce timeout for search
+      searchDebounceTimer: null
     }
   },
   watch: {
@@ -154,15 +174,11 @@ export default {
     const scrollY = getCurrentScrollPosition()
     saveScrollPosition(routePath, scrollY)
   },
-  beforeRouteLeave(to, from, next) {
-    // Also save scroll position when leaving via router navigation
-    // This ensures position is saved even in scenarios where deactivated isn't called first
-    if (to.name === 'player') {
-      const routePath = from.fullPath
-      const scrollY = getCurrentScrollPosition()
-      saveScrollPosition(routePath, scrollY)
+  beforeUnmount() {
+    // Clean up debounce timer
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer)
     }
-    next()
   },
   methods: {
     async init() {
@@ -212,8 +228,9 @@ export default {
     },
     
     async loadMore() {
-      if (this.loading) return
+      if (this.loading || this.loadingMore) return
       
+      this.loadingMore = true
       this.page++
       const offset = (this.page - 1) * this.limit
       
@@ -243,6 +260,8 @@ export default {
         }
       } catch (e) {
         console.error('Load more error:', e)
+      } finally {
+        this.loadingMore = false
       }
     },
     
@@ -278,6 +297,31 @@ export default {
         this.$router.push({ name: 'home' })
       }
       this.loadVideos()
+    },
+    
+    // Debounced search input handler - searches after 500ms of no typing
+    onSearchInput() {
+      if (this.searchDebounceTimer) {
+        clearTimeout(this.searchDebounceTimer)
+      }
+      // Only trigger debounced search if there's actually a search keyword
+      if (this.searchKeyword.trim()) {
+        this.searchDebounceTimer = setTimeout(() => {
+          this.handleSearch()
+        }, 500)
+      } else {
+        // When search input is cleared, reset to initial state
+        // Debounce this too to avoid rapid reloads while user is still typing/deleting
+        this.searchDebounceTimer = setTimeout(() => {
+          if (!this.searchKeyword.trim()) {
+            // Navigate back to home view if on search page
+            if (this.$route.name === 'search') {
+              this.$router.push({ name: 'home' })
+            }
+            this.loadVideos()
+          }
+        }, 500)
+      }
     },
     
     playVideo(video) {
@@ -421,6 +465,18 @@ export default {
 .load-more {
   text-align: center;
   padding: 30px;
+}
+
+.load-more .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading-spinner.small {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
 }
 
 /* Mobile responsive */

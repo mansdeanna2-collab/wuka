@@ -30,15 +30,34 @@ class VideoApp : MultiDexApplication(), ImageLoaderFactory {
         private var _instance: VideoApp? = null
         
         val instance: VideoApp
-            get() = _instance ?: throw IllegalStateException("VideoApp not initialized")
+            get() = _instance ?: throw IllegalStateException(
+                "VideoApp not initialized. This usually means the Application class " +
+                "was not properly configured in AndroidManifest.xml"
+            )
+        
+        /**
+         * Safe accessor that returns null if not initialized
+         * Use this in non-critical paths where the app can recover
+         */
+        fun getInstanceOrNull(): VideoApp? = _instance
     }
     
     override fun onCreate() {
-        super.onCreate()
+        // Set instance first thing to prevent race conditions
         _instance = this
         
-        // Setup global exception handler to prevent crashes
-        setupGlobalExceptionHandler()
+        try {
+            super.onCreate()
+            
+            // Setup global exception handler to prevent crashes
+            setupGlobalExceptionHandler()
+            
+            Log.i(TAG, "VideoApp initialized successfully")
+            Log.i(TAG, "Device: ${Build.MANUFACTURER} ${Build.MODEL}, Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error during VideoApp initialization", e)
+            // Don't rethrow - let the app attempt to continue
+        }
     }
     
     /**
@@ -58,8 +77,13 @@ class VideoApp : MultiDexApplication(), ImageLoaderFactory {
                     "  at ${it.className}.${it.methodName}(${it.fileName}:${it.lineNumber})"
                 }
                 Log.e(TAG, "Stack trace:\n$stackTrace")
+                
+                // Log cause if present
+                throwable.cause?.let { cause ->
+                    Log.e(TAG, "Caused by: ${cause.javaClass.name}: ${cause.message}")
+                }
             } catch (e: Exception) {
-                // Ignore any logging failures
+                // Ignore any logging failures - we must not crash the crash handler
             }
             
             // Call the default handler to terminate the app properly

@@ -98,12 +98,12 @@ def api_response(
 ) -> Tuple[Response, int]:
     """
     统一API响应格式 (Unified API response format)
-    
+
     Args:
         data: Response data
         message: Response message
         code: HTTP status code
-    
+
     Returns:
         Tuple of (JSON response, status code)
     """
@@ -146,17 +146,17 @@ def health_check() -> Tuple[Response, int]:
 def get_videos() -> Tuple[Response, int]:
     """
     获取视频列表 (Get video list)
-    
+
     Query参数 (Query parameters):
         limit: 返回数量 (默认20, 最大100) / Return count (default 20, max 100)
         offset: 偏移量 (默认0) / Offset (default 0)
     """
     limit: int = min(int(request.args.get('limit', 20)), 100)
     offset: int = int(request.args.get('offset', 0))
-    
+
     with get_db() as db:
         videos: List[Dict[str, Any]] = db.get_all_videos(limit=limit, offset=offset)
-    
+
     return api_response(data=videos)
 
 
@@ -166,7 +166,7 @@ def get_video(video_id: int) -> Tuple[Response, int]:
     """获取单个视频详情 (Get single video details)"""
     with get_db() as db:
         video: Optional[Dict[str, Any]] = db.get_video(video_id)
-    
+
     if video:
         return api_response(data=video)
     else:
@@ -178,7 +178,7 @@ def get_video(video_id: int) -> Tuple[Response, int]:
 def search_videos() -> Tuple[Response, int]:
     """
     搜索视频 (Search videos)
-    
+
     Query参数 (Query parameters):
         keyword: 搜索关键词 (必需) / Search keyword (required)
         limit: 返回数量 (默认20, 最大100) / Return count (default 20, max 100)
@@ -187,13 +187,13 @@ def search_videos() -> Tuple[Response, int]:
     keyword: str = request.args.get('keyword', '').strip()
     if not keyword:
         return api_response(message="请提供搜索关键词", code=400)
-    
+
     limit: int = min(int(request.args.get('limit', 20)), 100)
     offset: int = max(int(request.args.get('offset', 0)), 0)
-    
+
     with get_db() as db:
         videos: List[Dict[str, Any]] = db.search_videos(keyword, limit=limit, offset=offset)
-    
+
     return api_response(data=videos)
 
 
@@ -202,7 +202,7 @@ def search_videos() -> Tuple[Response, int]:
 def get_videos_by_category() -> Tuple[Response, int]:
     """
     按分类获取视频 (Get videos by category)
-    
+
     Query参数 (Query parameters):
         category: 分类名称 (必需) / Category name (required)
         limit: 返回数量 (默认20, 最大100) / Return count (default 20, max 100)
@@ -211,13 +211,13 @@ def get_videos_by_category() -> Tuple[Response, int]:
     category: str = request.args.get('category', '').strip()
     if not category:
         return api_response(message="请提供分类名称", code=400)
-    
+
     limit: int = min(int(request.args.get('limit', 20)), 100)
     offset: int = max(int(request.args.get('offset', 0)), 0)
-    
+
     with get_db() as db:
         videos: List[Dict[str, Any]] = db.get_videos_by_category(category, limit=limit, offset=offset)
-    
+
     return api_response(data=videos)
 
 
@@ -226,15 +226,15 @@ def get_videos_by_category() -> Tuple[Response, int]:
 def get_top_videos() -> Tuple[Response, int]:
     """
     获取热门视频 (Get top videos by play count)
-    
+
     Query参数 (Query parameters):
         limit: 返回数量 (默认10) / Return count (default 10)
     """
     limit: int = min(int(request.args.get('limit', 10)), 50)
-    
+
     with get_db() as db:
         videos: List[Dict[str, Any]] = db.get_top_videos(limit=limit)
-    
+
     return api_response(data=videos)
 
 
@@ -244,7 +244,7 @@ def update_play_count(video_id: int) -> Tuple[Response, int]:
     """增加视频播放次数 (Increment video play count)"""
     with get_db() as db:
         success: bool = db.update_play_count(video_id)
-    
+
     if success:
         return api_response(message="播放次数已更新")
     else:
@@ -257,7 +257,7 @@ def get_categories() -> Tuple[Response, int]:
     """获取所有视频分类 (Get all video categories)"""
     with get_db() as db:
         categories: List[Dict[str, Any]] = db.get_categories()
-    
+
     return api_response(data=categories)
 
 
@@ -267,7 +267,7 @@ def get_statistics() -> Tuple[Response, int]:
     """获取数据库统计信息 (Get database statistics)"""
     with get_db() as db:
         stats: Dict[str, Any] = db.get_statistics()
-    
+
     return api_response(data=stats)
 
 
@@ -295,7 +295,7 @@ def internal_error(e: Exception) -> Tuple[Response, int]:
 
 if __name__ == '__main__':
     import argparse
-    
+
     parser = argparse.ArgumentParser(description='视频API服务器 (Video API Server)')
     parser.add_argument('--host', type=str, default='0.0.0.0',
                         help='监听地址 / Listen address (默认: 0.0.0.0)')
@@ -305,15 +305,15 @@ if __name__ == '__main__':
                         help='生产模式 / Production mode (关闭调试)')
     parser.add_argument('--sqlite', action='store_true',
                         help='使用SQLite而非MySQL / Use SQLite instead of MySQL')
-    
+
     args = parser.parse_args()
-    
+
     # 设置环境变量 (Set environment variables)
     if args.sqlite:
         os.environ['USE_MYSQL'] = 'false'
-    
+
     debug: bool = not args.production
-    
+
     print("\n" + "="*60)
     print("🚀 视频API服务器 (Video API Server)")
     print("="*60)
@@ -321,7 +321,7 @@ if __name__ == '__main__':
     print(f"🔧 模式 (Mode): {'生产 (Production)' if args.production else '开发 (Development)'}")
     print(f"📦 数据库 (Database): {'SQLite' if args.sqlite else 'MySQL'}")
     print("="*60 + "\n")
-    
+
     app.run(
         host=args.host,
         port=args.port,

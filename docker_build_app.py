@@ -29,11 +29,9 @@ import sys
 import subprocess
 import argparse
 import shutil
-import json
 import re
 import time
 from typing import Tuple, Optional
-from urllib.parse import urlparse
 from pathlib import Path
 
 
@@ -711,23 +709,33 @@ dependencies {
         # 创建 AndroidManifest.xml
         with open(android_dir / "app" / "src" / "main" / "AndroidManifest.xml", 'w') as f:
             f.write('''<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Network permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    
+    <!-- Media playback permissions -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.VideoApp"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:hardwareAccelerated="true"
+        android:largeHeap="true"
+        tools:targetApi="34">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
-            android:screenOrientation="portrait">
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|layoutDirection|screenLayout|smallestScreenSize"
+            android:screenOrientation="portrait"
+            android:hardwareAccelerated="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

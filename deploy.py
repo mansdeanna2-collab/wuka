@@ -29,7 +29,7 @@ import subprocess
 import argparse
 import shutil
 import time
-from typing import Tuple, Optional, List
+from typing import Tuple
 
 
 class Colors:
@@ -70,17 +70,17 @@ def print_error(text: str) -> None:
     print(f"{Colors.RED}[✗]{Colors.RESET} {text}")
 
 
-def run_command(cmd: str, check: bool = True, capture: bool = False, 
+def run_command(cmd: str, check: bool = True, capture: bool = False,
                 shell: bool = True) -> Tuple[int, str, str]:
     """
     执行系统命令
-    
+
     Args:
         cmd: 要执行的命令
         check: 是否检查返回码
         capture: 是否捕获输出
         shell: 是否使用shell执行
-        
+
     Returns:
         (返回码, 标准输出, 标准错误)
     """
@@ -92,12 +92,12 @@ def run_command(cmd: str, check: bool = True, capture: bool = False,
             text=True,
             check=check
         )
-        return (result.returncode, 
-                result.stdout if capture else '', 
+        return (result.returncode,
+                result.stdout if capture else '',
                 result.stderr if capture else '')
     except subprocess.CalledProcessError as e:
-        return (e.returncode, 
-                e.stdout if capture else '', 
+        return (e.returncode,
+                e.stdout if capture else '',
                 e.stderr if capture else '')
     except Exception as e:
         return (1, '', str(e))
@@ -111,7 +111,7 @@ def check_root() -> bool:
 def check_ubuntu_version() -> Tuple[bool, str]:
     """
     检查Ubuntu版本
-    
+
     Returns:
         (是否为Ubuntu 22, 版本信息)
     """
@@ -131,7 +131,7 @@ def check_ubuntu_version() -> Tuple[bool, str]:
         except FileNotFoundError:
             pass
         return False, "Unknown"
-    
+
     version = stdout.strip()
     return version.startswith('22'), version
 
@@ -148,7 +148,7 @@ def is_docker_compose_installed() -> bool:
     code, _, _ = run_command("docker compose version", capture=True, check=False)
     if code == 0:
         return True
-    
+
     # 再检查 docker-compose (V1)
     code, _, _ = run_command("docker-compose --version", capture=True, check=False)
     return code == 0
@@ -163,7 +163,7 @@ def is_docker_running() -> bool:
 def install_docker() -> bool:
     """
     安装Docker (适用于Ubuntu)
-    
+
     Returns:
         安装是否成功
     """
@@ -172,7 +172,7 @@ def install_docker() -> bool:
     if code != 0:
         print_error("更新apt包索引失败")
         return False
-    
+
     print_step("正在安装必要的依赖...")
     code, _, _ = run_command(
         "apt-get install -y ca-certificates curl gnupg lsb-release"
@@ -180,7 +180,7 @@ def install_docker() -> bool:
     if code != 0:
         print_error("安装依赖失败")
         return False
-    
+
     print_step("正在添加Docker官方GPG密钥...")
     run_command("install -m 0755 -d /etc/apt/keyrings", check=False)
     code, _, _ = run_command(
@@ -190,32 +190,32 @@ def install_docker() -> bool:
     if code != 0:
         print_error("添加GPG密钥失败")
         return False
-    
+
     run_command("chmod a+r /etc/apt/keyrings/docker.gpg", check=False)
-    
+
     print_step("正在添加Docker软件源...")
     code, arch, _ = run_command("dpkg --print-architecture", capture=True)
     arch = arch.strip()
-    
+
     code, codename, _ = run_command(
         ". /etc/os-release && echo $VERSION_CODENAME", capture=True
     )
     codename = codename.strip() or "jammy"  # Ubuntu 22.04的代号
-    
+
     repo_line = (
         f'deb [arch={arch} signed-by=/etc/apt/keyrings/docker.gpg] '
         f'https://download.docker.com/linux/ubuntu {codename} stable'
     )
-    
+
     with open('/etc/apt/sources.list.d/docker.list', 'w') as f:
         f.write(repo_line + '\n')
-    
+
     print_step("正在更新apt包索引...")
     code, _, _ = run_command("apt-get update -y")
     if code != 0:
         print_error("更新apt包索引失败")
         return False
-    
+
     print_step("正在安装Docker Engine...")
     code, _, _ = run_command(
         "apt-get install -y docker-ce docker-ce-cli containerd.io "
@@ -224,15 +224,15 @@ def install_docker() -> bool:
     if code != 0:
         print_error("安装Docker Engine失败")
         return False
-    
+
     print_step("正在启动Docker服务...")
     code, _, _ = run_command("systemctl start docker")
     if code != 0:
         print_error("启动Docker服务失败")
         return False
-    
+
     code, _, _ = run_command("systemctl enable docker")
-    
+
     print_success("Docker安装完成!")
     return True
 
@@ -240,12 +240,12 @@ def install_docker() -> bool:
 def install_docker_compose_standalone() -> bool:
     """
     安装独立版本的Docker Compose (如果docker compose plugin不可用)
-    
+
     Returns:
         安装是否成功
     """
     print_step("正在下载Docker Compose...")
-    
+
     # 获取最新版本
     code, version, _ = run_command(
         'curl -s https://api.github.com/repos/docker/compose/releases/latest | '
@@ -253,17 +253,17 @@ def install_docker_compose_standalone() -> bool:
         capture=True,
         check=False
     )
-    
+
     if code != 0 or not version.strip():
         version = "v2.24.0"  # 使用默认版本
     else:
         version = version.strip()
-    
+
     print_step(f"正在安装 Docker Compose {version}...")
-    
+
     code, arch, _ = run_command("uname -m", capture=True)
     arch = arch.strip()
-    
+
     # 架构映射
     arch_map = {
         'x86_64': 'x86_64',
@@ -271,21 +271,21 @@ def install_docker_compose_standalone() -> bool:
         'armv7l': 'armv7'
     }
     arch = arch_map.get(arch, 'x86_64')
-    
+
     download_url = (
         f"https://github.com/docker/compose/releases/download/{version}/"
         f"docker-compose-linux-{arch}"
     )
-    
+
     code, _, _ = run_command(
         f"curl -SL {download_url} -o /usr/local/bin/docker-compose"
     )
     if code != 0:
         print_error("下载Docker Compose失败")
         return False
-    
+
     code, _, _ = run_command("chmod +x /usr/local/bin/docker-compose")
-    
+
     print_success("Docker Compose安装完成!")
     return True
 
@@ -293,12 +293,12 @@ def install_docker_compose_standalone() -> bool:
 def check_and_install_dependencies() -> bool:
     """
     检查并安装所有依赖
-    
+
     Returns:
         所有依赖是否就绪
     """
     print_header("检查系统依赖")
-    
+
     # 检查Ubuntu版本
     print_step("检查操作系统版本...")
     is_ubuntu22, version = check_ubuntu_version()
@@ -306,12 +306,12 @@ def check_and_install_dependencies() -> bool:
         print_success(f"检测到 Ubuntu {version}")
     else:
         print_warning(f"当前系统版本: {version} (建议使用 Ubuntu 22.04)")
-    
+
     # 检查Docker
     print_step("检查Docker安装状态...")
     if is_docker_installed():
         print_success("Docker 已安装")
-        
+
         if not is_docker_running():
             print_warning("Docker服务未运行，正在启动...")
             code, _, _ = run_command("systemctl start docker", check=False)
@@ -324,7 +324,7 @@ def check_and_install_dependencies() -> bool:
         if not install_docker():
             print_error("Docker安装失败")
             return False
-    
+
     # 检查Docker Compose
     print_step("检查Docker Compose安装状态...")
     if is_docker_compose_installed():
@@ -334,7 +334,7 @@ def check_and_install_dependencies() -> bool:
         if not install_docker_compose_standalone():
             print_error("Docker Compose安装失败")
             return False
-    
+
     # 检查必要的命令
     required_commands = ['curl', 'git']
     for cmd in required_commands:
@@ -348,7 +348,7 @@ def check_and_install_dependencies() -> bool:
                 print_error(f"安装 {cmd} 失败")
                 return False
             print_success(f"{cmd} 安装完成")
-    
+
     print_success("所有依赖检查完成!")
     return True
 
@@ -356,15 +356,15 @@ def check_and_install_dependencies() -> bool:
 def create_docker_files(base_dir: str) -> bool:
     """
     创建Docker相关文件
-    
+
     Args:
         base_dir: 项目根目录
-        
+
     Returns:
         是否成功创建
     """
     print_header("创建Docker配置文件")
-    
+
     # 创建API服务的Dockerfile
     api_dockerfile = os.path.join(base_dir, 'api', 'Dockerfile')
     if not os.path.exists(api_dockerfile):
@@ -402,7 +402,7 @@ CMD ["python", "api_server.py", "--host", "0.0.0.0", "--port", "5000", "--sqlite
         print_success("API Dockerfile 已创建")
     else:
         print_success("API Dockerfile 已存在")
-    
+
     # 创建前端的Dockerfile
     frontend_dockerfile = os.path.join(base_dir, 'video-app', 'Dockerfile')
     if not os.path.exists(frontend_dockerfile):
@@ -445,7 +445,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
         print_success("前端 Dockerfile 已创建")
     else:
         print_success("前端 Dockerfile 已存在")
-    
+
     # 创建nginx配置
     nginx_conf = os.path.join(base_dir, 'video-app', 'nginx.conf')
     if not os.path.exists(nginx_conf):
@@ -498,7 +498,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
         print_success("Nginx配置已创建")
     else:
         print_success("Nginx配置已存在")
-    
+
     # 创建docker-compose.yml
     compose_file = os.path.join(base_dir, 'docker-compose.yml')
     if not os.path.exists(compose_file):
@@ -557,7 +557,7 @@ volumes:
         print_success("docker-compose.yml 已创建")
     else:
         print_success("docker-compose.yml 已存在")
-    
+
     # 创建.dockerignore
     api_dockerignore = os.path.join(base_dir, 'api', '.dockerignore')
     if not os.path.exists(api_dockerignore):
@@ -575,7 +575,7 @@ volumes:
 venv
 ''')
         print_success("API .dockerignore 已创建")
-    
+
     frontend_dockerignore = os.path.join(base_dir, 'video-app', '.dockerignore')
     if not os.path.exists(frontend_dockerignore):
         print_step("创建前端 .dockerignore...")
@@ -591,7 +591,7 @@ android
 ios
 ''')
         print_success("前端 .dockerignore 已创建")
-    
+
     print_success("所有Docker配置文件已就绪!")
     return True
 
@@ -608,20 +608,20 @@ def get_compose_command() -> str:
 def wait_for_service_healthy(compose_cmd: str, service: str, timeout: int = 60) -> bool:
     """
     等待服务变为健康状态
-    
+
     Args:
         compose_cmd: docker compose命令
         service: 服务名称
         timeout: 超时时间(秒)
-        
+
     Returns:
         服务是否健康
     """
     start_time = time.time()
     while time.time() - start_time < timeout:
         code, stdout, _ = run_command(
-            f"{compose_cmd} ps --format json", 
-            capture=True, 
+            f"{compose_cmd} ps --format json",
+            capture=True,
             check=False
         )
         if code == 0 and 'healthy' in stdout.lower():
@@ -633,19 +633,19 @@ def wait_for_service_healthy(compose_cmd: str, service: str, timeout: int = 60) 
 def deploy_application(base_dir: str, build: bool = True) -> bool:
     """
     部署应用
-    
+
     Args:
         base_dir: 项目根目录
         build: 是否重新构建镜像
-        
+
     Returns:
         是否部署成功
     """
     print_header("部署应用")
-    
+
     compose_cmd = get_compose_command()
     os.chdir(base_dir)
-    
+
     if build:
         print_step("正在构建Docker镜像...")
         code, _, _ = run_command(f"{compose_cmd} build")
@@ -653,46 +653,46 @@ def deploy_application(base_dir: str, build: bool = True) -> bool:
             print_error("构建镜像失败")
             return False
         print_success("镜像构建完成")
-    
+
     print_step("正在启动容器...")
     code, _, _ = run_command(f"{compose_cmd} up -d")
     if code != 0:
         print_error("启动容器失败")
         return False
-    
+
     print_success("容器启动完成!")
-    
+
     # 等待服务就绪
     print_step("等待服务就绪 (最多60秒)...")
     if wait_for_service_healthy(compose_cmd, "api", timeout=60):
         print_success("API服务已就绪")
     else:
         print_warning("API服务健康检查超时，请手动检查服务状态")
-    
+
     # 检查服务状态
     code, stdout, _ = run_command(f"{compose_cmd} ps", capture=True)
     print(f"\n{stdout}")
-    
+
     print_success("部署完成!")
     print(f"\n{Colors.GREEN}访问地址:{Colors.RESET}")
-    print(f"  - 前端: http://localhost:8080")
-    print(f"  - API:  http://localhost:5000/api")
-    
+    print("  - 前端: http://localhost:8080")
+    print("  - API:  http://localhost:5000/api")
+
     return True
 
 
 def stop_application(base_dir: str) -> bool:
     """停止应用"""
     print_header("停止应用")
-    
+
     compose_cmd = get_compose_command()
     os.chdir(base_dir)
-    
+
     code, _, _ = run_command(f"{compose_cmd} down")
     if code != 0:
         print_error("停止应用失败")
         return False
-    
+
     print_success("应用已停止")
     return True
 
@@ -700,15 +700,15 @@ def stop_application(base_dir: str) -> bool:
 def restart_application(base_dir: str) -> bool:
     """重启应用"""
     print_header("重启应用")
-    
+
     compose_cmd = get_compose_command()
     os.chdir(base_dir)
-    
+
     code, _, _ = run_command(f"{compose_cmd} restart")
     if code != 0:
         print_error("重启应用失败")
         return False
-    
+
     print_success("应用已重启")
     return True
 
@@ -717,27 +717,27 @@ def show_logs(base_dir: str, follow: bool = True) -> None:
     """显示日志"""
     compose_cmd = get_compose_command()
     os.chdir(base_dir)
-    
+
     cmd = f"{compose_cmd} logs"
     if follow:
         cmd += " -f"
-    
+
     run_command(cmd, check=False)
 
 
 def clean_all(base_dir: str) -> bool:
     """清理所有容器和镜像"""
     print_header("清理Docker资源")
-    
+
     compose_cmd = get_compose_command()
     os.chdir(base_dir)
-    
+
     print_step("停止并删除容器...")
     run_command(f"{compose_cmd} down -v --rmi local", check=False)
-    
+
     print_step("清理未使用的资源...")
     run_command("docker system prune -f", check=False)
-    
+
     print_success("清理完成")
     return True
 
@@ -758,7 +758,7 @@ def main():
   sudo python3 deploy.py --clean      # 清理所有容器和镜像
         '''
     )
-    
+
     parser.add_argument('--check', action='store_true',
                         help='仅检查依赖，不部署')
     parser.add_argument('--no-build', action='store_true',
@@ -773,64 +773,64 @@ def main():
                         help='清理所有容器和镜像')
     parser.add_argument('--dir', type=str, default=None,
                         help='项目目录 (默认: 脚本所在目录)')
-    
+
     args = parser.parse_args()
-    
+
     # 获取项目目录
     if args.dir:
         base_dir = os.path.abspath(args.dir)
     else:
         base_dir = os.path.dirname(os.path.abspath(__file__))
-    
+
     print_header("视频应用 Docker 自动部署工具")
     print(f"项目目录: {base_dir}")
-    print(f"系统: Ubuntu")
-    
+    print("系统: Ubuntu")
+
     # 检查root权限
     if not check_root():
         print_error("请使用 sudo 运行此脚本")
         print("示例: sudo python3 deploy.py")
         sys.exit(1)
-    
+
     # 处理不同的操作
     if args.logs:
         show_logs(base_dir)
         return
-    
+
     if args.stop:
         if stop_application(base_dir):
             sys.exit(0)
         sys.exit(1)
-    
+
     if args.restart:
         if restart_application(base_dir):
             sys.exit(0)
         sys.exit(1)
-    
+
     if args.clean:
         if clean_all(base_dir):
             sys.exit(0)
         sys.exit(1)
-    
+
     # 检查并安装依赖
     if not check_and_install_dependencies():
         print_error("依赖检查失败")
         sys.exit(1)
-    
+
     if args.check:
         print_success("依赖检查完成")
         sys.exit(0)
-    
+
     # 创建Docker配置文件
     if not create_docker_files(base_dir):
         print_error("创建Docker配置文件失败")
         sys.exit(1)
-    
+
     # 部署应用
     if not deploy_application(base_dir, build=not args.no_build):
         print_error("部署失败")
         sys.exit(1)
-    
+
     print_header("部署成功! 🎉")
     print("使用以下命令管理应用:")
     print(f"  查看日志: sudo python3 {os.path.basename(__file__)} --logs")
