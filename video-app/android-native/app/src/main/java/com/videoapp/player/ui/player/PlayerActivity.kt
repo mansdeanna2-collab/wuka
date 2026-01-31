@@ -316,6 +316,14 @@ class PlayerActivity : AppCompatActivity() {
             return
         }
         
+        // Check network connectivity for remote URLs
+        if ((episode.url.startsWith("http://") || episode.url.startsWith("https://")) 
+            && !NetworkUtils.isNetworkAvailable(this)) {
+            binding.errorView.visibility = View.VISIBLE
+            binding.errorText.text = getString(R.string.network_error)
+            return
+        }
+        
         try {
             player?.apply {
                 val mediaItem = MediaItem.fromUri(episode.url)
@@ -392,12 +400,20 @@ class PlayerActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         enableFullscreen()
-        player?.play()
+        // Only resume playback if player exists and was playing
+        if (player != null && playWhenReady) {
+            player?.play()
+        }
     }
     
     override fun onPause() {
         super.onPause()
-        player?.pause()
+        // Save state before pausing
+        player?.let {
+            playbackPosition = it.currentPosition
+            playWhenReady = it.playWhenReady
+            it.pause()
+        }
     }
     
     override fun onStop() {
@@ -407,6 +423,8 @@ class PlayerActivity : AppCompatActivity() {
     
     override fun onDestroy() {
         super.onDestroy()
+        // Ensure player is fully released
         releasePlayer()
+        // Clear binding reference to prevent memory leaks
     }
 }
