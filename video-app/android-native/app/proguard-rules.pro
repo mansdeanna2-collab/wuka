@@ -113,3 +113,36 @@
 
 # Prevent stripping of methods with parameters annotated with @Nullable or @NonNull
 -keepattributes RuntimeVisibleParameterAnnotations
+
+# Keep BuildConfig class (needed for API_BASE_URL)
+-keep class com.videoapp.player.BuildConfig { *; }
+
+# Keep all classes with @Keep annotation
+-keep @androidx.annotation.Keep class * { *; }
+
+# Keep native methods
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+# Keep Parcelable implementations
+-keepclassmembers class * implements android.os.Parcelable {
+    public static final android.os.Parcelable$Creator CREATOR;
+}
+
+# Keep Serializable implementations
+-keepnames class * implements java.io.Serializable
+-keepclassmembers class * implements java.io.Serializable {
+    static final long serialVersionUID;
+    private static final java.io.ObjectStreamField[] serialPersistentFields;
+    !static !transient <fields>;
+    private void writeObject(java.io.ObjectOutputStream);
+    private void readObject(java.io.ObjectInputStream);
+    java.lang.Object writeReplace();
+    java.lang.Object readResolve();
+}
+
+# Keep R classes
+-keepclassmembers class **.R$* {
+    public static <fields>;
+}
