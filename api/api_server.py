@@ -22,14 +22,16 @@ API端点:
 作者: Auto-generated
 日期: 2026-01-30
 """
+from __future__ import annotations
 
 import os
 import sys
 import logging
 from functools import wraps
 from contextlib import contextmanager
+from typing import Any, Callable, cast, Dict, Generator, List, Optional, Tuple, TypeVar
 
-from flask import Flask, jsonify, request, g
+from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 
 # 导入视频数据库模块 (在同一目录或父目录中)
@@ -45,15 +47,18 @@ except ImportError:
         print("请确保 video_database.py 在正确的位置")
         sys.exit(1)
 
-# 配置日志
+# Type variable for decorated functions
+F = TypeVar('F', bound=Callable[..., Any])
+
+# 配置日志 (Configure logging)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
-# 创建Flask应用
-app = Flask(__name__)
+# 创建Flask应用 (Create Flask app)
+app: Flask = Flask(__name__)
 
 # 配置CORS - 允许跨域请求
 # 在部署的app或H5中，origin可能来自多种来源（Capacitor、WebView、不同域名等）
@@ -68,19 +73,37 @@ CORS(app, resources={
 
 
 @contextmanager
-def get_db():
-    """获取数据库连接 (每个请求创建新连接，解决SQLite线程问题)"""
-    use_mysql = os.environ.get('USE_MYSQL', 'true').lower() == 'true'
-    db = VideoDatabase(use_mysql=use_mysql, verbose=False)
+def get_db() -> Generator[VideoDatabase, None, None]:
+    """
+    获取数据库连接 (Get database connection)
+    每个请求创建新连接，解决SQLite线程问题
+    Creates a new connection per request to solve SQLite threading issues
+    """
+    use_mysql: bool = os.environ.get('USE_MYSQL', 'true').lower() == 'true'
+    db: VideoDatabase = VideoDatabase(use_mysql=use_mysql, verbose=False)
     try:
         yield db
     finally:
         db.close()
 
 
-def api_response(data=None, message="success", code=200):
-    """统一API响应格式"""
-    response = {
+def api_response(
+    data: Optional[Any] = None,
+    message: str = "success",
+    code: int = 200
+) -> Tuple[Response, int]:
+    """
+    统一API响应格式 (Unified API response format)
+    
+    Args:
+        data: Response data
+        message: Response message
+        code: HTTP status code
+    
+    Returns:
+        Tuple of (JSON response, status code)
+    """
+    response: Dict[str, Any] = {
         "code": code,
         "message": message,
         "data": data
@@ -88,54 +111,57 @@ def api_response(data=None, message="success", code=200):
     return jsonify(response), code
 
 
-def handle_errors(f):
-    """错误处理装饰器"""
+def handle_errors(f: F) -> F:
+    """
+    错误处理装饰器 (Error handling decorator)
+    Wraps route handlers to provide consistent error handling
+    """
     @wraps(f)
-    def decorated_function(*args, **kwargs):
+    def decorated_function(*args: Any, **kwargs: Any) -> Tuple[Response, int]:
         try:
             return f(*args, **kwargs)
         except ValueError as e:
-            logger.warning(f"参数错误: {e}")
+            logger.warning(f"参数错误 (Parameter error): {e}")
             return api_response(message=str(e), code=400)
         except Exception as e:
-            logger.error(f"服务器错误: {e}", exc_info=True)
+            logger.error(f"服务器错误 (Server error): {e}", exc_info=True)
             return api_response(message="服务器内部错误", code=500)
-    return decorated_function
+    return cast(F, decorated_function)
 
 
-# ==================== API路由 ====================
+# ==================== API路由 (API Routes) ====================
 
 @app.route('/api/health', methods=['GET'])
-def health_check():
-    """健康检查端点"""
+def health_check() -> Tuple[Response, int]:
+    """健康检查端点 (Health check endpoint)"""
     return api_response(data={"status": "healthy"})
 
 
 @app.route('/api/videos', methods=['GET'])
 @handle_errors
-def get_videos():
+def get_videos() -> Tuple[Response, int]:
     """
-    获取视频列表
+    获取视频列表 (Get video list)
     
-    Query参数:
-        limit: 返回数量 (默认20, 最大100)
-        offset: 偏移量 (默认0)
+    Query参数 (Query parameters):
+        limit: 返回数量 (默认20, 最大100) / Return count (default 20, max 100)
+        offset: 偏移量 (默认0) / Offset (default 0)
     """
-    limit = min(int(request.args.get('limit', 20)), 100)
-    offset = int(request.args.get('offset', 0))
+    limit: int = min(int(request.args.get('limit', 20)), 100)
+    offset: int = int(request.args.get('offset', 0))
     
     with get_db() as db:
-        videos = db.get_all_videos(limit=limit, offset=offset)
+        videos: List[Dict[str, Any]] = db.get_all_videos(limit=limit, offset=offset)
     
     return api_response(data=videos)
 
 
 @app.route('/api/videos/<int:video_id>', methods=['GET'])
 @handle_errors
-def get_video(video_id):
-    """获取单个视频详情"""
+def get_video(video_id: int) -> Tuple[Response, int]:
+    """获取单个视频详情 (Get single video details)"""
     with get_db() as db:
-        video = db.get_video(video_id)
+        video: Optional[Dict[str, Any]] = db.get_video(video_id)
     
     if video:
         return api_response(data=video)
@@ -145,75 +171,75 @@ def get_video(video_id):
 
 @app.route('/api/videos/search', methods=['GET'])
 @handle_errors
-def search_videos():
+def search_videos() -> Tuple[Response, int]:
     """
-    搜索视频
+    搜索视频 (Search videos)
     
-    Query参数:
-        keyword: 搜索关键词 (必需)
-        limit: 返回数量 (默认20, 最大100)
-        offset: 偏移量 (默认0)
+    Query参数 (Query parameters):
+        keyword: 搜索关键词 (必需) / Search keyword (required)
+        limit: 返回数量 (默认20, 最大100) / Return count (default 20, max 100)
+        offset: 偏移量 (默认0) / Offset (default 0)
     """
-    keyword = request.args.get('keyword', '').strip()
+    keyword: str = request.args.get('keyword', '').strip()
     if not keyword:
         return api_response(message="请提供搜索关键词", code=400)
     
-    limit = min(int(request.args.get('limit', 20)), 100)
-    offset = max(int(request.args.get('offset', 0)), 0)
+    limit: int = min(int(request.args.get('limit', 20)), 100)
+    offset: int = max(int(request.args.get('offset', 0)), 0)
     
     with get_db() as db:
-        videos = db.search_videos(keyword, limit=limit, offset=offset)
+        videos: List[Dict[str, Any]] = db.search_videos(keyword, limit=limit, offset=offset)
     
     return api_response(data=videos)
 
 
 @app.route('/api/videos/category', methods=['GET'])
 @handle_errors
-def get_videos_by_category():
+def get_videos_by_category() -> Tuple[Response, int]:
     """
-    按分类获取视频
+    按分类获取视频 (Get videos by category)
     
-    Query参数:
-        category: 分类名称 (必需)
-        limit: 返回数量 (默认20, 最大100)
-        offset: 偏移量 (默认0)
+    Query参数 (Query parameters):
+        category: 分类名称 (必需) / Category name (required)
+        limit: 返回数量 (默认20, 最大100) / Return count (default 20, max 100)
+        offset: 偏移量 (默认0) / Offset (default 0)
     """
-    category = request.args.get('category', '').strip()
+    category: str = request.args.get('category', '').strip()
     if not category:
         return api_response(message="请提供分类名称", code=400)
     
-    limit = min(int(request.args.get('limit', 20)), 100)
-    offset = max(int(request.args.get('offset', 0)), 0)
+    limit: int = min(int(request.args.get('limit', 20)), 100)
+    offset: int = max(int(request.args.get('offset', 0)), 0)
     
     with get_db() as db:
-        videos = db.get_videos_by_category(category, limit=limit, offset=offset)
+        videos: List[Dict[str, Any]] = db.get_videos_by_category(category, limit=limit, offset=offset)
     
     return api_response(data=videos)
 
 
 @app.route('/api/videos/top', methods=['GET'])
 @handle_errors
-def get_top_videos():
+def get_top_videos() -> Tuple[Response, int]:
     """
-    获取热门视频 (按播放量排序)
+    获取热门视频 (Get top videos by play count)
     
-    Query参数:
-        limit: 返回数量 (默认10)
+    Query参数 (Query parameters):
+        limit: 返回数量 (默认10) / Return count (default 10)
     """
-    limit = min(int(request.args.get('limit', 10)), 50)
+    limit: int = min(int(request.args.get('limit', 10)), 50)
     
     with get_db() as db:
-        videos = db.get_top_videos(limit=limit)
+        videos: List[Dict[str, Any]] = db.get_top_videos(limit=limit)
     
     return api_response(data=videos)
 
 
 @app.route('/api/videos/<int:video_id>/play', methods=['POST'])
 @handle_errors
-def update_play_count(video_id):
-    """增加视频播放次数"""
+def update_play_count(video_id: int) -> Tuple[Response, int]:
+    """增加视频播放次数 (Increment video play count)"""
     with get_db() as db:
-        success = db.update_play_count(video_id)
+        success: bool = db.update_play_count(video_id)
     
     if success:
         return api_response(message="播放次数已更新")
@@ -223,70 +249,73 @@ def update_play_count(video_id):
 
 @app.route('/api/categories', methods=['GET'])
 @handle_errors
-def get_categories():
-    """获取所有视频分类"""
+def get_categories() -> Tuple[Response, int]:
+    """获取所有视频分类 (Get all video categories)"""
     with get_db() as db:
-        categories = db.get_categories()
+        categories: List[Dict[str, Any]] = db.get_categories()
     
     return api_response(data=categories)
 
 
 @app.route('/api/statistics', methods=['GET'])
 @handle_errors
-def get_statistics():
-    """获取数据库统计信息"""
+def get_statistics() -> Tuple[Response, int]:
+    """获取数据库统计信息 (Get database statistics)"""
     with get_db() as db:
-        stats = db.get_statistics()
+        stats: Dict[str, Any] = db.get_statistics()
     
     return api_response(data=stats)
 
 
-# ==================== 错误处理 ====================
+# ==================== 错误处理 (Error Handlers) ====================
 
 @app.errorhandler(404)
-def not_found(e):
+def not_found(e: Exception) -> Tuple[Response, int]:
+    """404 错误处理 (404 error handler)"""
     return api_response(message="接口不存在", code=404)
 
 
 @app.errorhandler(405)
-def method_not_allowed(e):
+def method_not_allowed(e: Exception) -> Tuple[Response, int]:
+    """405 错误处理 (405 error handler)"""
     return api_response(message="方法不允许", code=405)
 
 
 @app.errorhandler(500)
-def internal_error(e):
+def internal_error(e: Exception) -> Tuple[Response, int]:
+    """500 错误处理 (500 error handler)"""
     return api_response(message="服务器内部错误", code=500)
 
 
-# ==================== 主程序入口 ====================
+# ==================== 主程序入口 (Main Entry Point) ====================
 
 if __name__ == '__main__':
     import argparse
     
-    parser = argparse.ArgumentParser(description='视频API服务器')
+    parser = argparse.ArgumentParser(description='视频API服务器 (Video API Server)')
     parser.add_argument('--host', type=str, default='0.0.0.0',
-                        help='监听地址 (默认: 0.0.0.0)')
+                        help='监听地址 / Listen address (默认: 0.0.0.0)')
     parser.add_argument('--port', type=int, default=5000,
-                        help='监听端口 (默认: 5000)')
+                        help='监听端口 / Listen port (默认: 5000)')
     parser.add_argument('--production', action='store_true',
-                        help='生产模式 (关闭调试)')
+                        help='生产模式 / Production mode (关闭调试)')
     parser.add_argument('--sqlite', action='store_true',
-                        help='使用SQLite而非MySQL')
+                        help='使用SQLite而非MySQL / Use SQLite instead of MySQL')
     
     args = parser.parse_args()
     
-    # 设置环境变量
+    # 设置环境变量 (Set environment variables)
     if args.sqlite:
         os.environ['USE_MYSQL'] = 'false'
     
-    debug = not args.production
+    debug: bool = not args.production
     
     print("\n" + "="*60)
-    print("🚀 视频API服务器")
+    print("🚀 视频API服务器 (Video API Server)")
     print("="*60)
-    print(f"📡 地址: http://{args.host}:{args.port}")
-    print(f"🔧 模式: {'生产' if args.production else '开发'}")
-    print(f"📦 数据库: {'SQLite' if args.sqlite else 'MySQL'}")
+    print(f"📡 地址 (Address): http://{args.host}:{args.port}")
+    print(f"🔧 模式 (Mode): {'生产 (Production)' if args.production else '开发 (Development)'}")
+    print(f"📦 数据库 (Database): {'SQLite' if args.sqlite else 'MySQL'}")
     print("="*60 + "\n")
     
     app.run(
