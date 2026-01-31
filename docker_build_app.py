@@ -595,9 +595,11 @@ def clean_build_artifacts(base_dir: str, output_dir: str) -> bool:
 
     # 清理Docker镜像
     print_step("清理Docker镜像...")
-    for platform in ['web', 'android', 'ios']:
+    for platform in ['web', 'android', 'ios', 'android-native']:
         image_name = f"video-app-builder-{platform}"
         run_command(f"docker rmi -f {image_name}", check=False, capture=True)
+    # Also clean native builder image
+    run_command("docker rmi -f video-app-native-builder", check=False, capture=True)
 
     print_success("构建产物清理完成!")
     return True
@@ -889,6 +891,204 @@ public class MainActivity extends AppCompatActivity {{
         return False
 
 
+def build_native_android(base_dir: str, output_dir: str, api_url: str,
+                         release: bool = False) -> bool:
+    """
+    构建原生Android应用 (Build Native Android App)
+
+    使用android-native项目目录构建真正的原生Android应用，
+    不使用WebView包装器，而是使用Kotlin/ExoPlayer等原生组件。
+
+    Args:
+        base_dir: 项目根目录 (Project root directory)
+        output_dir: 输出目录 (Output directory)
+        api_url: API服务器地址 (API server URL)
+        release: 是否构建发布版 (Whether to build release version)
+
+    Returns:
+        是否成功 (Whether successful)
+    """
+    print_header("构建原生Android应用 (Native Android App)")
+
+    android_native_dir = Path(base_dir) / "video-app" / "android-native"
+
+    if not android_native_dir.exists():
+        print_error(f"原生Android项目目录不存在: {android_native_dir}")
+        print("请确保android-native目录存在于video-app下。")
+        return False
+
+    # 配置API地址到build.gradle.kts
+    print_step(f"配置API地址: {api_url}")
+    build_gradle_path = android_native_dir / "app" / "build.gradle.kts"
+
+    try:
+        with open(build_gradle_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        # 替换API URL占位符
+        api_url_escaped = api_url.replace('"', '\\"')
+        if not api_url_escaped.endswith('/'):
+            api_url_escaped += '/'
+        content = content.replace(
+            'API_BASE_URL_PLACEHOLDER',
+            api_url_escaped
+        )
+
+        with open(build_gradle_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+
+        print_success("API地址已配置")
+
+    except Exception as e:
+        print_error(f"配置API地址失败: {e}")
+        return False
+
+    # 使用Docker构建原生Android APK
+    print_step("使用Docker构建原生Android APK...")
+
+    # 创建用于原生Android构建的Dockerfile
+    dockerfile_content = '''# Native Android build environment
+FROM eclipse-temurin:17-jdk-jammy
+
+# Build arguments for version control
+ARG CMDLINE_TOOLS_VERSION=11076708
+ARG ANDROID_BUILD_TOOLS_VERSION=34.0.0
+ARG ANDROID_PLATFORM_VERSION=android-34
+ARG GRADLE_VERSION=8.4
+
+# Install required packages
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    wget \\
+    unzip \\
+    ca-certificates \\
+    git \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Android SDK
+ENV ANDROID_HOME=/opt/android-sdk
+ENV PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+
+RUN mkdir -p $ANDROID_HOME/cmdline-tools && \\
+    cd $ANDROID_HOME/cmdline-tools && \\
+    wget -q https://dl.google.com/android/repository/commandlinetools-linux-${CMDLINE_TOOLS_VERSION}_latest.zip -O cmdline-tools.zip && \\
+    unzip -q cmdline-tools.zip && \\
+    mv cmdline-tools latest && \\
+    rm cmdline-tools.zip
+
+# Accept licenses and install required SDK components
+RUN yes | sdkmanager --licenses && \\
+    sdkmanager "platforms;${ANDROID_PLATFORM_VERSION}" "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" "platform-tools"
+
+# Install Gradle
+ENV GRADLE_HOME=/opt/gradle
+ENV PATH=$GRADLE_HOME/bin:$PATH
+
+RUN wget -q https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -O gradle.zip && \\
+    unzip -q gradle.zip && \\
+    mv gradle-${GRADLE_VERSION} $GRADLE_HOME && \\
+    rm gradle.zip
+
+WORKDIR /app
+
+# Copy the Android project
+COPY android-native/ .
+
+# Build argument for build type
+ARG BUILD_TYPE=debug
+
+# Generate gradle wrapper and build the APK
+RUN gradle wrapper --gradle-version ${GRADLE_VERSION} && \\
+    chmod +x gradlew && \\
+    if [ "$BUILD_TYPE" = "release" ]; then \\
+        ./gradlew assembleRelease --no-daemon; \\
+    else \\
+        ./gradlew assembleDebug --no-daemon; \\
+    fi
+
+# Output stage
+FROM alpine:latest AS output
+ARG BUILD_TYPE=debug
+COPY --from=0 /app/app/build/outputs/apk/$BUILD_TYPE/*.apk /output/
+'''
+
+    dockerfile_path = Path(base_dir) / "video-app" / "Dockerfile.native"
+
+    try:
+        with open(dockerfile_path, 'w', encoding='utf-8') as f:
+            f.write(dockerfile_content)
+        print_success(f"已创建Dockerfile: {dockerfile_path}")
+    except Exception as e:
+        print_error(f"创建Dockerfile失败: {e}")
+        return False
+
+    # 构建Docker镜像
+    build_type = "release" if release else "debug"
+    image_name = "video-app-native-builder"
+
+    print_step("构建Docker镜像...")
+    cmd = (
+        f"docker build "
+        f"--build-arg BUILD_TYPE={build_type} "
+        f"-f {dockerfile_path} "
+        f"-t {image_name} "
+        f"."
+    )
+
+    code, _, _ = run_command(cmd, cwd=str(Path(base_dir) / "video-app"), check=False)
+
+    if code != 0:
+        print_error("Docker镜像构建失败")
+        # 清理临时文件
+        try:
+            os.remove(dockerfile_path)
+        except Exception:
+            pass
+        return False
+
+    print_success("Docker镜像构建成功!")
+
+    # 从容器中提取APK
+    print_step("提取APK文件...")
+    container_name = f"video-app-native-extract-{int(time.time())}"
+    output_subdir = Path(output_dir) / "android-native"
+
+    try:
+        output_subdir.mkdir(parents=True, exist_ok=True)
+
+        # 创建临时容器
+        code, _, _ = run_command(
+            f"docker create --name {container_name} {image_name}",
+            capture=True,
+            check=False
+        )
+
+        if code != 0:
+            print_error("创建临时容器失败")
+            return False
+
+        # 复制APK
+        code, _, _ = run_command(
+            f"docker cp {container_name}:/output/. {output_subdir}/",
+            check=False
+        )
+
+        if code != 0:
+            print_error("复制APK失败")
+            return False
+
+        print_success(f"APK已保存到: {output_subdir}")
+
+    finally:
+        # 清理临时容器和Dockerfile
+        run_command(f"docker rm -f {container_name}", check=False, capture=True)
+        try:
+            os.remove(dockerfile_path)
+        except Exception:
+            pass
+
+    return True
+
+
 def main() -> None:
     """主函数 (Main function)"""
     parser = argparse.ArgumentParser(
@@ -898,6 +1098,7 @@ def main() -> None:
 示例 (Examples):
   python3 docker_build_app.py                              # 构建Web版本
   python3 docker_build_app.py --platform android           # 构建Android WebView APK
+  python3 docker_build_app.py --platform android-native    # 构建原生Android APK
   python3 docker_build_app.py --platform android --release # 构建发布版APK
   python3 docker_build_app.py --web-url http://myserver:8080  # 自定义Web应用地址
   python3 docker_build_app.py --check                      # 仅检查依赖
@@ -906,8 +1107,8 @@ def main() -> None:
     )
 
     parser.add_argument('--platform', type=str, default='web',
-                        choices=['web', 'android'],
-                        help='目标平台 (Target platform): web, android (默认: web)')
+                        choices=['web', 'android', 'android-native'],
+                        help='目标平台 (Target platform): web, android, android-native (默认: web)')
     parser.add_argument('--release', action='store_true',
                         help='构建发布版而非调试版 (Build release instead of debug)')
     parser.add_argument('--web-url', type=str, default='http://localhost:8080',
@@ -991,6 +1192,17 @@ def main() -> None:
             print_header("构建成功! 🎉")
             print(f"\\n此APK是一个WebView应用，加载地址: {args.web_url}")
             print("请确保deploy.py已在该地址部署了Web应用。")
+            sys.exit(0)
+        else:
+            print_error("构建失败")
+            sys.exit(1)
+    elif args.platform == 'android-native':
+        # 构建原生Android应用
+        if build_native_android(base_dir, output_dir, args.api_url, args.release):
+            show_build_summary(output_dir, args.platform, args.api_url)
+            print_header("构建成功! 🎉")
+            print("\\n此APK是原生Android应用，直接调用API接口。")
+            print(f"API地址: {args.api_url}")
             sys.exit(0)
         else:
             print_error("构建失败")
