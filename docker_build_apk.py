@@ -734,8 +734,9 @@ venv/
         dockerfile_path = self.docker_build_dir / 'Dockerfile.project-only'
         
         dockerfile_content = f'''# ============================================================================
+# Docker Android 项目导出镜像 (不执行 Gradle 构建)
 # Docker Android Project Export Image (No Gradle Build)
-# Auto-generated on {time.strftime("%Y-%m-%d %H:%M:%S")}
+# 自动生成于 {time.strftime("%Y-%m-%d %H:%M:%S")}
 # ============================================================================
 # 此镜像仅导出 Android 项目，不执行 Gradle 构建
 # 可以使用 Android Studio 或 GitHub Actions 构建 APK

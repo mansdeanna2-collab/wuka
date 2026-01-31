@@ -50,6 +50,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# 限制 GITHUB_TOKEN 权限 (Limit permissions)
+permissions:
+  contents: read
+
 jobs:
   build-apk:
     name: Build Android APK
