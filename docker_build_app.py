@@ -382,7 +382,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \\
 # SHA256 checksum from: https://github.com/adoptium/temurin21-binaries/releases/tag/jdk-21.0.5%2B11
 RUN mkdir -p /opt/java && \\
     wget -q https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jdk_x64_linux_hotspot_21.0.5_11.tar.gz -O /tmp/openjdk21.tar.gz && \\
-    echo "a33787a86eec1e4931c255c395b74db3e58afb18d59ede201a30b2190813053a  /tmp/openjdk21.tar.gz" | sha256sum -c - && \\
+    echo "3c654d98404c073b8a7e66bffb27f4ae3e7ede47d13284c132d40a83144bfd8c  /tmp/openjdk21.tar.gz" | sha256sum -c - && \\
     tar -xzf /tmp/openjdk21.tar.gz -C /opt/java && \\
     rm /tmp/openjdk21.tar.gz
 
