@@ -322,8 +322,8 @@ npm run cap:open:ios             # 打开 Xcode
 video-app/
 ├── manifest.json          # HBuilderX 核心配置
 ├── pages.json             # 页面路由配置
-├── main.hbuilder.js       # uni-app 入口
-├── App.hbuilder.vue       # uni-app 根组件
+├── main.js                # uni-app 入口
+├── App.vue                # uni-app 根组件
 ├── pages/                 # uni-app 页面
 │   ├── index/index.vue    # 首页
 │   ├── player/player.vue  # 播放页

@@ -84,8 +84,8 @@ https://nativesupport.dcloud.net.cn/AppDocs/usesdk/android
 video-app/
 ├── manifest.json          # 应用配置文件（核心）
 ├── pages.json             # 页面路由配置
-├── main.hbuilder.js       # uni-app 入口文件
-├── App.hbuilder.vue       # 根组件
+├── main.js                # uni-app 入口文件
+├── App.vue                # 根组件
 ├── pages/                 # 页面目录
 │   ├── index/
 │   │   └── index.vue      # 首页
@@ -110,8 +110,8 @@ video-app/
 |------|------|
 | `manifest.json` | HBuilderX 项目核心配置，包含 AppID、图标、权限等 |
 | `pages.json` | 页面路由和全局样式配置 |
-| `main.hbuilder.js` | uni-app 应用入口 |
-| `App.hbuilder.vue` | uni-app 根组件 |
+| `main.js` | uni-app 应用入口 |
+| `App.vue` | uni-app 根组件 |
 | `api/index.js` | uni.request 封装的 API 模块 |
 
 ## 🔧 常见问题
