@@ -29,13 +29,13 @@ const getApiBaseUrl = () => {
 export const API_CONFIG = {
   // 开发环境 API 地址
   development: {
-    baseUrl: getApiBaseUrl() + '/api',
+    baseUrl: `${getApiBaseUrl()}/api`,
     timeout: 30000
   },
   
   // 生产环境 API 地址
   production: {
-    baseUrl: getApiBaseUrl() + '/api',
+    baseUrl: `${getApiBaseUrl()}/api`,
     timeout: 30000
   },
   
