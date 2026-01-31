@@ -1,11 +1,6 @@
 <template>
   <view class="app">
-    <!-- #ifdef H5 -->
-    <router-view></router-view>
-    <!-- #endif -->
-    <!-- #ifndef H5 -->
-    <!-- uni-app pages are managed by pages.json -->
-    <!-- #endif -->
+    <!-- uni-app pages are managed by pages.json for all platforms including H5 -->
   </view>
 </template>
 
