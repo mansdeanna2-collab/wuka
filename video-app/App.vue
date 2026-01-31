@@ -23,11 +23,32 @@ export default {
     // 系统信息
     systemInfo: null,
     
+    // 设备信息
+    deviceInfo: null,
+    
     // 状态栏高度
     statusBarHeight: 0,
     
     // 导航栏高度
     navBarHeight: 44,
+    
+    // 安全区域
+    safeAreaInsets: {
+      top: 20,
+      bottom: 0,
+      left: 0,
+      right: 0
+    },
+    
+    // 是否刘海屏
+    hasNotch: false,
+    
+    // 网络状态
+    networkInfo: {
+      isConnected: true,
+      networkType: 'unknown',
+      isWeakNetwork: false
+    },
     
     // 是否已初始化
     isInitialized: false
@@ -42,6 +63,8 @@ export default {
   
   onShow() {
     console.log('App Show')
+    // 检查网络状态
+    this.checkNetworkStatus()
   },
   
   onHide() {
@@ -65,13 +88,20 @@ export default {
         // 设置状态栏样式
         this.setStatusBarStyle()
         
+        // 初始化网络监听
+        this.initNetworkListener()
+        
         // 检查更新
         this.checkUpdate()
         
         // 标记初始化完成
         this.globalData.isInitialized = true
         
-        console.log('App initialized successfully')
+        console.log('App initialized successfully', {
+          platform: this.globalData.systemInfo?.platform,
+          model: this.globalData.systemInfo?.model,
+          hasNotch: this.globalData.hasNotch
+        })
       } catch (error) {
         console.error('App initialization failed:', error)
       }
@@ -87,11 +117,39 @@ export default {
           this.globalData.systemInfo = systemInfo
           this.globalData.statusBarHeight = systemInfo.statusBarHeight || 20
           
+          // 设置安全区域
+          if (systemInfo.safeAreaInsets) {
+            this.globalData.safeAreaInsets = systemInfo.safeAreaInsets
+          } else if (systemInfo.safeArea) {
+            this.globalData.safeAreaInsets = {
+              top: systemInfo.safeArea.top || systemInfo.statusBarHeight || 20,
+              bottom: systemInfo.screenHeight - (systemInfo.safeArea.bottom || systemInfo.screenHeight),
+              left: systemInfo.safeArea.left || 0,
+              right: systemInfo.screenWidth - (systemInfo.safeArea.right || systemInfo.screenWidth)
+            }
+          }
+          
+          // 检测刘海屏
+          if (systemInfo.platform === 'ios') {
+            this.globalData.hasNotch = (this.globalData.safeAreaInsets.bottom || 0) > 0
+          } else if (systemInfo.platform === 'android') {
+            this.globalData.hasNotch = (systemInfo.statusBarHeight || 0) > 30
+          }
+          
           // #ifdef MP-WEIXIN
           // 微信小程序获取胶囊按钮位置
           const menuButtonInfo = uni.getMenuButtonBoundingClientRect()
           this.globalData.navBarHeight = menuButtonInfo.bottom + menuButtonInfo.top - systemInfo.statusBarHeight
           // #endif
+          
+          console.log('System info:', {
+            platform: systemInfo.platform,
+            model: systemInfo.model,
+            screenWidth: systemInfo.screenWidth,
+            screenHeight: systemInfo.screenHeight,
+            statusBarHeight: systemInfo.statusBarHeight,
+            hasNotch: this.globalData.hasNotch
+          })
           
           resolve(systemInfo)
         } catch (error) {
@@ -99,6 +157,53 @@ export default {
           resolve(null)
         }
       })
+    },
+    
+    /**
+     * 初始化网络状态监听
+     */
+    initNetworkListener() {
+      // #ifdef APP-PLUS || MP
+      uni.getNetworkType({
+        success: (res) => {
+          this.globalData.networkInfo = {
+            isConnected: res.networkType !== 'none',
+            networkType: res.networkType,
+            isWeakNetwork: ['2g', '3g'].includes(res.networkType)
+          }
+        }
+      })
+      
+      uni.onNetworkStatusChange((res) => {
+        this.globalData.networkInfo = {
+          isConnected: res.isConnected,
+          networkType: res.networkType,
+          isWeakNetwork: ['2g', '3g'].includes(res.networkType)
+        }
+        
+        if (!res.isConnected) {
+          uni.showToast({
+            title: '网络连接已断开',
+            icon: 'none',
+            duration: 2000
+          })
+        }
+      })
+      // #endif
+    },
+    
+    /**
+     * 检查网络状态
+     */
+    checkNetworkStatus() {
+      // #ifdef APP-PLUS || MP
+      uni.getNetworkType({
+        success: (res) => {
+          this.globalData.networkInfo.isConnected = res.networkType !== 'none'
+          this.globalData.networkInfo.networkType = res.networkType
+        }
+      })
+      // #endif
     },
     
     /**
