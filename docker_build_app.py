@@ -29,11 +29,9 @@ import sys
 import subprocess
 import argparse
 import shutil
-import json
 import re
 import time
 from typing import Tuple, Optional
-from urllib.parse import urlparse
 from pathlib import Path
 
 

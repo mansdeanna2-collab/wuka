@@ -28,7 +28,7 @@ SQLite配置:
 
 使用方法:
     from video_database import VideoDatabase
-    
+
     db = VideoDatabase()
     db.insert_video({
         'video_id': 1,
@@ -51,7 +51,7 @@ import re
 import json
 import logging
 from datetime import datetime
-from typing import Optional, List, Dict, Any, Union
+from typing import Optional, List, Dict, Any
 
 # 配置日志
 logger = logging.getLogger(__name__)
@@ -81,17 +81,17 @@ import sqlite3
 class VideoDatabase:
     """
     视频数据库管理类
-    
+
     支持MySQL和SQLite两种数据库后端。
     注意：建议使用上下文管理器 (with语句) 来确保数据库连接正确关闭，
     或手动调用 close() 方法。
     """
-    
+
     @staticmethod
     def _get_default_db_path():
         """
         获取默认数据库路径
-        
+
         优先级:
         1. SQLITE_DB_PATH 环境变量 (如果设置且非空)
         2. /app/data/videos.db (Docker环境，当目录存在时)
@@ -105,12 +105,12 @@ class VideoDatabase:
             return '/app/data/videos.db'
         # 本地开发使用相对路径
         return 'data/videos.db'
-    
-    def __init__(self, use_mysql: bool = True, db_path: Optional[str] = None, 
+
+    def __init__(self, use_mysql: bool = True, db_path: Optional[str] = None,
                  mysql_config: Optional[Dict[str, Any]] = None, verbose: bool = True):
         """
         初始化数据库连接
-        
+
         Args:
             use_mysql: 是否使用MySQL，默认True。如果pymysql未安装，自动降级到SQLite
             db_path: SQLite数据库文件路径。默认路径取决于环境:
@@ -126,14 +126,14 @@ class VideoDatabase:
         self.use_mysql = use_mysql and MYSQL_AVAILABLE
         self.mysql_config = mysql_config or MYSQL_CONFIG
         self._init_database()
-    
+
     def _init_database(self) -> None:
         """初始化数据库，创建表结构"""
         if self.use_mysql:
             self._init_mysql()
         else:
             self._init_sqlite()
-    
+
     def _init_mysql(self) -> None:
         """初始化MySQL数据库"""
         try:
@@ -146,9 +146,9 @@ class VideoDatabase:
                 charset=self.mysql_config.get('charset', 'utf8mb4'),
                 cursorclass=pymysql.cursors.DictCursor
             )
-            
+
             cursor = self.connection.cursor()
-            
+
             # 创建视频表
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS videos (
@@ -165,23 +165,23 @@ class VideoDatabase:
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
             ''')
-            
+
             # 创建索引以提高查询效率
             try:
                 cursor.execute('CREATE INDEX idx_video_category ON videos(video_category)')
             except pymysql.err.OperationalError:
                 pass  # 索引已存在
-            
+
             try:
                 cursor.execute('CREATE INDEX idx_video_upload_time ON videos(upload_time)')
             except pymysql.err.OperationalError:
                 pass
-            
+
             try:
                 cursor.execute('CREATE INDEX idx_video_play_count ON videos(play_count)')
             except pymysql.err.OperationalError:
                 pass
-            
+
             self.connection.commit()
             self._log(f"✅ MySQL数据库初始化完成: {self.mysql_config['database']}")
         except Exception as e:
@@ -189,7 +189,7 @@ class VideoDatabase:
             self._log(f"⚠️ MySQL连接失败，降级到SQLite: {e}")
             self.use_mysql = False
             self._init_sqlite()
-    
+
     def _init_sqlite(self) -> None:
         """初始化SQLite数据库"""
         # 确保父目录存在
@@ -197,12 +197,12 @@ class VideoDatabase:
         if db_dir and not os.path.exists(db_dir):
             os.makedirs(db_dir, exist_ok=True)
             self._log(f"📂 创建数据库目录: {db_dir}")
-        
+
         self.connection = sqlite3.connect(self.db_path)
         self.connection.row_factory = sqlite3.Row
-        
+
         cursor = self.connection.cursor()
-        
+
         # 创建视频表 (使用video_coins代替video_price)
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS videos (
@@ -219,36 +219,36 @@ class VideoDatabase:
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
         ''')
-        
+
         # 创建索引以提高查询效率
         cursor.execute('''
-            CREATE INDEX IF NOT EXISTS idx_video_category 
+            CREATE INDEX IF NOT EXISTS idx_video_category
             ON videos(video_category)
         ''')
-        
+
         cursor.execute('''
-            CREATE INDEX IF NOT EXISTS idx_video_upload_time 
+            CREATE INDEX IF NOT EXISTS idx_video_upload_time
             ON videos(upload_time)
         ''')
-        
+
         cursor.execute('''
-            CREATE INDEX IF NOT EXISTS idx_video_play_count 
+            CREATE INDEX IF NOT EXISTS idx_video_play_count
             ON videos(play_count)
         ''')
-        
+
         self.connection.commit()
         self._log(f"✅ 数据库初始化完成: {self.db_path}")
-    
+
     def _log(self, message: str) -> None:
         """输出日志信息"""
         if self.verbose:
             print(message)
         logger.info(message)
-    
+
     def insert_video(self, video_data: Dict[str, Any]) -> bool:
         """
         插入单个视频记录
-        
+
         Args:
             video_data: 视频数据字典，包含以下字段:
                 - video_id: 视频ID (必需)
@@ -260,7 +260,7 @@ class VideoDatabase:
                 - upload_time: 上传时间
                 - video_duration: 视频时长
                 - video_coins: 视频金币
-                
+
         Returns:
             插入成功返回True，失败返回False
         """
@@ -269,15 +269,15 @@ class VideoDatabase:
             if field not in video_data or video_data[field] is None:
                 self._log(f"❌ 缺少必需字段: {field}")
                 return False
-        
+
         try:
             cursor = self.connection.cursor()
-            
+
             if self.use_mysql:
                 # MySQL使用 REPLACE INTO
                 cursor.execute('''
-                    REPLACE INTO videos 
-                    (video_id, video_url, video_image, video_title, video_category, 
+                    REPLACE INTO videos
+                    (video_id, video_url, video_image, video_title, video_category,
                      play_count, upload_time, video_duration, video_coins)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ''', (
@@ -294,8 +294,8 @@ class VideoDatabase:
             else:
                 # SQLite使用 INSERT OR REPLACE
                 cursor.execute('''
-                    INSERT OR REPLACE INTO videos 
-                    (video_id, video_url, video_image, video_title, video_category, 
+                    INSERT OR REPLACE INTO videos
+                    (video_id, video_url, video_image, video_title, video_category,
                      play_count, upload_time, video_duration, video_coins, updated_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
@@ -310,21 +310,21 @@ class VideoDatabase:
                     video_data.get('video_coins', 0),
                     datetime.now().isoformat()
                 ))
-            
+
             self.connection.commit()
             return True
         except Exception as e:
             logger.error(f"插入视频失败: {e}")
             self._log(f"❌ 插入视频失败: {e}")
             return False
-    
+
     def insert_videos(self, videos: List[Dict[str, Any]]) -> int:
         """
         批量插入视频记录
-        
+
         Args:
             videos: 视频数据列表
-            
+
         Returns:
             成功插入的视频数量
         """
@@ -332,17 +332,17 @@ class VideoDatabase:
         for video in videos:
             if self.insert_video(video):
                 success_count += 1
-        
+
         self._log(f"✅ 批量插入完成: 成功 {success_count}/{len(videos)} 个")
         return success_count
-    
+
     def get_video(self, video_id: int) -> Optional[Dict[str, Any]]:
         """
         根据ID获取视频信息
-        
+
         Args:
             video_id: 视频ID
-            
+
         Returns:
             视频数据字典，如果不存在返回None
         """
@@ -350,26 +350,26 @@ class VideoDatabase:
         placeholder = '%s' if self.use_mysql else '?'
         cursor.execute(f'SELECT * FROM videos WHERE video_id = {placeholder}', (video_id,))
         row = cursor.fetchone()
-        
+
         if row:
             return dict(row) if isinstance(row, dict) else dict(row)
         return None
-    
-    def get_all_videos(self, limit: Optional[int] = None, 
+
+    def get_all_videos(self, limit: Optional[int] = None,
                        offset: int = 0) -> List[Dict[str, Any]]:
         """
         获取所有视频
-        
+
         Args:
             limit: 限制返回数量
             offset: 偏移量
-            
+
         Returns:
             视频列表
         """
         cursor = self.connection.cursor()
         placeholder = '%s' if self.use_mysql else '?'
-        
+
         if limit:
             cursor.execute(
                 f'SELECT * FROM videos ORDER BY upload_time DESC LIMIT {placeholder} OFFSET {placeholder}',
@@ -377,27 +377,27 @@ class VideoDatabase:
             )
         else:
             cursor.execute('SELECT * FROM videos ORDER BY upload_time DESC')
-        
+
         rows = cursor.fetchall()
         return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
-    
-    def get_videos_by_category(self, category: str, 
+
+    def get_videos_by_category(self, category: str,
                                limit: Optional[int] = None,
                                offset: int = 0) -> List[Dict[str, Any]]:
         """
         按分类获取视频
-        
+
         Args:
             category: 视频分类
             limit: 限制返回数量
             offset: 偏移量
-            
+
         Returns:
             视频列表
         """
         cursor = self.connection.cursor()
         placeholder = '%s' if self.use_mysql else '?'
-        
+
         if limit:
             cursor.execute(
                 f'SELECT * FROM videos WHERE video_category = {placeholder} ORDER BY upload_time DESC LIMIT {placeholder} OFFSET {placeholder}',
@@ -408,28 +408,28 @@ class VideoDatabase:
                 f'SELECT * FROM videos WHERE video_category = {placeholder} ORDER BY upload_time DESC',
                 (category,)
             )
-        
+
         rows = cursor.fetchall()
         return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
-    
-    def search_videos(self, keyword: str, 
+
+    def search_videos(self, keyword: str,
                       limit: Optional[int] = None,
                       offset: int = 0) -> List[Dict[str, Any]]:
         """
         搜索视频标题
-        
+
         Args:
             keyword: 搜索关键词
             limit: 限制返回数量
             offset: 偏移量
-            
+
         Returns:
             匹配的视频列表
         """
         cursor = self.connection.cursor()
         search_pattern = f"%{keyword}%"
         placeholder = '%s' if self.use_mysql else '?'
-        
+
         if limit:
             cursor.execute(
                 f'SELECT * FROM videos WHERE video_title LIKE {placeholder} ORDER BY play_count DESC LIMIT {placeholder} OFFSET {placeholder}',
@@ -440,17 +440,17 @@ class VideoDatabase:
                 f'SELECT * FROM videos WHERE video_title LIKE {placeholder} ORDER BY play_count DESC',
                 (search_pattern,)
             )
-        
+
         rows = cursor.fetchall()
         return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
-    
+
     def get_top_videos(self, limit: int = 10) -> List[Dict[str, Any]]:
         """
         获取播放量最高的视频
-        
+
         Args:
             limit: 返回数量
-            
+
         Returns:
             视频列表
         """
@@ -462,47 +462,47 @@ class VideoDatabase:
         )
         rows = cursor.fetchall()
         return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
-    
-    def update_video(self, video_id: int, 
+
+    def update_video(self, video_id: int,
                      updates: Dict[str, Any]) -> bool:
         """
         更新视频信息
-        
+
         Args:
             video_id: 视频ID
             updates: 要更新的字段和值
-            
+
         Returns:
             更新成功返回True，失败返回False
         """
         if not updates:
             return False
-        
+
         # 构建更新SQL
         # 注意：字段名来自 allowed_fields 白名单，防止SQL注入
         allowed_fields = [
             'video_url', 'video_image', 'video_title', 'video_category',
             'play_count', 'upload_time', 'video_duration', 'video_coins'
         ]
-        
+
         placeholder = '%s' if self.use_mysql else '?'
         set_clauses = []
         values = []
-        
+
         for field, value in updates.items():
             if field in allowed_fields:
                 set_clauses.append(f"{field} = {placeholder}")
                 values.append(value)
-        
+
         if not set_clauses:
             return False
-        
+
         if not self.use_mysql:
             set_clauses.append(f"updated_at = {placeholder}")
             values.append(datetime.now().isoformat())
-        
+
         values.append(video_id)
-        
+
         try:
             cursor = self.connection.cursor()
             sql = f"UPDATE videos SET {', '.join(set_clauses)} WHERE video_id = {placeholder}"
@@ -513,23 +513,23 @@ class VideoDatabase:
             logger.error(f"更新视频失败: {e}")
             self._log(f"❌ 更新视频失败: {e}")
             return False
-    
-    def update_play_count(self, video_id: int, 
+
+    def update_play_count(self, video_id: int,
                           increment: int = 1) -> bool:
         """
         增加视频播放数
-        
+
         Args:
             video_id: 视频ID
             increment: 增加的数量，默认为1
-            
+
         Returns:
             更新成功返回True
         """
         try:
             cursor = self.connection.cursor()
             placeholder = '%s' if self.use_mysql else '?'
-            
+
             if self.use_mysql:
                 cursor.execute(
                     f'UPDATE videos SET play_count = play_count + {placeholder} WHERE video_id = {placeholder}',
@@ -546,14 +546,14 @@ class VideoDatabase:
             logger.error(f"更新播放数失败: {e}")
             self._log(f"❌ 更新播放数失败: {e}")
             return False
-    
+
     def delete_video(self, video_id: int) -> bool:
         """
         删除视频
-        
+
         Args:
             video_id: 视频ID
-            
+
         Returns:
             删除成功返回True
         """
@@ -567,104 +567,104 @@ class VideoDatabase:
             logger.error(f"删除视频失败: {e}")
             self._log(f"❌ 删除视频失败: {e}")
             return False
-    
+
     def get_categories(self) -> List[Dict[str, Any]]:
         """
         获取所有分类及其视频数量
-        
+
         Returns:
             分类列表，包含分类名和视频数量
         """
         cursor = self.connection.cursor()
         cursor.execute('''
-            SELECT video_category, COUNT(*) as video_count 
-            FROM videos 
-            GROUP BY video_category 
+            SELECT video_category, COUNT(*) as video_count
+            FROM videos
+            GROUP BY video_category
             ORDER BY video_count DESC
         ''')
         rows = cursor.fetchall()
         return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
-    
+
     def get_statistics(self) -> Dict[str, Any]:
         """
         获取数据库统计信息
-        
+
         Returns:
             统计信息字典
         """
         cursor = self.connection.cursor()
-        
+
         # 总视频数
         cursor.execute('SELECT COUNT(*) as cnt FROM videos')
         row = cursor.fetchone()
         total_videos = row['cnt'] if isinstance(row, dict) else row[0]
-        
+
         # 总播放数
         cursor.execute('SELECT COALESCE(SUM(play_count), 0) as total FROM videos')
         row = cursor.fetchone()
         total_plays = row['total'] if isinstance(row, dict) else row[0]
-        
+
         # 分类数
         cursor.execute('SELECT COUNT(DISTINCT video_category) as cnt FROM videos')
         row = cursor.fetchone()
         category_count = row['cnt'] if isinstance(row, dict) else row[0]
-        
+
         # 平均播放数
         avg_plays = total_plays / total_videos if total_videos > 0 else 0
-        
+
         return {
             'total_videos': total_videos,
             'total_plays': total_plays,
             'category_count': category_count,
             'average_plays': round(avg_plays, 2)
         }
-    
+
     def close(self) -> None:
         """关闭数据库连接"""
         if self.connection:
             self.connection.close()
             self.connection = None
             self._log("📁 数据库连接已关闭")
-    
+
     def __del__(self):
         """析构函数，确保连接被关闭"""
         self.close()
-    
+
     def __enter__(self):
         """支持with语句"""
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         """退出时自动关闭连接"""
         self.close()
 
 
-def import_from_collector(collector_data: List[Dict[str, Any]], 
+def import_from_collector(collector_data: List[Dict[str, Any]],
                           db: VideoDatabase) -> int:
     """
     从采集器数据导入到数据库
-    
+
     Args:
         collector_data: 采集器收集的视频数据列表
         db: 数据库实例
-        
+
     Returns:
         成功导入的数量
     """
     videos_to_insert = []
     skipped_count = 0
-    
+
     for video in collector_data:
         # 验证必需字段
         vod_id = video.get('vod_id')
         vod_name = video.get('vod_name', '')
         vod_play_url = video.get('vod_play_url', '')
-        
+
         if not vod_id or not vod_name:
             skipped_count += 1
             logger.warning(f"跳过无效视频记录: 缺少必需字段 (vod_id={vod_id}, vod_name={vod_name})")
             continue
-        
+
         # 映射采集器字段到数据库字段
         db_video = {
             'video_id': vod_id,
@@ -678,23 +678,23 @@ def import_from_collector(collector_data: List[Dict[str, Any]],
             'video_coins': 0  # 默认金币为0
         }
         videos_to_insert.append(db_video)
-    
+
     if skipped_count > 0:
         logger.info(f"跳过 {skipped_count} 个无效视频记录")
-    
+
     return db.insert_videos(videos_to_insert)
 
 
 def parse_spjs_file(file_path: str) -> List[Dict[str, Any]]:
     """
     解析sp.js文件，提取视频数据
-    
+
     sp.js文件格式通常为JavaScript变量赋值，包含视频数组
     例如: var videoList = [{...}, {...}];
-    
+
     Args:
         file_path: sp.js文件路径
-        
+
     Returns:
         视频数据列表
     """
@@ -702,11 +702,11 @@ def parse_spjs_file(file_path: str) -> List[Dict[str, Any]]:
         logger.error(f"文件不存在: {file_path}")
         print(f"❌ 文件不存在: {file_path}")
         return []
-    
+
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
-        
+
         # 尝试提取JSON数组
         # 方法1: 查找 var xxx = [...] 或 let xxx = [...] 或 const xxx = [...]
         array_match = re.search(r'(?:var|let|const)\s+\w+\s*=\s*(\[[\s\S]*?\]);?\s*$', content, re.MULTILINE)
@@ -717,7 +717,7 @@ def parse_spjs_file(file_path: str) -> List[Dict[str, Any]]:
             videos = json.loads(json_str)
             print(f"✅ 从sp.js解析到 {len(videos)} 个视频 (变量赋值格式)")
             return videos
-        
+
         # 方法2: 直接尝试作为JSON解析
         try:
             videos = json.loads(content)
@@ -730,7 +730,7 @@ def parse_spjs_file(file_path: str) -> List[Dict[str, Any]]:
                 return videos if isinstance(videos, list) else []
         except json.JSONDecodeError:
             pass
-        
+
         # 方法3: 查找JSON数组部分
         bracket_match = re.search(r'\[[\s\S]*\]', content)
         if bracket_match:
@@ -739,10 +739,10 @@ def parse_spjs_file(file_path: str) -> List[Dict[str, Any]]:
             videos = json.loads(json_str)
             print(f"✅ 从sp.js解析到 {len(videos)} 个视频 (提取JSON数组)")
             return videos
-        
+
         print("❌ 无法解析sp.js文件格式")
         return []
-        
+
     except json.JSONDecodeError as e:
         logger.error(f"JSON解析失败: {e}")
         print(f"❌ JSON解析失败: {e}")
@@ -756,23 +756,23 @@ def parse_spjs_file(file_path: str) -> List[Dict[str, Any]]:
 def import_from_spjs(file_path: str, db: VideoDatabase) -> int:
     """
     从sp.js文件导入视频数据到数据库
-    
+
     Args:
         file_path: sp.js文件路径
         db: 数据库实例
-        
+
     Returns:
         成功导入的数量
     """
     videos = parse_spjs_file(file_path)
-    
+
     if not videos:
         print("⚠️ 没有找到可导入的视频数据")
         return 0
-    
+
     videos_to_insert = []
     skipped_count = 0
-    
+
     def get_first_value(*keys, default=None, source=None):
         """从字典中获取第一个存在的键值"""
         for key in keys:
@@ -780,17 +780,17 @@ def import_from_spjs(file_path: str, db: VideoDatabase) -> int:
             if val is not None:
                 return val
         return default
-    
+
     for video in videos:
         # 尝试多种字段名映射
         video_id = get_first_value('video_id', 'vod_id', 'id', source=video)
         video_title = get_first_value('video_title', 'vod_name', 'title', 'name', source=video)
         video_url = get_first_value('video_url', 'vod_play_url', 'url', 'play_url', default='', source=video)
-        
+
         if not video_id or not video_title:
             skipped_count += 1
             continue
-        
+
         db_video = {
             'video_id': video_id,
             'video_url': video_url,
@@ -803,60 +803,60 @@ def import_from_spjs(file_path: str, db: VideoDatabase) -> int:
             'video_coins': get_first_value('video_coins', 'coins', 'gold', default=0, source=video)
         }
         videos_to_insert.append(db_video)
-    
+
     if skipped_count > 0:
         print(f"⏭️ 跳过 {skipped_count} 个无效视频记录")
-    
+
     return db.insert_videos(videos_to_insert)
 
 
 # 命令行测试
 if __name__ == '__main__':
     import argparse
-    
+
     parser = argparse.ArgumentParser(description='视频数据库管理工具 - 支持MySQL和SQLite')
     parser.add_argument('--mysql', action='store_true', default=True,
                         help='使用MySQL数据库 (默认)')
     parser.add_argument('--sqlite', action='store_true',
                         help='使用SQLite数据库')
-    parser.add_argument('--db', type=str, default='videos.db', 
+    parser.add_argument('--db', type=str, default='videos.db',
                         help='SQLite数据库文件路径')
     parser.add_argument('--import-spjs', type=str, default=None, metavar='FILE',
                         help='从sp.js文件导入视频数据')
-    parser.add_argument('--stats', action='store_true', 
+    parser.add_argument('--stats', action='store_true',
                         help='显示统计信息')
-    parser.add_argument('--categories', action='store_true', 
+    parser.add_argument('--categories', action='store_true',
                         help='显示所有分类')
-    parser.add_argument('--list', type=int, default=None, 
+    parser.add_argument('--list', type=int, default=None,
                         help='列出指定数量的视频')
-    parser.add_argument('--search', type=str, default=None, 
+    parser.add_argument('--search', type=str, default=None,
                         help='搜索视频标题')
-    parser.add_argument('--top', type=int, default=None, 
+    parser.add_argument('--top', type=int, default=None,
                         help='显示播放量最高的N个视频')
-    
+
     args = parser.parse_args()
-    
+
     # 确定使用MySQL还是SQLite
     use_mysql = not args.sqlite
-    
+
     print("\n" + "="*60)
     print("🎬 视频数据库管理工具 v2.0")
     print("="*60)
-    
+
     if use_mysql and MYSQL_AVAILABLE:
-        print(f"📡 数据库类型: MySQL")
+        print("📡 数据库类型: MySQL")
         print(f"   主机: {MYSQL_CONFIG['host']}:{MYSQL_CONFIG['port']}")
         print(f"   数据库: {MYSQL_CONFIG['database']}")
     else:
         print(f"📡 数据库类型: SQLite ({args.db})")
-    
+
     with VideoDatabase(use_mysql=use_mysql, db_path=args.db) as db:
         # 导入sp.js文件
         if args.import_spjs:
             print(f"\n📥 正在从 {args.import_spjs} 导入视频数据...")
             count = import_from_spjs(args.import_spjs, db)
             print(f"✅ 成功导入 {count} 个视频到数据库")
-        
+
         if args.stats:
             stats = db.get_statistics()
             print("\n📊 数据库统计信息:")
@@ -864,25 +864,25 @@ if __name__ == '__main__':
             print(f"  总播放数: {stats['total_plays']}")
             print(f"  分类数量: {stats['category_count']}")
             print(f"  平均播放: {stats['average_plays']}")
-        
+
         if args.categories:
             categories = db.get_categories()
             print("\n📂 视频分类:")
             for cat in categories:
                 print(f"  - {cat['video_category']}: {cat['video_count']} 个视频")
-        
+
         if args.list:
             videos = db.get_all_videos(limit=args.list)
             print(f"\n📺 视频列表 (共 {len(videos)} 个):")
             for v in videos:
                 print(f"  [{v['video_id']}] {v['video_title']} - {v['video_category']}")
-        
+
         if args.search:
             results = db.search_videos(args.search)
             print(f"\n🔍 搜索 '{args.search}' 结果 (共 {len(results)} 个):")
             for v in results:
                 print(f"  [{v['video_id']}] {v['video_title']}")
-        
+
         if args.top:
             top_videos = db.get_top_videos(limit=args.top)
             print(f"\n🔥 播放量TOP{args.top}:")
