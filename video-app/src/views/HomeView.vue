@@ -309,6 +309,18 @@ export default {
         this.searchDebounceTimer = setTimeout(() => {
           this.handleSearch()
         }, 500)
+      } else {
+        // When search input is cleared, reset to initial state
+        // Debounce this too to avoid rapid reloads while user is still typing/deleting
+        this.searchDebounceTimer = setTimeout(() => {
+          if (!this.searchKeyword.trim()) {
+            // Navigate back to home view if on search page
+            if (this.$route.name === 'search') {
+              this.$router.push({ name: 'home' })
+            }
+            this.loadVideos()
+          }
+        }, 500)
       }
     },
     

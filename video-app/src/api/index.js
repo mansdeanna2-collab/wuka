@@ -1,8 +1,37 @@
 import axios from 'axios'
 
 // Simple in-memory cache for API responses
+// Note: This cache stores the transformed response data (after axios response interceptor)
+// which returns response.data directly. The cache stores whatever the API endpoint returns.
 const cache = new Map()
 const CACHE_TTL = 5 * 60 * 1000 // 5 minutes cache TTL
+const MAX_CACHE_SIZE = 50 // Maximum number of entries to prevent memory leaks
+
+/**
+ * Clean up expired entries and enforce max cache size
+ * This is called periodically to prevent memory leaks
+ */
+function cleanupCache() {
+  const now = Date.now()
+  
+  // First, remove all expired entries
+  for (const [key, value] of cache.entries()) {
+    if (now - value.timestamp >= CACHE_TTL) {
+      cache.delete(key)
+    }
+  }
+  
+  // If still over max size, remove oldest entries
+  if (cache.size > MAX_CACHE_SIZE) {
+    const entries = Array.from(cache.entries())
+      .sort((a, b) => a[1].timestamp - b[1].timestamp)
+    
+    const toRemove = cache.size - MAX_CACHE_SIZE
+    for (let i = 0; i < toRemove; i++) {
+      cache.delete(entries[i][0])
+    }
+  }
+}
 
 /**
  * Get cached response if valid
@@ -19,11 +48,15 @@ function getCached(key) {
 }
 
 /**
- * Set cache entry
+ * Set cache entry with automatic cleanup
  * @param {string} key - Cache key
- * @param {any} data - Data to cache
+ * @param {any} data - Data to cache (this is the transformed response from axios interceptor)
  */
 function setCache(key, data) {
+  // Clean up before adding new entry to prevent unbounded growth
+  if (cache.size >= MAX_CACHE_SIZE) {
+    cleanupCache()
+  }
   cache.set(key, { data, timestamp: Date.now() })
 }
 
@@ -96,10 +129,15 @@ api.interceptors.response.use(
 
 /**
  * GET request with optional caching
+ * 
+ * Note: This function caches the transformed response data (after axios response interceptor).
+ * The response interceptor returns `response.data`, so the cache stores the API's data payload
+ * directly (typically an object with `code`, `message`, and `data` fields from our API format).
+ * 
  * @param {string} url - Request URL
  * @param {object} params - Request params
  * @param {boolean} useCache - Whether to use cache (default: true)
- * @returns {Promise} - API response
+ * @returns {Promise} - API response (the transformed data from interceptor)
  */
 async function cachedGet(url, params = {}, useCache = true) {
   const cacheKey = getCacheKey(url, params)
