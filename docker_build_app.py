@@ -342,8 +342,6 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-COPY patches ./patches
-COPY scripts ./scripts
 
 # Install dependencies
 RUN npm ci
@@ -409,8 +407,6 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-COPY patches ./patches
-COPY scripts ./scripts
 
 # Install dependencies
 RUN npm ci
@@ -425,23 +421,12 @@ ENV VITE_API_BASE_URL=$API_BASE_URL
 # Build web assets
 RUN npm run build
 
-# Add Android platform and sync
-RUN npx cap add android || true
-RUN npx cap sync android
-
-# Build APK
-ARG BUILD_TYPE=debug
-WORKDIR /app/android
-RUN if [ "$BUILD_TYPE" = "release" ]; then \\
-        ./gradlew assembleRelease --no-daemon; \\
-    else \\
-        ./gradlew assembleDebug --no-daemon; \\
-    fi
+# Note: Android/iOS builds require Capacitor which has been removed from this project.
+# This Dockerfile is kept for reference but Android builds are no longer supported.
 
 # Output stage
 FROM alpine:latest AS output
-ARG BUILD_TYPE=debug
-COPY --from=0 /app/android/app/build/outputs/apk/$BUILD_TYPE/*.apk /output/
+COPY --from=0 /app/dist /output/
 '''
 
     def __init__(self, base_dir: str, output_dir: str, platform: str = 'web',
