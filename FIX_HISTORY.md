@@ -4,6 +4,46 @@
 
 ---
 
+## 2026-01-31: 修复 Kotlin 版本与 AGP 8.7.2 兼容性问题 (Fix Kotlin Version Compatibility with AGP 8.7.2)
+
+### 问题描述 (Issue Description)
+
+Android APK 构建失败，错误信息：
+
+```
+Could not resolve project :capacitor-android.
+Required by:
+    project :app
+> No matching variant of project :capacitor-android was found. The consumer was configured to find a library for use during compile-time, preferably optimized for Android, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '8.7.2'... but:
+    - No variants exist.
+```
+
+构建完全失败，无法生成 APK。
+
+### 根本原因 (Root Cause)
+
+Android Gradle Plugin (AGP) 8.7.2 要求 Kotlin 版本至少为 2.1.0，但 Capacitor 7.4.5 默认使用 Kotlin 1.9.25：
+
+1. **`@capacitor/android`** 模块的 `build.gradle` 默认设置 `kotlin_version = '1.9.25'`
+2. **`android-template`** 的 `variables.gradle` 不包含 `kotlin_version` 变量
+
+Kotlin 1.9.25 与 AGP 8.7.2 不兼容，导致 Android Library 插件无法正确配置变体 (variants)，从而出现 "No variants exist" 错误。
+
+### 解决方案 (Solution)
+
+1. 更新 `@capacitor/android` 的 patch-package 补丁，将默认 `kotlin_version` 从 `'1.9.25'` 改为 `'2.1.0'`
+2. 更新 `postinstall.sh` 脚本，在 `android-template` 的 `variables.gradle` 中添加 `kotlin_version = '2.1.0'`
+
+### 实施的更改 (Changes Made)
+
+**文件: `video-app/patches/@capacitor+android+7.4.5.patch`**
+- 添加 Kotlin 版本修复：`'1.9.25'` → `'2.1.0'`
+
+**文件: `video-app/scripts/postinstall.sh`**
+- 添加逻辑：在 `android-template.tar.gz` 的 `variables.gradle` 中注入 `kotlin_version = '2.1.0'`
+
+---
+
 ## 2026-01-31: 修复 Gradle 弃用警告 (Fix Gradle Deprecation Warnings)
 
 ### 问题描述 (Issue Description)
