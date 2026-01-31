@@ -1,6 +1,6 @@
 <template>
-  <view class="player-view">
-    <!-- Back button -->
+  <view class="player-view" :style="{ paddingTop: safeAreaInsets.top + 'px' }">
+    <!-- Back button with safe area -->
     <view class="nav-bar">
       <button class="back-btn" @click="goBack">
         ← 返回
@@ -19,8 +19,9 @@
     <!-- Error State -->
     <view v-else-if="error" class="error-state">
       <text class="error-icon">⚠️</text>
-      <text>{{ errorMessage }}</text>
+      <text class="error-message">{{ errorMessage }}</text>
       <button class="btn btn-primary" @click="loadVideo">重试</button>
+      <button class="btn btn-secondary" @click="goBack" style="margin-top: 20rpx;">返回首页</button>
     </view>
 
     <!-- Video Player -->
@@ -30,7 +31,11 @@
         :src="video.video_url"
         :poster="video.video_image"
         controls
+        :style="{ height: videoPlayerHeight + 'rpx' }"
         class="video-player"
+        show-center-play-btn
+        show-play-btn
+        enable-progress-gesture
         @play="onPlay"
         @ended="onEnded"
         @error="onVideoError"
@@ -88,7 +93,7 @@
 
 <script>
 import { videoApi } from '@/api'
-import { formatPlayCount, showToast } from '@/utils'
+import { formatPlayCount, showToast, getDeviceInfo, calcVideoPlayerHeight, getSafeAreaInsets } from '@/utils'
 
 export default {
   name: 'PlayerPage',
@@ -101,10 +106,17 @@ export default {
       errorMessage: '',
       videoId: '',
       isPlaying: false,
-      hasPlayed: false
+      hasPlayed: false,
+      // 设备适配
+      deviceInfo: null,
+      videoPlayerHeight: 420,
+      safeAreaInsets: { top: 20, bottom: 0 }
     }
   },
   onLoad(options) {
+    // 初始化设备信息
+    this.initDeviceInfo()
+    
     this.videoId = options.id
     if (!this.videoId) {
       this.error = true
@@ -124,6 +136,27 @@ export default {
   methods: {
     // 使用工具函数
     formatPlayCount,
+    
+    /**
+     * 初始化设备信息
+     */
+    initDeviceInfo() {
+      try {
+        this.deviceInfo = getDeviceInfo()
+        this.videoPlayerHeight = calcVideoPlayerHeight(16 / 9)
+        this.safeAreaInsets = getSafeAreaInsets()
+        console.log('Device adapted:', {
+          model: this.deviceInfo.model,
+          playerHeight: this.videoPlayerHeight,
+          hasNotch: this.deviceInfo.hasNotch
+        })
+      } catch (e) {
+        console.warn('Device info init failed:', e)
+        // 使用默认值
+        this.videoPlayerHeight = 420
+      }
+    },
+    
     async loadVideo() {
       if (!this.videoId) {
         this.error = true
@@ -136,12 +169,25 @@ export default {
       
       try {
         const result = await videoApi.getVideo(this.videoId)
+        
+        // 数据验证
+        if (!result) {
+          this.error = true
+          this.errorMessage = '服务器返回空数据'
+          return
+        }
+        
         this.video = result.data || result || {}
         
         if (!this.video.video_id) {
           this.error = true
-          this.errorMessage = '视频不存在'
+          this.errorMessage = '视频不存在或已被删除'
           return
+        }
+        
+        // 验证视频 URL
+        if (!this.video.video_url) {
+          console.warn('Video URL is missing')
         }
         
         // Update navigation bar title
@@ -155,7 +201,7 @@ export default {
         }
       } catch (e) {
         this.error = true
-        this.errorMessage = '加载视频失败'
+        this.errorMessage = e.message || '加载视频失败，请检查网络连接'
         console.error('Load video error:', e)
       } finally {
         this.loading = false
@@ -166,10 +212,13 @@ export default {
       try {
         const result = await videoApi.getVideosByCategory(this.video.video_category, 6)
         const videos = result.data || result || []
-        // Filter out current video
-        this.relatedVideos = videos.filter(v => v.video_id !== this.video.video_id).slice(0, 4)
+        // Filter out current video and validate data
+        this.relatedVideos = videos
+          .filter(v => v && v.video_id && v.video_id !== this.video.video_id)
+          .slice(0, 4)
       } catch (e) {
         console.error('Load related videos error:', e)
+        // 相关视频加载失败不影响主视频播放
       }
     },
     

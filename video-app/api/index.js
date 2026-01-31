@@ -2,6 +2,12 @@
  * uni-app 兼容的 API 模块
  * 使用 uni.request 替代 axios，支持 H5、App、小程序等多端
  * 包含请求重试、网络状态检测、错误处理等功能
+ * 
+ * 增强功能：
+ * - 自动检测网络质量，调整超时时间
+ * - API 健康检查
+ * - 更细致的错误处理
+ * - 数据格式验证
  */
 
 // API 基础配置
@@ -9,7 +15,14 @@ const CONFIG = {
   baseUrl: '/api',
   timeout: 30000,
   retryCount: 3,
-  retryDelay: 1000
+  retryDelay: 1000,
+  // 弱网环境配置
+  weakNetworkTimeout: 60000,
+  weakNetworkRetryDelay: 2000,
+  // 健康检查
+  healthCheckInterval: 30000,
+  lastHealthCheck: 0,
+  isServerHealthy: true
 }
 
 // 错误码映射
@@ -31,7 +44,8 @@ const NO_RETRY_STATUS_CODES = [400, 401, 403, 404]
 // 网络状态
 let networkStatus = {
   isConnected: true,
-  networkType: 'unknown'
+  networkType: 'unknown',
+  isWeakNetwork: false
 }
 
 /**
@@ -43,12 +57,14 @@ function initNetworkListener() {
     success: (res) => {
       networkStatus.networkType = res.networkType
       networkStatus.isConnected = res.networkType !== 'none'
+      networkStatus.isWeakNetwork = ['2g', '3g'].includes(res.networkType)
     }
   })
   
   uni.onNetworkStatusChange((res) => {
     networkStatus.isConnected = res.isConnected
     networkStatus.networkType = res.networkType
+    networkStatus.isWeakNetwork = ['2g', '3g'].includes(res.networkType)
     
     if (!res.isConnected) {
       uni.showToast({
@@ -56,8 +72,26 @@ function initNetworkListener() {
         icon: 'none',
         duration: 2000
       })
+    } else if (networkStatus.isWeakNetwork) {
+      uni.showToast({
+        title: '当前网络信号较弱',
+        icon: 'none',
+        duration: 1500
+      })
     }
   })
+  // #endif
+  
+  // #ifdef H5
+  // H5 环境网络监听
+  if (typeof window !== 'undefined') {
+    window.addEventListener('online', () => {
+      networkStatus.isConnected = true
+    })
+    window.addEventListener('offline', () => {
+      networkStatus.isConnected = false
+    })
+  }
   // #endif
 }
 
@@ -110,6 +144,28 @@ function checkNetwork() {
 }
 
 /**
+ * 获取当前请求超时时间 (根据网络状态自动调整)
+ * @returns {number} 超时时间（毫秒）
+ */
+function getTimeout() {
+  if (networkStatus.isWeakNetwork) {
+    return CONFIG.weakNetworkTimeout
+  }
+  return CONFIG.timeout
+}
+
+/**
+ * 获取当前重试延迟 (根据网络状态自动调整)
+ * @returns {number} 延迟时间（毫秒）
+ */
+function getRetryDelay() {
+  if (networkStatus.isWeakNetwork) {
+    return CONFIG.weakNetworkRetryDelay
+  }
+  return CONFIG.retryDelay
+}
+
+/**
  * 延迟函数
  * @param {number} ms 毫秒
  * @returns {Promise}
@@ -119,7 +175,25 @@ function delay(ms) {
 }
 
 /**
- * 封装的请求方法（带重试机制）
+ * 验证 API 响应数据格式
+ * @param {any} data 响应数据
+ * @returns {Object} 验证结果
+ */
+function validateResponseData(data) {
+  if (data === null || data === undefined) {
+    return { valid: false, error: '服务器返回空数据' }
+  }
+  
+  // 检查是否是对象或数组
+  if (typeof data !== 'object') {
+    return { valid: false, error: '服务器返回数据格式错误' }
+  }
+  
+  return { valid: true, data }
+}
+
+/**
+ * 封装的请求方法（带重试机制和智能超时）
  * @param {Object} options 请求配置
  * @param {number} retryCount 重试次数
  * @returns {Promise}
@@ -132,13 +206,15 @@ async function request(options, retryCount = 0) {
   }
   
   const baseUrl = getBaseUrl()
+  const timeout = options.timeout || getTimeout()
+  const retryDelay = getRetryDelay()
   
   return new Promise((resolve, reject) => {
-    const requestTask = uni.request({
+    uni.request({
       url: baseUrl + options.url,
       method: options.method || 'GET',
       data: options.data || options.params,
-      timeout: options.timeout || CONFIG.timeout,
+      timeout: timeout,
       header: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -146,6 +222,16 @@ async function request(options, retryCount = 0) {
       },
       success: (res) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
+          // 验证响应数据
+          const validation = validateResponseData(res.data)
+          if (!validation.valid) {
+            console.warn('API response validation failed:', validation.error)
+          }
+          
+          // 标记服务器健康
+          CONFIG.isServerHealthy = true
+          CONFIG.lastHealthCheck = Date.now()
+          
           resolve(res.data)
         } else {
           const errorMessage = ERROR_MESSAGES[res.statusCode] || `请求失败 (${res.statusCode})`
@@ -159,8 +245,8 @@ async function request(options, retryCount = 0) {
           
           // 其他错误尝试重试
           if (retryCount < CONFIG.retryCount) {
-            console.log(`请求失败，${CONFIG.retryDelay}ms 后重试 (${retryCount + 1}/${CONFIG.retryCount})`)
-            delay(CONFIG.retryDelay).then(() => {
+            console.log(`请求失败，${retryDelay}ms 后重试 (${retryCount + 1}/${CONFIG.retryCount})`)
+            delay(retryDelay).then(() => {
               request(options, retryCount + 1).then(resolve).catch(reject)
             })
           } else {
@@ -171,23 +257,35 @@ async function request(options, retryCount = 0) {
       fail: (err) => {
         console.error('Request Error:', err)
         
+        // 标记服务器可能不健康
+        CONFIG.isServerHealthy = false
+        
+        // 解析错误类型
+        const errMsg = err.errMsg || ''
+        let userFriendlyMessage = '网络请求失败'
+        
+        if (errMsg.includes('timeout')) {
+          userFriendlyMessage = networkStatus.isWeakNetwork 
+            ? '网络信号弱，请求超时' 
+            : '请求超时，请稍后重试'
+        } else if (errMsg.includes('abort')) {
+          userFriendlyMessage = '请求已取消'
+        } else if (errMsg.includes('fail')) {
+          userFriendlyMessage = '网络连接失败，请检查网络设置'
+        }
+        
         // 网络错误重试
+        const retryDelay = getRetryDelay()
         if (retryCount < CONFIG.retryCount) {
-          console.log(`网络错误，${CONFIG.retryDelay}ms 后重试 (${retryCount + 1}/${CONFIG.retryCount})`)
-          delay(CONFIG.retryDelay).then(() => {
+          console.log(`网络错误，${retryDelay}ms 后重试 (${retryCount + 1}/${CONFIG.retryCount})`)
+          delay(retryDelay).then(() => {
             request(options, retryCount + 1).then(resolve).catch(reject)
           })
         } else {
-          const errorMessage = err.errMsg || '网络请求失败'
-          reject(new Error(errorMessage))
+          reject(new Error(userFriendlyMessage))
         }
       }
     })
-    
-    // 超时处理
-    if (options.onProgress) {
-      // 可以添加进度回调
-    }
   })
 }
 
@@ -333,6 +431,34 @@ export const videoApi = {
    */
   getStatistics() {
     return get('/statistics')
+  },
+
+  /**
+   * 健康检查 - 检测 API 服务器是否可用
+   * @returns {Promise<boolean>}
+   */
+  async healthCheck() {
+    try {
+      await get('/statistics')
+      CONFIG.isServerHealthy = true
+      CONFIG.lastHealthCheck = Date.now()
+      return true
+    } catch (e) {
+      CONFIG.isServerHealthy = false
+      return false
+    }
+  }
+}
+
+/**
+ * 检查 API 服务器健康状态
+ * @returns {Object} 健康状态信息
+ */
+export function getApiHealth() {
+  return {
+    isHealthy: CONFIG.isServerHealthy,
+    lastCheck: CONFIG.lastHealthCheck,
+    timeSinceLastCheck: Date.now() - CONFIG.lastHealthCheck
   }
 }
 
@@ -343,7 +469,11 @@ export function setApiConfig(config) {
 
 // 导出网络状态
 export function getNetworkStatus() {
-  return { ...networkStatus }
+  return { 
+    ...networkStatus,
+    isWeakNetwork: networkStatus.isWeakNetwork,
+    currentTimeout: getTimeout()
+  }
 }
 
 export default {
@@ -355,5 +485,6 @@ export default {
   videoApi,
   setApiConfig,
   getNetworkStatus,
+  getApiHealth,
   CONFIG
 }

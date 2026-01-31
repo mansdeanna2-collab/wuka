@@ -336,6 +336,9 @@ export function buildQueryString(params) {
   return pairs.length > 0 ? '?' + pairs.join('&') : ''
 }
 
+// 导入设备适配模块
+export * from './device.js'
+
 export default {
   formatPlayCount,
   formatDuration,

@@ -108,8 +108,8 @@
 </template>
 
 <script>
-import { videoApi } from '@/api'
-import { formatPlayCount, debounce } from '@/utils'
+import { videoApi, getNetworkStatus } from '@/api'
+import { formatPlayCount, debounce, getDeviceInfo, getGridColumns, getSafeAreaInsets } from '@/utils'
 import { PAGINATION_CONFIG } from '@/config'
 
 export default {
@@ -129,27 +129,43 @@ export default {
       page: 1,
       limit: PAGINATION_CONFIG.defaultPageSize,
       hasMore: true,
-      isRefreshing: false
+      isRefreshing: false,
+      // 设备适配
+      deviceInfo: null,
+      gridColumns: 2,
+      safeAreaInsets: { top: 20, bottom: 0 },
+      networkStatus: { isConnected: true, isWeakNetwork: false }
     }
   },
   computed: {
     categoryOptions() {
       const options = [{ label: '全部分类', value: '' }]
       this.categories.forEach(cat => {
-        options.push({
-          label: `${cat.video_category} (${cat.video_count})`,
-          value: cat.video_category
-        })
+        if (cat && cat.video_category) {
+          options.push({
+            label: `${cat.video_category} (${cat.video_count || 0})`,
+            value: cat.video_category
+          })
+        }
       })
       return options
     },
     selectedCategoryLabel() {
       if (!this.selectedCategory) return '全部分类'
       const cat = this.categories.find(c => c.video_category === this.selectedCategory)
-      return cat ? `${cat.video_category} (${cat.video_count})` : '全部分类'
+      return cat ? `${cat.video_category} (${cat.video_count || 0})` : '全部分类'
+    },
+    // 根据列数计算卡片宽度
+    cardWidth() {
+      if (this.gridColumns === 1) return '100%'
+      if (this.gridColumns === 4) return 'calc(25% - 15rpx)'
+      return 'calc(50% - 10rpx)'
     }
   },
   onLoad(options) {
+    // 初始化设备信息
+    this.initDeviceInfo()
+    
     if (options.category) {
       this.selectedCategory = options.category
     }
@@ -174,6 +190,28 @@ export default {
   methods: {
     // 使用工具函数
     formatPlayCount,
+    
+    /**
+     * 初始化设备信息
+     */
+    initDeviceInfo() {
+      try {
+        this.deviceInfo = getDeviceInfo()
+        this.gridColumns = getGridColumns()
+        this.safeAreaInsets = getSafeAreaInsets()
+        this.networkStatus = getNetworkStatus()
+        console.log('Device info:', {
+          model: this.deviceInfo.model,
+          platform: this.deviceInfo.platform,
+          gridColumns: this.gridColumns,
+          hasNotch: this.deviceInfo.hasNotch,
+          isWeakNetwork: this.networkStatus.isWeakNetwork
+        })
+      } catch (e) {
+        console.warn('Device info init failed:', e)
+      }
+    },
+    
     async init() {
       await Promise.all([
         this.loadVideos(),
@@ -202,11 +240,21 @@ export default {
           result = await videoApi.getVideos(params)
         }
         
-        this.videos = result.data || result || []
+        // 数据验证和过滤
+        const rawVideos = result.data || result || []
+        this.videos = Array.isArray(rawVideos) 
+          ? rawVideos.filter(v => v && v.video_id)
+          : []
+        
         this.hasMore = this.videos.length >= this.limit
+        
+        // 如果没有数据但也没有错误，显示空状态
+        if (this.videos.length === 0 && !this.searchKeyword && !this.selectedCategory) {
+          console.log('No videos available')
+        }
       } catch (e) {
         this.error = true
-        this.errorMessage = '加载视频失败，请稍后重试'
+        this.errorMessage = e.message || '加载视频失败，请检查网络连接'
         console.error('Load videos error:', e)
       } finally {
         this.loading = false
@@ -230,13 +278,19 @@ export default {
           const params = { limit: this.limit, offset }
           result = await videoApi.getVideos(params)
         }
-        const newVideos = result.data || result || []
+        
+        // 数据验证和过滤
+        const rawVideos = result.data || result || []
+        const newVideos = Array.isArray(rawVideos) 
+          ? rawVideos.filter(v => v && v.video_id)
+          : []
+        
         this.videos = [...this.videos, ...newVideos]
         this.hasMore = newVideos.length >= this.limit
       } catch (e) {
         console.error('Load more error:', e)
         uni.showToast({
-          title: '加载失败，请重试',
+          title: e.message || '加载失败，请重试',
           icon: 'none'
         })
         this.page-- // 回退页码
