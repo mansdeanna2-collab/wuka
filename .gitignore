@@ -43,6 +43,8 @@ Thumbs.db
 !capacitor.config.json
 !vite.config.js
 !tsconfig.json
+!tsconfig.node.json
+!eslint.config.js
 
 # Logs
 *.log
