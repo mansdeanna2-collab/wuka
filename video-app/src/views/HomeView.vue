@@ -100,9 +100,15 @@ export default {
   },
   watch: {
     '$route'(to, from) {
-      // Mark that we should restore scroll when returning from player
+      // When returning from player, mark that we should restore scroll and skip reloading
+      // The data is already cached via keep-alive
       if (from.name === 'player' && (to.name === 'home' || to.name === 'category' || to.name === 'search')) {
         this.shouldRestoreScroll = true
+        // Update selectedCategory to match the route without reloading videos
+        if (to.name === 'category') {
+          this.selectedCategory = to.params.category || ''
+        }
+        return // Skip loadVideos() - data is already in keep-alive cache
       }
       
       if (to.name === 'category') {
