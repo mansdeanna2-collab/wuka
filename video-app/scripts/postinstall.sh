@@ -84,8 +84,8 @@ if [ -f "$ANDROID_TEMPLATE_PATH" ]; then
     if [ -f "$TEMP_DIR2/variables.gradle" ]; then
         # Check if kotlin_version is not already present
         if ! grep -q "kotlin_version" "$TEMP_DIR2/variables.gradle"; then
-            # Add kotlin_version after the opening ext { bracket
-            sed_inplace 's/^ext {$/ext {\n    kotlin_version = '\''2.1.0'\''/' "$TEMP_DIR2/variables.gradle"
+            # Add kotlin_version after the opening ext { bracket (handles whitespace variations)
+            sed_inplace 's/^ext[[:space:]]*{[[:space:]]*$/ext {\n    kotlin_version = '\''2.1.0'\''/' "$TEMP_DIR2/variables.gradle"
         fi
     fi
     
