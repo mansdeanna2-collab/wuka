@@ -107,6 +107,8 @@
 
 <script>
 import { videoApi } from '@/api'
+import { formatPlayCount, debounce } from '@/utils'
+import { PAGINATION_CONFIG } from '@/config'
 
 export default {
   name: 'IndexPage',
@@ -119,11 +121,13 @@ export default {
       selectedCategory: '',
       selectedCategoryIndex: 0,
       loading: true,
+      loadingMore: false,
       error: false,
       errorMessage: '',
       page: 1,
-      limit: 20,
-      hasMore: true
+      limit: PAGINATION_CONFIG.defaultPageSize,
+      hasMore: true,
+      isRefreshing: false
     }
   },
   computed: {
@@ -153,11 +157,21 @@ export default {
     this.init()
   },
   onPullDownRefresh() {
+    this.isRefreshing = true
     this.loadVideos().finally(() => {
+      this.isRefreshing = false
       uni.stopPullDownRefresh()
     })
   },
+  onReachBottom() {
+    // 触底加载更多
+    if (this.hasMore && !this.loading && !this.loadingMore) {
+      this.loadMore()
+    }
+  },
   methods: {
+    // 使用工具函数
+    formatPlayCount,
     async init() {
       await Promise.all([
         this.loadVideos(),
@@ -198,8 +212,9 @@ export default {
     },
     
     async loadMore() {
-      if (this.loading) return
+      if (this.loading || this.loadingMore) return
       
+      this.loadingMore = true
       this.page++
       const offset = (this.page - 1) * this.limit
       
@@ -218,6 +233,13 @@ export default {
         this.hasMore = newVideos.length >= this.limit
       } catch (e) {
         console.error('Load more error:', e)
+        uni.showToast({
+          title: '加载失败，请重试',
+          icon: 'none'
+        })
+        this.page-- // 回退页码
+      } finally {
+        this.loadingMore = false
       }
     },
     
@@ -239,7 +261,7 @@ export default {
       }
     },
     
-    handleSearch() {
+    handleSearch: debounce(function() {
       if (this.searchKeyword.trim()) {
         uni.navigateTo({
           url: `/pages/search/search?q=${encodeURIComponent(this.searchKeyword)}`
@@ -247,7 +269,7 @@ export default {
       } else {
         this.loadVideos()
       }
-    },
+    }, 300),
     
     handleCategoryChange(e) {
       const index = e.detail.value
@@ -264,20 +286,20 @@ export default {
     },
     
     playVideo(video) {
+      if (!video || !video.video_id) {
+        uni.showToast({
+          title: '无效的视频',
+          icon: 'none'
+        })
+        return
+      }
       uni.navigateTo({
         url: `/pages/player/player?id=${video.video_id}`
       })
     },
     
-    formatPlayCount(count) {
-      if (count >= 10000) {
-        return (count / 10000).toFixed(1) + '万'
-      }
-      return count.toString()
-    },
-    
     handleImageError(e) {
-      // Handle image loading error
+      // Handle image loading error - 可以替换为默认图片
       console.log('Image load error:', e)
     }
   }

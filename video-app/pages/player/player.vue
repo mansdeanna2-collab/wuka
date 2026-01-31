@@ -86,6 +86,7 @@
 
 <script>
 import { videoApi } from '@/api'
+import { formatPlayCount, showToast } from '@/utils'
 
 export default {
   name: 'PlayerPage',
@@ -96,14 +97,31 @@ export default {
       loading: true,
       error: false,
       errorMessage: '',
-      videoId: ''
+      videoId: '',
+      isPlaying: false,
+      hasPlayed: false
     }
   },
   onLoad(options) {
     this.videoId = options.id
+    if (!this.videoId) {
+      this.error = true
+      this.errorMessage = '无效的视频ID'
+      this.loading = false
+      return
+    }
     this.loadVideo()
   },
+  onShareAppMessage() {
+    // 分享配置
+    return {
+      title: this.video.video_title || '精彩视频',
+      path: `/pages/player/player?id=${this.videoId}`
+    }
+  },
   methods: {
+    // 使用工具函数
+    formatPlayCount,
     async loadVideo() {
       if (!this.videoId) {
         this.error = true
@@ -147,39 +165,65 @@ export default {
         const result = await videoApi.getVideosByCategory(this.video.video_category, 6)
         const videos = result.data || result || []
         // Filter out current video
-        this.relatedVideos = videos.filter(v => v.video_id !== this.video.video_id)
+        this.relatedVideos = videos.filter(v => v.video_id !== this.video.video_id).slice(0, 4)
       } catch (e) {
         console.error('Load related videos error:', e)
       }
     },
     
     async onPlay() {
-      // Update play count
-      try {
-        await videoApi.updatePlayCount(this.video.video_id)
-        if (this.video.play_count) {
-          this.video.play_count++
+      this.isPlaying = true
+      
+      // 只在第一次播放时更新播放次数
+      if (!this.hasPlayed) {
+        this.hasPlayed = true
+        try {
+          await videoApi.updatePlayCount(this.video.video_id)
+          if (this.video.play_count !== undefined) {
+            this.video.play_count++
+          }
+        } catch (e) {
+          console.error('Update play count error:', e)
         }
-      } catch (e) {
-        console.error('Update play count error:', e)
       }
     },
     
+    onPause() {
+      this.isPlaying = false
+    },
+    
     onEnded() {
-      // Could auto-play next video
+      this.isPlaying = false
+      // 可以在这里实现自动播放下一个视频
+      if (this.relatedVideos.length > 0) {
+        uni.showModal({
+          title: '播放完成',
+          content: '是否播放相关视频？',
+          confirmText: '播放',
+          cancelText: '取消',
+          success: (res) => {
+            if (res.confirm) {
+              this.playRelated(this.relatedVideos[0])
+            }
+          }
+        })
+      }
     },
     
     onVideoError(e) {
       console.error('Video playback error:', e)
-      uni.showToast({
-        title: '视频播放失败',
-        icon: 'none'
-      })
+      this.isPlaying = false
+      showToast('视频播放失败，请稍后重试')
     },
     
     playRelated(video) {
+      if (!video || !video.video_id) return
+      
       this.videoId = video.video_id
+      this.hasPlayed = false
+      this.isPlaying = false
       this.loadVideo()
+      
       // Scroll to top
       uni.pageScrollTo({
         scrollTop: 0,
@@ -196,13 +240,6 @@ export default {
           url: '/pages/index/index'
         })
       }
-    },
-    
-    formatPlayCount(count) {
-      if (count >= 10000) {
-        return (count / 10000).toFixed(1) + '万'
-      }
-      return count.toString()
     }
   }
 }

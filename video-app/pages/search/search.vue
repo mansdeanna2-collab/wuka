@@ -92,6 +92,8 @@
 
 <script>
 import { videoApi } from '@/api'
+import { formatPlayCount, debounce, showToast, storage } from '@/utils'
+import { PAGINATION_CONFIG, CACHE_CONFIG } from '@/config'
 
 export default {
   name: 'SearchPage',
@@ -100,28 +102,37 @@ export default {
       keyword: '',
       displayKeyword: '',
       videos: [],
+      searchHistory: [],
       loading: false,
+      loadingMore: false,
       error: false,
       errorMessage: '',
       searched: false,
       page: 1,
-      limit: 20,
+      limit: PAGINATION_CONFIG.defaultPageSize,
       hasMore: true
     }
   },
   onLoad(options) {
+    // 加载搜索历史
+    this.loadSearchHistory()
+    
     if (options.q) {
       this.keyword = decodeURIComponent(options.q)
       this.handleSearch()
     }
   },
+  onReachBottom() {
+    if (this.hasMore && !this.loading && !this.loadingMore && this.searched) {
+      this.loadMore()
+    }
+  },
   methods: {
+    // 使用工具函数
+    formatPlayCount,
     async handleSearch() {
       if (!this.keyword.trim()) {
-        uni.showToast({
-          title: '请输入搜索关键词',
-          icon: 'none'
-        })
+        showToast('请输入搜索关键词')
         return
       }
       
@@ -131,13 +142,16 @@ export default {
       this.searched = true
       this.page = 1
       
+      // 保存搜索历史
+      this.saveSearchHistory(this.displayKeyword)
+      
       try {
         const result = await videoApi.searchVideos(this.keyword.trim(), this.limit)
         this.videos = result.data || result || []
         this.hasMore = this.videos.length >= this.limit
       } catch (e) {
         this.error = true
-        this.errorMessage = '搜索失败，请稍后重试'
+        this.errorMessage = e.message || '搜索失败，请稍后重试'
         console.error('Search error:', e)
       } finally {
         this.loading = false
@@ -145,8 +159,9 @@ export default {
     },
     
     async loadMore() {
-      if (this.loading) return
+      if (this.loading || this.loadingMore) return
       
+      this.loadingMore = true
       this.page++
       const offset = (this.page - 1) * this.limit
       
@@ -157,20 +172,67 @@ export default {
         this.hasMore = newVideos.length >= this.limit
       } catch (e) {
         console.error('Load more error:', e)
+        showToast('加载失败，请重试')
+        this.page-- // 回退页码
+      } finally {
+        this.loadingMore = false
       }
     },
     
     playVideo(video) {
+      if (!video || !video.video_id) {
+        showToast('无效的视频')
+        return
+      }
       uni.navigateTo({
         url: `/pages/player/player?id=${video.video_id}`
       })
     },
     
-    formatPlayCount(count) {
-      if (count >= 10000) {
-        return (count / 10000).toFixed(1) + '万'
+    /**
+     * 加载搜索历史
+     */
+    loadSearchHistory() {
+      const history = storage.get(CACHE_CONFIG.searchHistory.key, [])
+      this.searchHistory = Array.isArray(history) ? history : []
+    },
+    
+    /**
+     * 保存搜索历史
+     */
+    saveSearchHistory(keyword) {
+      if (!keyword) return
+      
+      // 移除重复项
+      let history = this.searchHistory.filter(item => item !== keyword)
+      
+      // 添加到开头
+      history.unshift(keyword)
+      
+      // 限制数量
+      if (history.length > CACHE_CONFIG.searchHistory.maxItems) {
+        history = history.slice(0, CACHE_CONFIG.searchHistory.maxItems)
       }
-      return count.toString()
+      
+      this.searchHistory = history
+      storage.set(CACHE_CONFIG.searchHistory.key, history)
+    },
+    
+    /**
+     * 清空搜索历史
+     */
+    clearSearchHistory() {
+      this.searchHistory = []
+      storage.remove(CACHE_CONFIG.searchHistory.key)
+      showToast('已清空搜索历史')
+    },
+    
+    /**
+     * 使用历史关键词搜索
+     */
+    searchFromHistory(keyword) {
+      this.keyword = keyword
+      this.handleSearch()
     }
   }
 }

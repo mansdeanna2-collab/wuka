@@ -1,7 +1,9 @@
 {
     "easycom": {
         "autoscan": true,
-        "custom": {}
+        "custom": {
+            "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
+        }
     },
     "pages": [
         {
@@ -11,7 +13,18 @@
                 "navigationBarBackgroundColor": "#1a1a2e",
                 "navigationBarTextStyle": "white",
                 "backgroundColor": "#0a0a1a",
-                "enablePullDownRefresh": true
+                "backgroundTextStyle": "light",
+                "enablePullDownRefresh": true,
+                "onReachBottomDistance": 100,
+                "app-plus": {
+                    "titleNView": {
+                        "type": "default",
+                        "backgroundColor": "#1a1a2e",
+                        "titleColor": "#ffffff",
+                        "titleText": "视频首页"
+                    },
+                    "bounce": "vertical"
+                }
             }
         },
         {
@@ -20,7 +33,13 @@
                 "navigationBarTitleText": "视频播放",
                 "navigationBarBackgroundColor": "#1a1a2e",
                 "navigationBarTextStyle": "white",
-                "backgroundColor": "#0a0a1a"
+                "backgroundColor": "#0a0a1a",
+                "navigationStyle": "custom",
+                "app-plus": {
+                    "titleNView": false,
+                    "bounce": "none",
+                    "softinputMode": "adjustResize"
+                }
             }
         },
         {
@@ -30,7 +49,16 @@
                 "navigationBarBackgroundColor": "#1a1a2e",
                 "navigationBarTextStyle": "white",
                 "backgroundColor": "#0a0a1a",
-                "enablePullDownRefresh": true
+                "enablePullDownRefresh": true,
+                "onReachBottomDistance": 100,
+                "app-plus": {
+                    "titleNView": {
+                        "type": "default",
+                        "backgroundColor": "#1a1a2e",
+                        "titleColor": "#ffffff"
+                    },
+                    "bounce": "vertical"
+                }
             }
         },
         {
@@ -39,7 +67,17 @@
                 "navigationBarTitleText": "搜索结果",
                 "navigationBarBackgroundColor": "#1a1a2e",
                 "navigationBarTextStyle": "white",
-                "backgroundColor": "#0a0a1a"
+                "backgroundColor": "#0a0a1a",
+                "onReachBottomDistance": 100,
+                "app-plus": {
+                    "titleNView": {
+                        "type": "default",
+                        "backgroundColor": "#1a1a2e",
+                        "titleColor": "#ffffff",
+                        "titleText": "搜索"
+                    },
+                    "softinputMode": "adjustResize"
+                }
             }
         }
     ],
@@ -49,11 +87,23 @@
         "navigationBarBackgroundColor": "#1a1a2e",
         "backgroundColor": "#0a0a1a",
         "backgroundTextStyle": "light",
+        "pageOrientation": "portrait",
+        "rpxCalcMaxDeviceWidth": 750,
+        "rpxCalcBaseDeviceWidth": 375,
         "app-plus": {
             "titleNView": {
-                "buttons": []
+                "buttons": [],
+                "titleColor": "#ffffff",
+                "backgroundColor": "#1a1a2e"
             },
-            "bounce": "none"
+            "bounce": "none",
+            "scrollIndicator": "none"
+        },
+        "h5": {
+            "navigationStyle": "default"
+        },
+        "mp-weixin": {
+            "navigationStyle": "default"
         }
     },
     "tabBar": {
@@ -61,6 +111,10 @@
         "selectedColor": "#00d4ff",
         "borderStyle": "black",
         "backgroundColor": "#1a1a2e",
+        "height": "50px",
+        "fontSize": "12px",
+        "iconWidth": "24px",
+        "spacing": "3px",
         "list": [
             {
                 "pagePath": "pages/index/index",
@@ -77,6 +131,11 @@
                 "name": "首页",
                 "path": "pages/index/index",
                 "query": ""
+            },
+            {
+                "name": "播放页",
+                "path": "pages/player/player",
+                "query": "id=1"
             }
         ]
     }

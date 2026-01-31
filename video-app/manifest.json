@@ -15,7 +15,13 @@
             "autoclose": true,
             "delay": 0
         },
-        "modules": {},
+        "screenOrientation": [
+            "portrait-primary",
+            "portrait-secondary"
+        ],
+        "modules": {
+            "VideoPlayer": {}
+        },
         "distribute": {
             "android": {
                 "permissions": [
@@ -23,28 +29,72 @@
                     "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
                     "<uses-permission android:name=\"android.permission.ACCESS_WIFI_STATE\"/>",
                     "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\"/>",
-                    "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>"
+                    "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>",
+                    "<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>"
                 ],
                 "minSdkVersion": 21,
-                "targetSdkVersion": 30,
+                "targetSdkVersion": 33,
                 "abiFilters": [
                     "armeabi-v7a",
-                    "arm64-v8a"
-                ]
+                    "arm64-v8a",
+                    "x86_64"
+                ],
+                "packagingOptions": [
+                    "pickFirst 'lib/*/libssl.so'",
+                    "pickFirst 'lib/*/libcrypto.so'"
+                ],
+                "icons": {
+                    "hdpi": "static/icons/icon-hdpi.png",
+                    "xhdpi": "static/icons/icon-xhdpi.png",
+                    "xxhdpi": "static/icons/icon-xxhdpi.png",
+                    "xxxhdpi": "static/icons/icon-xxxhdpi.png"
+                },
+                "splashscreen": {
+                    "hdpi": "static/launch/splash-hdpi.png",
+                    "xhdpi": "static/launch/splash-xhdpi.png",
+                    "xxhdpi": "static/launch/splash-xxhdpi.png"
+                }
             },
             "ios": {
-                "dSYMs": false
+                "dSYMs": false,
+                "icons": {
+                    "iphone": {
+                        "app@2x": "static/icons/icon-iphone-2x.png",
+                        "app@3x": "static/icons/icon-iphone-3x.png"
+                    },
+                    "ipad": {
+                        "app@1x": "static/icons/icon-ipad-1x.png",
+                        "app@2x": "static/icons/icon-ipad-2x.png"
+                    }
+                }
             },
-            "sdkConfigs": {}
-        }
+            "sdkConfigs": {
+                "ad": {}
+            }
+        },
+        "statusbar": {
+            "immersed": true,
+            "style": "light",
+            "background": "#1a1a2e"
+        },
+        "popGesture": "close",
+        "softinputMode": "adjustResize"
     },
     "quickapp": {},
     "mp-weixin": {
         "appid": "",
         "setting": {
-            "urlCheck": false
+            "urlCheck": false,
+            "es6": true,
+            "postcss": true,
+            "minified": true
         },
-        "usingComponents": true
+        "usingComponents": true,
+        "permission": {
+            "scope.userLocation": {
+                "desc": "用于获取您的位置信息"
+            }
+        }
     },
     "mp-alipay": {
         "usingComponents": true
@@ -60,17 +110,27 @@
     },
     "h5": {
         "title": "视频播放器",
+        "template": "index.html",
         "router": {
             "mode": "history",
             "base": "/"
         },
+        "optimization": {
+            "prefetch": true,
+            "preload": true,
+            "treeShaking": {
+                "enable": true
+            }
+        },
         "devServer": {
             "https": false,
             "port": 3000,
+            "disableHostCheck": true,
             "proxy": {
                 "/api": {
                     "target": "http://localhost:5000",
-                    "changeOrigin": true
+                    "changeOrigin": true,
+                    "secure": false
                 }
             }
         }

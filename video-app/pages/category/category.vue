@@ -71,6 +71,8 @@
 
 <script>
 import { videoApi } from '@/api'
+import { formatPlayCount, showToast } from '@/utils'
+import { PAGINATION_CONFIG } from '@/config'
 
 export default {
   name: 'CategoryPage',
@@ -80,17 +82,24 @@ export default {
       videos: [],
       loadedCount: 0,
       loading: true,
+      loadingMore: false,
       error: false,
       errorMessage: '',
       page: 1,
-      limit: 20,
+      limit: PAGINATION_CONFIG.defaultPageSize,
       hasMore: true
     }
   },
   onLoad(options) {
     this.category = decodeURIComponent(options.category || '')
+    if (!this.category) {
+      this.error = true
+      this.errorMessage = '无效的分类'
+      this.loading = false
+      return
+    }
     uni.setNavigationBarTitle({
-      title: `${this.category} 分类`
+      title: `${this.category}`
     })
     this.loadVideos()
   },
@@ -99,7 +108,14 @@ export default {
       uni.stopPullDownRefresh()
     })
   },
+  onReachBottom() {
+    if (this.hasMore && !this.loading && !this.loadingMore) {
+      this.loadMore()
+    }
+  },
   methods: {
+    // 使用工具函数
+    formatPlayCount,
     async loadVideos() {
       if (!this.category) {
         this.error = true
@@ -126,8 +142,9 @@ export default {
     },
     
     async loadMore() {
-      if (this.loading) return
+      if (this.loading || this.loadingMore) return
       
+      this.loadingMore = true
       this.page++
       const offset = (this.page - 1) * this.limit
       
@@ -139,20 +156,21 @@ export default {
         this.hasMore = newVideos.length >= this.limit
       } catch (e) {
         console.error('Load more error:', e)
+        showToast('加载失败，请重试')
+        this.page-- // 回退页码
+      } finally {
+        this.loadingMore = false
       }
     },
     
     playVideo(video) {
+      if (!video || !video.video_id) {
+        showToast('无效的视频')
+        return
+      }
       uni.navigateTo({
         url: `/pages/player/player?id=${video.video_id}`
       })
-    },
-    
-    formatPlayCount(count) {
-      if (count >= 10000) {
-        return (count / 10000).toFixed(1) + '万'
-      }
-      return count.toString()
     }
   }
 }
