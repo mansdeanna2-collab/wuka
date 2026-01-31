@@ -3,6 +3,11 @@
  * 用于检测设备信息并提供适配方案
  */
 
+// 配置常量
+const ANDROID_NOTCH_THRESHOLD = 30  // Android 刘海屏状态栏高度阈值 (px)
+const MIN_VIDEO_PLAYER_HEIGHT = 200  // 视频播放器最小高度 (px)
+const MAX_VIDEO_HEIGHT_RATIO = 0.4   // 视频播放器最大高度占屏幕比例
+
 // 设备信息缓存
 let deviceInfo = null
 
@@ -88,9 +93,9 @@ export function getDeviceInfo() {
       const bottomInset = deviceInfo.safeAreaInsets.bottom || 0
       deviceInfo.hasNotch = bottomInset > 0
     } else if (deviceInfo.isAndroid) {
-      // Android 刘海屏检测
+      // Android 刘海屏检测 - 使用配置常量
       const statusBarHeight = deviceInfo.statusBarHeight
-      deviceInfo.hasNotch = statusBarHeight > 30
+      deviceInfo.hasNotch = statusBarHeight > ANDROID_NOTCH_THRESHOLD
     }
     
     console.log('Device Info:', deviceInfo)
@@ -150,15 +155,14 @@ export function calcVideoPlayerHeight(aspectRatio = 16 / 9) {
   let height = screenWidth / aspectRatio
   
   // 限制最大高度，避免在大屏幕上过高
-  const maxHeight = device.screenHeight * 0.4
+  const maxHeight = device.screenHeight * MAX_VIDEO_HEIGHT_RATIO
   if (height > maxHeight) {
     height = maxHeight
   }
   
-  // 最小高度限制
-  const minHeight = 200
-  if (height < minHeight) {
-    height = minHeight
+  // 最小高度限制 - 使用配置常量
+  if (height < MIN_VIDEO_PLAYER_HEIGHT) {
+    height = MIN_VIDEO_PLAYER_HEIGHT
   }
   
   // 转换为 rpx (基准 750rpx = 设备宽度)

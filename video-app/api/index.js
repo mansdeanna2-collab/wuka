@@ -148,7 +148,7 @@ function checkNetwork() {
  * @returns {number} 超时时间（毫秒）
  */
 function getTimeout() {
-  if (networkStatus.isWeakNetwork) {
+  if (networkStatus && networkStatus.isWeakNetwork === true) {
     return CONFIG.weakNetworkTimeout
   }
   return CONFIG.timeout
@@ -159,7 +159,7 @@ function getTimeout() {
  * @returns {number} 延迟时间（毫秒）
  */
 function getRetryDelay() {
-  if (networkStatus.isWeakNetwork) {
+  if (networkStatus && networkStatus.isWeakNetwork === true) {
     return CONFIG.weakNetworkRetryDelay
   }
   return CONFIG.retryDelay
@@ -206,15 +206,15 @@ async function request(options, retryCount = 0) {
   }
   
   const baseUrl = getBaseUrl()
-  const timeout = options.timeout || getTimeout()
-  const retryDelay = getRetryDelay()
+  const currentTimeout = options.timeout || getTimeout()
+  const currentRetryDelay = getRetryDelay()
   
   return new Promise((resolve, reject) => {
     uni.request({
       url: baseUrl + options.url,
       method: options.method || 'GET',
       data: options.data || options.params,
-      timeout: timeout,
+      timeout: currentTimeout,
       header: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -245,8 +245,8 @@ async function request(options, retryCount = 0) {
           
           // 其他错误尝试重试
           if (retryCount < CONFIG.retryCount) {
-            console.log(`请求失败，${retryDelay}ms 后重试 (${retryCount + 1}/${CONFIG.retryCount})`)
-            delay(retryDelay).then(() => {
+            console.log(`请求失败，${currentRetryDelay}ms 后重试 (${retryCount + 1}/${CONFIG.retryCount})`)
+            delay(currentRetryDelay).then(() => {
               request(options, retryCount + 1).then(resolve).catch(reject)
             })
           } else {
@@ -275,10 +275,10 @@ async function request(options, retryCount = 0) {
         }
         
         // 网络错误重试
-        const retryDelay = getRetryDelay()
+        const currentRetryDelay = getRetryDelay()
         if (retryCount < CONFIG.retryCount) {
-          console.log(`网络错误，${retryDelay}ms 后重试 (${retryCount + 1}/${CONFIG.retryCount})`)
-          delay(retryDelay).then(() => {
+          console.log(`网络错误，${currentRetryDelay}ms 后重试 (${retryCount + 1}/${CONFIG.retryCount})`)
+          delay(currentRetryDelay).then(() => {
             request(options, retryCount + 1).then(resolve).catch(reject)
           })
         } else {

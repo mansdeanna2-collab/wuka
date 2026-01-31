@@ -185,9 +185,12 @@ export default {
           return
         }
         
-        // 验证视频 URL
+        // 验证视频 URL - 没有 URL 则无法播放
         if (!this.video.video_url) {
-          console.warn('Video URL is missing')
+          this.error = true
+          this.errorMessage = '视频地址无效，无法播放'
+          console.error('Video URL is missing for video:', this.video.video_id)
+          return
         }
         
         // Update navigation bar title
