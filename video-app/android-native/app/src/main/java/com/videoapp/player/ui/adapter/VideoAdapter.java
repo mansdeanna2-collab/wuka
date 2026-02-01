@@ -147,14 +147,6 @@ public class VideoAdapter extends ListAdapter<Video, VideoAdapter.VideoViewHolde
                             .size(480, 270)
                             .allowHardware(true)
                             .target(binding.thumbnailImage)
-                            .listener(
-                                    request1 -> null,
-                                    (request1, result) -> null,
-                                    (request1, throwable) -> {
-                                        Log.d(TAG, "Image load error: " + throwable.getMessage());
-                                        return null;
-                                    }
-                            )
                             .build();
                     Coil.imageLoader(binding.getRoot().getContext()).enqueue(request);
                 } else {
