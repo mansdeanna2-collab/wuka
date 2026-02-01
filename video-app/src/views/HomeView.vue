@@ -98,6 +98,9 @@ export default {
     Carousel,
     CategorySection
   },
+  // Constants
+  MAX_REFRESH_OFFSET: 20,
+  VIDEOS_PER_CATEGORY: 5,
   beforeRouteLeave(to, from, next) {
     if (to.name === 'player') {
       const routePath = from.fullPath
@@ -172,8 +175,10 @@ export default {
       } else if (to.name === 'home') {
         this.selectedCategory = ''
         this.searchKeyword = ''
-        // Reload home view
-        this.init()
+        // Only reload if no data exists (keep-alive should preserve data)
+        if (this.categories.length === 0) {
+          this.init()
+        }
       }
     }
   },
@@ -246,26 +251,33 @@ export default {
     },
     
     async loadHomeData() {
+      const videosPerCategory = this.$options.VIDEOS_PER_CATEGORY
+      
       // Load carousel videos (top videos)
       try {
-        const topResult = await videoApi.getTopVideos(5)
+        const topResult = await videoApi.getTopVideos(videosPerCategory)
         this.carouselVideos = topResult.data || topResult || []
       } catch (e) {
         console.error('Load top videos error:', e)
       }
       
-      // Load videos for each category (first 5 categories, 5 videos each)
-      const categoriesToLoad = this.categories.slice(0, 5)
+      // Load videos for each category in parallel (first 5 categories)
+      const categoriesToLoad = this.categories.slice(0, videosPerCategory)
       
-      for (const cat of categoriesToLoad) {
+      const categoryPromises = categoriesToLoad.map(async (cat) => {
         try {
-          const result = await videoApi.getVideosByCategory(cat.video_category, 5)
-          this.categoryVideos[cat.video_category] = result.data || result || []
+          const result = await videoApi.getVideosByCategory(cat.video_category, videosPerCategory)
+          return { category: cat.video_category, videos: result.data || result || [] }
         } catch (e) {
           console.error(`Load category ${cat.video_category} error:`, e)
-          this.categoryVideos[cat.video_category] = []
+          return { category: cat.video_category, videos: [] }
         }
-      }
+      })
+      
+      const results = await Promise.all(categoryPromises)
+      results.forEach(({ category, videos }) => {
+        this.categoryVideos[category] = videos
+      })
     },
     
     async loadFilteredVideos() {
@@ -364,8 +376,8 @@ export default {
     async refreshCategory(category) {
       try {
         // Get random offset for variety
-        const randomOffset = Math.floor(Math.random() * 20)
-        const result = await videoApi.getVideosByCategory(category, 5, randomOffset)
+        const randomOffset = Math.floor(Math.random() * this.$options.MAX_REFRESH_OFFSET)
+        const result = await videoApi.getVideosByCategory(category, this.$options.VIDEOS_PER_CATEGORY, randomOffset)
         this.categoryVideos[category] = result.data || result || []
       } catch (e) {
         console.error(`Refresh category ${category} error:`, e)

@@ -80,6 +80,7 @@
 
 <script>
 import { formatImageUrl } from '@/utils/imageUtils'
+import { formatPlayCount } from '@/utils/formatUtils'
 
 export default {
   name: 'CategorySection',
@@ -96,15 +97,10 @@ export default {
   emits: ['play', 'refresh', 'more'],
   methods: {
     formatImageUrl,
+    formatPlayCount,
     handleImageError(e) {
       e.target.src = ''
       e.target.closest('.video-thumbnail').classList.add('no-image')
-    },
-    formatPlayCount(count) {
-      if (count >= 10000) {
-        return (count / 10000).toFixed(1) + '万'
-      }
-      return count.toString()
     }
   }
 }
