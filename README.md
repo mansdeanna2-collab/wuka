@@ -12,8 +12,8 @@
 │   │   ├── views/      # 页面视图
 │   │   ├── router/     # 路由配置
 │   │   └── assets/     # 静态资源
-│   ├── android-native/ # 🆕 原生 Android 应用 (Kotlin/ExoPlayer)
-│   │   ├── app/src/main/java/   # Kotlin 源码
+│   ├── android-native/ # 🆕 原生 Android 应用 (Java/ExoPlayer)
+│   │   ├── app/src/main/java/   # Java 源码
 │   │   └── app/src/main/res/    # Android 资源
 │   ├── package.json    # 依赖配置
 │   └── Dockerfile      # 前端容器配置
@@ -34,7 +34,7 @@
 - ✅ Vue 3 + Vite 现代化前端架构
 - ✅ 支持 H5 网页访问
 - ✅ 支持 Android WebView APK 打包
-- ✅ 🆕 **支持原生 Android APK** (Kotlin/ExoPlayer/Retrofit)
+- ✅ 🆕 **支持原生 Android APK** (Java/ExoPlayer/Retrofit)
 - ✅ 视频分类和搜索
 - ✅ 视频播放器支持多集
 - ✅ 响应式设计，适配手机和平板
@@ -176,14 +176,14 @@ docker compose down
 
 ### 1. 原生 Android 应用 (推荐) 🆕
 
-使用 Kotlin/ExoPlayer/Retrofit 构建的真正原生 Android 应用，无需 WebView 包装器。
+使用 Java/ExoPlayer/Retrofit 构建的真正原生 Android 应用，无需 WebView 包装器。
 
 **特性:**
 - ✅ **ExoPlayer** - 高性能原生视频播放器
 - ✅ **Retrofit** - 类型安全的 REST API 调用
 - ✅ **Coil** - 高效图片加载和缓存
 - ✅ **Material Design 3** - 原生 UI 组件
-- ✅ **Kotlin Coroutines** - 异步处理
+- ✅ **Java 11** - 现代 Java 开发
 - ✅ **ViewBinding** - 类型安全的视图访问
 - ✅ 支持多集视频播放
 - ✅ 视频搜索和分类筛选
@@ -351,6 +351,7 @@ python tools/video_database.py --import-spjs videos_*.json
 ## 技术栈
 
 - **前端**: Vue 3, Vite, Vue Router, Axios
+- **原生 Android**: Java 11, ExoPlayer, Retrofit, Coil, Material Design 3
 - **后端**: Flask, Flask-CORS
 - **数据库**: MySQL / SQLite
 - **部署**: Docker, Docker Compose, Nginx
