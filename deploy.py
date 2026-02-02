@@ -45,9 +45,9 @@ class Colors:
 
 def print_header(text: str) -> None:
     """打印标题"""
-    print(f"\n{Colors.BOLD}{Colors.CYAN}{'='*60}")
+    print(f"\n{Colors.BOLD}{Colors.CYAN}{'=' * 60}")
     print(f"  {text}")
-    print(f"{'='*60}{Colors.RESET}\n")
+    print(f"{'=' * 60}{Colors.RESET}\n")
 
 
 def print_step(text: str) -> None:

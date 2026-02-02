@@ -147,7 +147,9 @@ export default {
       // Slow loading threshold in milliseconds (5 seconds)
       slowLoadingThreshold: 5000,
       // Track source for retry validation (prevent retrying wrong source)
-      retrySourceUrl: ''
+      retrySourceUrl: '',
+      // Retry timeout for cleanup
+      retryTimeout: null
     }
   },
   watch: {
@@ -177,6 +179,11 @@ export default {
     }
     // Clear slow loading timeout
     this.clearSlowLoadingTimeout()
+    // Clear retry timeout to prevent memory leak
+    if (this.retryTimeout) {
+      clearTimeout(this.retryTimeout)
+      this.retryTimeout = null
+    }
   },
   methods: {
     // Clear slow loading detection timeout
@@ -290,18 +297,21 @@ export default {
       let isNetworkError = false
       
       if (video && video.error) {
-        switch (video.error.code) {
-          case MediaError.MEDIA_ERR_ABORTED:
+        // Use numeric codes for cross-browser compatibility
+        // MediaError constants may not be defined in all browsers
+        const errorCode = video.error.code
+        switch (errorCode) {
+          case 1: // MEDIA_ERR_ABORTED
             errorMsg = '视频加载被中断'
             break
-          case MediaError.MEDIA_ERR_NETWORK:
+          case 2: // MEDIA_ERR_NETWORK
             errorMsg = '网络错误，视频加载失败'
             isNetworkError = true
             break
-          case MediaError.MEDIA_ERR_DECODE:
+          case 3: // MEDIA_ERR_DECODE
             errorMsg = '视频格式不支持或解码错误'
             break
-          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+          case 4: // MEDIA_ERR_SRC_NOT_SUPPORTED
             errorMsg = '不支持的视频格式或无效链接'
             break
         }
@@ -321,7 +331,12 @@ export default {
         const delay = Math.pow(2, this.retryCount - 1) * 1000
         const srcAtError = this.currentSrc
         
-        setTimeout(() => {
+        // Clear any existing retry timeout
+        if (this.retryTimeout) {
+          clearTimeout(this.retryTimeout)
+        }
+        
+        this.retryTimeout = setTimeout(() => {
           // Skip if source changed (user loaded different video)
           if (this.currentSrc !== srcAtError) return
           

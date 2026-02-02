@@ -1,15 +1,21 @@
 <template>
   <div class="carousel" v-if="videos.length > 0">
-    <div class="carousel-container" ref="container">
+    <div 
+      class="carousel-container" 
+      ref="container"
+      @touchstart="onTouchStart"
+      @touchmove="onTouchMove"
+      @touchend="onTouchEnd"
+    >
       <div 
         class="carousel-track"
-        :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
+        :style="trackStyle"
       >
         <div 
           class="carousel-slide"
           v-for="(video, index) in videos"
           :key="video.video_id || index"
-          @click="$emit('click', video)"
+          @click="handleSlideClick(video)"
         >
           <img 
             v-if="video.video_image"
@@ -62,7 +68,24 @@ export default {
       currentIndex: 0,
       timer: null,
       imgRefs: {},
-      loadedUrls: new Set()
+      loadedUrls: new Set(),
+      // Touch swipe support
+      touchStartX: 0,
+      touchStartY: 0,
+      touchDeltaX: 0,
+      isSwiping: false,
+      swipeThreshold: 50
+    }
+  },
+  computed: {
+    trackStyle() {
+      const baseTranslate = -this.currentIndex * 100
+      const containerWidth = this.$refs.container?.offsetWidth || 1
+      const swipeOffset = this.isSwiping ? (this.touchDeltaX / containerWidth) * 100 : 0
+      return {
+        transform: `translateX(calc(${baseTranslate}% + ${swipeOffset}%))`,
+        transition: this.isSwiping ? 'none' : 'transform 0.5s ease'
+      }
     }
   },
   watch: {
@@ -108,6 +131,12 @@ export default {
       e.target.src = ''
       e.target.style.background = 'linear-gradient(135deg, #2a2a4a 0%, #1a1a3e 100%)'
     },
+    handleSlideClick(video) {
+      // Only emit click if not swiping
+      if (!this.isSwiping && Math.abs(this.touchDeltaX) < 10) {
+        this.$emit('click', video)
+      }
+    },
     goToSlide(index) {
       this.currentIndex = index
       this.startAutoplay()
@@ -115,6 +144,11 @@ export default {
     nextSlide() {
       if (this.videos.length > 0) {
         this.currentIndex = (this.currentIndex + 1) % this.videos.length
+      }
+    },
+    prevSlide() {
+      if (this.videos.length > 0) {
+        this.currentIndex = (this.currentIndex - 1 + this.videos.length) % this.videos.length
       }
     },
     startAutoplay() {
@@ -130,6 +164,42 @@ export default {
         window.clearInterval(this.timer)
         this.timer = null
       }
+    },
+    // Touch event handlers for swipe support
+    onTouchStart(e) {
+      if (e.touches.length !== 1) return
+      this.touchStartX = e.touches[0].clientX
+      this.touchStartY = e.touches[0].clientY
+      this.touchDeltaX = 0
+      this.isSwiping = false
+      this.stopAutoplay()
+    },
+    onTouchMove(e) {
+      if (e.touches.length !== 1) return
+      
+      const deltaX = e.touches[0].clientX - this.touchStartX
+      const deltaY = e.touches[0].clientY - this.touchStartY
+      
+      // Only consider horizontal swipes (ignore vertical scrolling)
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+        this.isSwiping = true
+        this.touchDeltaX = deltaX
+        // Prevent vertical scrolling while swiping
+        e.preventDefault()
+      }
+    },
+    onTouchEnd() {
+      if (this.isSwiping) {
+        if (this.touchDeltaX > this.swipeThreshold) {
+          this.prevSlide()
+        } else if (this.touchDeltaX < -this.swipeThreshold) {
+          this.nextSlide()
+        }
+      }
+      
+      this.isSwiping = false
+      this.touchDeltaX = 0
+      this.startAutoplay()
     }
   }
 }

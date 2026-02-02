@@ -27,11 +27,12 @@ from __future__ import annotations
 import os
 import sys
 import logging
+import time
 from functools import wraps
 from contextlib import contextmanager
 from typing import Any, Callable, cast, Dict, Generator, List, Optional, Tuple, TypeVar
 
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, request, Response, g
 from flask_cors import CORS
 
 # 导入视频数据库模块 (在同一目录或父目录中)
@@ -74,6 +75,27 @@ CORS(app, resources={
         "allow_headers": ["Content-Type", "Authorization"]
     }
 })
+
+
+# 请求计时中间件 (Request timing middleware)
+@app.before_request
+def before_request() -> None:
+    """记录请求开始时间 (Record request start time)"""
+    g.start_time = time.time()
+
+
+@app.after_request
+def after_request(response: Response) -> Response:
+    """记录请求处理时间 (Log request processing time)"""
+    if hasattr(g, 'start_time'):
+        elapsed = time.time() - g.start_time
+        # 记录慢请求 (超过1秒) (Log slow requests over 1 second)
+        if elapsed > 1.0:
+            logger.warning(
+                f"Slow request: {request.method} {request.path} "
+                f"took {elapsed:.3f}s"
+            )
+    return response
 
 
 @contextmanager
@@ -151,8 +173,8 @@ def get_videos() -> Tuple[Response, int]:
         limit: 返回数量 (默认20, 最大100) / Return count (default 20, max 100)
         offset: 偏移量 (默认0) / Offset (default 0)
     """
-    limit: int = min(int(request.args.get('limit', 20)), 100)
-    offset: int = int(request.args.get('offset', 0))
+    limit: int = max(1, min(int(request.args.get('limit', 20)), 100))
+    offset: int = max(0, int(request.args.get('offset', 0)))
 
     with get_db() as db:
         videos: List[Dict[str, Any]] = db.get_all_videos(limit=limit, offset=offset)
@@ -188,8 +210,8 @@ def search_videos() -> Tuple[Response, int]:
     if not keyword:
         return api_response(message="请提供搜索关键词", code=400)
 
-    limit: int = min(int(request.args.get('limit', 20)), 100)
-    offset: int = max(int(request.args.get('offset', 0)), 0)
+    limit: int = max(1, min(int(request.args.get('limit', 20)), 100))
+    offset: int = max(0, int(request.args.get('offset', 0)))
 
     with get_db() as db:
         videos: List[Dict[str, Any]] = db.search_videos(keyword, limit=limit, offset=offset)
@@ -212,8 +234,8 @@ def get_videos_by_category() -> Tuple[Response, int]:
     if not category:
         return api_response(message="请提供分类名称", code=400)
 
-    limit: int = min(int(request.args.get('limit', 20)), 100)
-    offset: int = max(int(request.args.get('offset', 0)), 0)
+    limit: int = max(1, min(int(request.args.get('limit', 20)), 100))
+    offset: int = max(0, int(request.args.get('offset', 0)))
 
     with get_db() as db:
         videos: List[Dict[str, Any]] = db.get_videos_by_category(category, limit=limit, offset=offset)
@@ -230,7 +252,7 @@ def get_top_videos() -> Tuple[Response, int]:
     Query参数 (Query parameters):
         limit: 返回数量 (默认10) / Return count (default 10)
     """
-    limit: int = min(int(request.args.get('limit', 10)), 50)
+    limit: int = max(1, min(int(request.args.get('limit', 10)), 50))
 
     with get_db() as db:
         videos: List[Dict[str, Any]] = db.get_top_videos(limit=limit)
@@ -314,13 +336,13 @@ if __name__ == '__main__':
 
     debug: bool = not args.production
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("🚀 视频API服务器 (Video API Server)")
-    print("="*60)
+    print("=" * 60)
     print(f"📡 地址 (Address): http://{args.host}:{args.port}")
     print(f"🔧 模式 (Mode): {'生产 (Production)' if args.production else '开发 (Development)'}")
     print(f"📦 数据库 (Database): {'SQLite' if args.sqlite else 'MySQL'}")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
 
     app.run(
         host=args.host,
