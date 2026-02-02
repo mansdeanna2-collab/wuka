@@ -22,7 +22,8 @@ export default [
         MediaError: 'readonly',
         Promise: 'readonly',
         Map: 'readonly',
-        HTMLImageElement: 'readonly'
+        HTMLImageElement: 'readonly',
+        IntersectionObserver: 'readonly'
       }
     },
     rules: {
