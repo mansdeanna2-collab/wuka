@@ -12,7 +12,7 @@
             @input="onSearchInput"
             @keyup.enter="handleSearch"
           />
-          <button class="search-btn" @click="handleSearch">🔍</button>
+          <button class="search-btn" @click="handleSearch">搜索</button>
         </div>
         <div class="header-spacer"></div>
       </div>
@@ -173,13 +173,14 @@ export default {
       }))
       return [...tabs, ...catList]
     },
-    // Category sections for home view
+    // Category sections for home view (show max 8 subcategories)
     categorySections() {
       if (this.isFilteredView) {
         return []
       }
       return this.categories
         .filter(cat => this.categoryVideos[cat.video_category]?.length > 0)
+        .slice(0, 8)
         .map(cat => ({
           category: cat.video_category,
           videos: this.categoryVideos[cat.video_category] || []
@@ -528,25 +529,25 @@ export default {
 .search-box {
   flex: 1;
   display: flex;
-  max-width: 400px;
+  max-width: 280px;
   margin: 0 auto;
 }
 
 .search-box input {
   flex: 1;
-  padding: 10px 15px;
+  padding: 6px 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px 0 0 20px;
+  border-radius: 16px 0 0 16px;
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
-  font-size: 14px;
+  font-size: 13px;
   outline: none;
   transition: all 0.3s;
 }
 
 .search-box input:focus {
-  border-color: #00d4ff;
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+  border-color: #7c3aed;
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
 }
 
 .search-box input::placeholder {
@@ -554,17 +555,19 @@ export default {
 }
 
 .search-btn {
-  padding: 10px 15px;
-  background: linear-gradient(90deg, #00d4ff, #7c3aed);
+  padding: 6px 14px;
+  background: #7c3aed;
   border: none;
-  border-radius: 0 20px 20px 0;
+  border-radius: 0 16px 16px 0;
   color: #fff;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .search-btn:hover {
-  filter: brightness(1.1);
+  background: #6d28d9;
 }
 
 .header-spacer {
@@ -742,16 +745,17 @@ export default {
   
   .search-box {
     flex: 1;
-    max-width: none;
+    max-width: 200px;
   }
   
   .search-box input {
-    padding: 8px 12px;
-    font-size: 13px;
+    padding: 5px 10px;
+    font-size: 12px;
   }
   
   .search-btn {
-    padding: 8px 12px;
+    padding: 5px 10px;
+    font-size: 12px;
   }
   
   .category-tabs {
