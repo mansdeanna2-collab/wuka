@@ -5,7 +5,7 @@
         <span class="yellow-dot"></span>
         <h2 class="section-title">{{ title }}</h2>
       </div>
-      <span class="more-link" @click="$emit('more')">更多</span>
+      <span class="more-link" @click="$emit('more')">更多 <span class="more-arrow">›</span></span>
     </div>
     
     <div class="videos-grid" v-if="videos.length > 0">
@@ -201,32 +201,40 @@ export default {
   color: #7c3aed;
   cursor: pointer;
   transition: color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .more-link:hover {
   color: #6d28d9;
 }
 
+.more-arrow {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
 .section-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 15px;
-  padding: 10px 0;
+  margin-top: 12px;
+  padding: 6px 0;
 }
 
 .action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 20px;
+  gap: 4px;
+  padding: 6px 12px;
   border: none;
-  border-radius: 20px;
-  font-size: 0.9em;
+  border-radius: 15px;
+  font-size: 0.75em;
   cursor: pointer;
   transition: all 0.3s;
-  min-width: 100px;
+  min-width: 70px;
 }
 
 .refresh-btn {
@@ -256,11 +264,11 @@ export default {
 }
 
 .refresh-icon {
-  font-size: 0.9em;
+  font-size: 0.8em;
 }
 
 .arrow-icon {
-  font-size: 1em;
+  font-size: 0.9em;
 }
 
 .videos-grid {
@@ -439,18 +447,22 @@ export default {
   }
   
   .more-link {
-    font-size: 0.75em;
+    font-size: 0.7em;
+  }
+  
+  .more-arrow {
+    font-size: 1.1em;
   }
   
   .section-actions {
-    margin-top: 12px;
-    padding: 8px 0;
+    margin-top: 10px;
+    padding: 4px 0;
   }
   
   .action-btn {
-    padding: 8px 14px;
-    font-size: 0.8em;
-    min-width: 85px;
+    padding: 5px 10px;
+    font-size: 0.7em;
+    min-width: 60px;
   }
   
   .video-large {

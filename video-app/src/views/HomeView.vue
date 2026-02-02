@@ -18,15 +18,15 @@
       </div>
     </header>
 
-    <!-- Category Tabs -->
+    <!-- Main Category Tabs (大分类) -->
     <div class="category-tabs">
       <button
-        v-for="(cat, index) in displayCategories"
-        :key="cat.video_category || index"
-        :class="['tab-btn', { active: cat.video_category === '' && !isFilteredView }]"
-        @click="handleCategoryClick(cat.video_category)"
+        v-for="(cat, index) in mainCategories"
+        :key="index"
+        :class="['tab-btn', { active: activeMainCategory === cat.key }]"
+        @click="handleMainCategoryClick(cat.key)"
       >
-        {{ cat.label || cat.video_category }}
+        {{ cat.label }}
       </button>
     </div>
 
@@ -44,7 +44,7 @@
     </div>
 
     <!-- Main Content -->
-    <div v-else class="main-content">
+    <div v-else class="main-content" ref="mainContent">
       <!-- Carousel Banner -->
       <Carousel 
         v-if="carouselVideos.length > 0"
@@ -52,9 +52,9 @@
         @click="playVideo"
       />
 
-      <!-- Category Sections (Home View) -->
+      <!-- Category Sections (Home View) - Load first 4, then more on scroll -->
       <CategorySection
-        v-for="cat in categorySections"
+        v-for="cat in visibleCategorySections"
         :key="cat.category"
         :title="cat.category"
         :videos="cat.videos"
@@ -62,6 +62,16 @@
         @refresh="refreshCategory(cat.category)"
         @more="viewMoreCategory(cat.category)"
       />
+      
+      <!-- Load More Categories Trigger -->
+      <div 
+        v-if="!isFilteredView && hasMoreCategories" 
+        ref="loadMoreTrigger"
+        class="load-more-categories"
+      >
+        <div v-if="loadingMoreCategories" class="loading-spinner"></div>
+        <span v-else>向上滑动加载更多分类...</span>
+      </div>
 
       <!-- Filtered Videos Grid (Search View) -->
       <div v-if="isFilteredView && filteredVideos.length > 0" class="filtered-view">
@@ -134,6 +144,9 @@ export default {
   // Constants
   MAX_REFRESH_OFFSET: 20,
   VIDEOS_PER_CATEGORY: 5,
+  INITIAL_CATEGORIES_COUNT: 4,
+  MAX_CATEGORIES_COUNT: 8,
+  LOAD_MORE_DELAY: 300, // ms delay for smooth UX when loading more categories
   beforeRouteLeave(to, from, next) {
     if (to.name === 'player') {
       const routePath = from.fullPath
@@ -150,6 +163,7 @@ export default {
       searchKeyword: '',
       loading: true,
       loadingMore: false,
+      loadingMoreCategories: false,
       error: false,
       errorMessage: '',
       page: 1,
@@ -160,31 +174,44 @@ export default {
       // For filtered view (search or single category)
       filteredVideos: [],
       // Flag to indicate using mock data
-      usingMockData: false
+      usingMockData: false,
+      // Main category tabs (大分类)
+      mainCategories: [
+        { key: 'recommend', label: '推荐' },
+        { key: 'japan', label: '日本' },
+        { key: 'domestic', label: '国产' },
+        { key: 'anime', label: '动漫' },
+        { key: 'welfare', label: '福利' },
+        { key: 'settings', label: '设置' }
+      ],
+      activeMainCategory: 'recommend',
+      // Visible categories count for lazy loading
+      visibleCategoriesCount: 4,
+      // Intersection observer for lazy loading
+      intersectionObserver: null
     }
   },
   computed: {
-    // Get display categories (first 5 including "推荐")
-    displayCategories() {
-      const tabs = [{ video_category: '', label: '推荐' }]
-      const catList = this.categories.slice(0, 4).map(c => ({
-        video_category: c.video_category,
-        label: c.video_category
-      }))
-      return [...tabs, ...catList]
-    },
-    // Category sections for home view (show max 8 subcategories)
+    // All category sections for home view (show max 8 subcategories)
     categorySections() {
       if (this.isFilteredView) {
         return []
       }
       return this.categories
         .filter(cat => this.categoryVideos[cat.video_category]?.length > 0)
-        .slice(0, 8)
+        .slice(0, this.$options.MAX_CATEGORIES_COUNT)
         .map(cat => ({
           category: cat.video_category,
           videos: this.categoryVideos[cat.video_category] || []
         }))
+    },
+    // Visible category sections (lazy loading - first 4, then 4 more on scroll)
+    visibleCategorySections() {
+      return this.categorySections.slice(0, this.visibleCategoriesCount)
+    },
+    // Check if there are more categories to load
+    hasMoreCategories() {
+      return this.visibleCategoriesCount < this.categorySections.length
     },
     // Check if we're in filtered view (search only now, category is separate view)
     isFilteredView() {
@@ -207,6 +234,8 @@ export default {
         if (this.filteredVideos.length > 0) {
           this.filteredVideos = []
         }
+        // Reset visible categories count
+        this.visibleCategoriesCount = this.$options.INITIAL_CATEGORIES_COUNT
         // Reload home data to show all categories
         this.loadHomeData()
       }
@@ -231,18 +260,78 @@ export default {
         })
       }
     }
+    // Re-setup observer when activated
+    this.$nextTick(() => {
+      this.setupIntersectionObserver()
+    })
   },
   deactivated() {
     const routePath = this.$route.fullPath
     const scrollY = getCurrentScrollPosition()
     saveScrollPosition(routePath, scrollY)
+    // Cleanup observer
+    this.cleanupIntersectionObserver()
   },
   beforeUnmount() {
     if (this.searchDebounceTimer) {
       clearTimeout(this.searchDebounceTimer)
     }
+    this.cleanupIntersectionObserver()
   },
   methods: {
+    // Setup intersection observer for lazy loading more categories
+    setupIntersectionObserver() {
+      if (this.$refs.loadMoreTrigger && !this.intersectionObserver) {
+        this.intersectionObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting && this.hasMoreCategories && !this.loadingMoreCategories) {
+                this.loadMoreCategories()
+              }
+            })
+          },
+          { threshold: 0.1 }
+        )
+        this.intersectionObserver.observe(this.$refs.loadMoreTrigger)
+      }
+    },
+    
+    // Cleanup intersection observer
+    cleanupIntersectionObserver() {
+      if (this.intersectionObserver) {
+        this.intersectionObserver.disconnect()
+        this.intersectionObserver = null
+      }
+    },
+    
+    // Load more categories on scroll
+    loadMoreCategories() {
+      if (this.loadingMoreCategories || !this.hasMoreCategories) return
+      
+      this.loadingMoreCategories = true
+      
+      // Small delay for smooth UX transition
+      setTimeout(() => {
+        this.visibleCategoriesCount = this.$options.MAX_CATEGORIES_COUNT
+        this.loadingMoreCategories = false
+      }, this.$options.LOAD_MORE_DELAY)
+    },
+    
+    // Handle main category tab click
+    handleMainCategoryClick(categoryKey) {
+      this.activeMainCategory = categoryKey
+      
+      // Settings tab - navigate to profile/settings
+      if (categoryKey === 'settings') {
+        this.$router.push({ name: 'profile' })
+        return
+      }
+      
+      // Reset visible categories count and reload data for the selected main category
+      this.visibleCategoriesCount = this.$options.INITIAL_CATEGORIES_COUNT
+      this.loadHomeData()
+    },
+    
     async init() {
       // Check route params (only search now, category is separate view)
       if (this.$route.name === 'search') {
@@ -252,6 +341,8 @@ export default {
       this.loading = true
       this.error = false
       this.usingMockData = false
+      // Reset visible categories count
+      this.visibleCategoriesCount = this.$options.INITIAL_CATEGORIES_COUNT
       
       try {
         await this.loadCategories()
@@ -276,6 +367,10 @@ export default {
         await this.loadHomeDataWithMock()
       } finally {
         this.loading = false
+        // Setup intersection observer after loading completes
+        this.$nextTick(() => {
+          this.setupIntersectionObserver()
+        })
       }
     },
     
@@ -600,7 +695,7 @@ export default {
   padding: 8px 16px;
   background: transparent;
   border: none;
-  color: #aaa;
+  color: #fff;
   font-size: 1.1em;
   font-weight: 500;
   cursor: pointer;
@@ -610,7 +705,7 @@ export default {
 }
 
 .tab-btn:hover {
-  color: #fff;
+  color: #00d4ff;
 }
 
 .tab-btn.active {
@@ -661,10 +756,33 @@ export default {
   gap: 8px;
 }
 
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #00d4ff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .loading-spinner.small {
   width: 16px;
   height: 16px;
   border-width: 2px;
+}
+
+/* Load More Categories */
+.load-more-categories {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #888;
+  font-size: 0.9em;
 }
 
 /* Filtered View Styles */
