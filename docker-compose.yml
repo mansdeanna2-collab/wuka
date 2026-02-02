@@ -40,6 +40,21 @@ services:
     networks:
       - video-network
 
+  # 管理后台前端服务 (Admin Frontend on port 8899)
+  admin:
+    build:
+      context: ./video-app
+      dockerfile: Dockerfile.admin
+    container_name: video-admin
+    restart: unless-stopped
+    ports:
+      - "8899:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - video-network
+
 networks:
   video-network:
     driver: bridge

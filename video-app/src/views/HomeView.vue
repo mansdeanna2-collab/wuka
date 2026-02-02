@@ -141,7 +141,7 @@ import {
   getMockTopVideos,
   searchMockVideos
 } from '@/utils/mockData'
-import { getMainCategories, getSubcategoryMapping } from '@/utils/navCategoryManager'
+import { getMainCategories, getSubcategoryMapping, fetchNavCategories } from '@/utils/navCategoryManager'
 
 export default {
   name: 'HomeView',
@@ -157,7 +157,7 @@ export default {
   LOAD_MORE_BATCH_SIZE: 4, // Load 4 more categories each time on scroll
   LOAD_MORE_DELAY: 300, // ms delay for smooth UX when loading more categories
   beforeRouteLeave(to, from, next) {
-    if (to.name === 'player') {
+    if (to.name === 'player' || to.name === 'category') {
       const routePath = from.fullPath
       const scrollY = getCurrentScrollPosition()
       saveScrollPosition(routePath, scrollY)
@@ -232,7 +232,7 @@ export default {
   },
   watch: {
     '$route'(to, from) {
-      if (from.name === 'player' && (to.name === 'home' || to.name === 'search')) {
+      if ((from.name === 'player' || from.name === 'category') && (to.name === 'home' || to.name === 'search')) {
         this.shouldRestoreScroll = true
         return
       }
@@ -305,8 +305,11 @@ export default {
     this.cleanupIntersectionObserver()
   },
   methods: {
-    // Refresh navigation categories from storage
-    refreshNavCategories() {
+    // Refresh navigation categories from API/cache
+    async refreshNavCategories() {
+      // Fetch fresh categories from API (updates cache)
+      await fetchNavCategories()
+      
       const newMainCategories = getMainCategories()
       const newSubcategories = getSubcategoryMapping()
       
@@ -329,9 +332,20 @@ export default {
     },
     
     // Setup intersection observer for lazy loading more categories
-    setupIntersectionObserver() {
+    // Optional retryCount parameter to limit recursion (max 5 retries = 500ms total wait)
+    setupIntersectionObserver(retryCount = 0) {
+      const MAX_RETRIES = 5
+      
       // Guard: check if trigger element exists
       if (!this.$refs.loadMoreTrigger) {
+        // If element doesn't exist yet but should (hasMoreCategories is true), 
+        // retry after a short delay to wait for DOM update.
+        // This handles timing issues when activated() is called before the template is fully rendered.
+        if (this.hasMoreCategories && !this.isFilteredView && retryCount < MAX_RETRIES) {
+          setTimeout(() => {
+            this.setupIntersectionObserver(retryCount + 1)
+          }, 100)
+        }
         return
       }
       
@@ -433,6 +447,13 @@ export default {
       this.visibleCategoriesCount = this.$options.INITIAL_CATEGORIES_COUNT
       
       try {
+        // Fetch navigation categories from database (global settings)
+        // This ensures all users see the same categories configured by admin
+        await fetchNavCategories()
+        // Update local refs with fetched data
+        this.mainCategories = getMainCategories()
+        this.mainCategorySubcategories = getSubcategoryMapping()
+        
         await this.loadCategories()
         
         // If no categories loaded from API, use mock data
@@ -835,7 +856,7 @@ export default {
 
 /* Main Content */
 .main-content {
-  padding-top: 120px;
+  padding-top: 130px;
   padding-bottom: 10px;
 }
 
@@ -1016,7 +1037,7 @@ export default {
   }
   
   .main-content {
-    padding-top: 105px;
+    padding-top: 115px;
   }
   
   .tab-btn {
@@ -1060,7 +1081,7 @@ export default {
   }
   
   .main-content {
-    padding-top: 95px;
+    padding-top: 105px;
   }
   
   .tab-btn {
