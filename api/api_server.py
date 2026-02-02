@@ -182,19 +182,6 @@ def get_videos() -> Tuple[Response, int]:
     return api_response(data=videos)
 
 
-@app.route('/api/videos/<int:video_id>', methods=['GET'])
-@handle_errors
-def get_video(video_id: int) -> Tuple[Response, int]:
-    """获取单个视频详情 (Get single video details)"""
-    with get_db() as db:
-        video: Optional[Dict[str, Any]] = db.get_video(video_id)
-
-    if video:
-        return api_response(data=video)
-    else:
-        return api_response(message="视频不存在", code=404)
-
-
 @app.route('/api/videos/search', methods=['GET'])
 @handle_errors
 def search_videos() -> Tuple[Response, int]:
@@ -217,6 +204,19 @@ def search_videos() -> Tuple[Response, int]:
         videos: List[Dict[str, Any]] = db.search_videos(keyword, limit=limit, offset=offset)
 
     return api_response(data=videos)
+
+
+@app.route('/api/videos/<int:video_id>', methods=['GET'])
+@handle_errors
+def get_video(video_id: int) -> Tuple[Response, int]:
+    """获取单个视频详情 (Get single video details)"""
+    with get_db() as db:
+        video: Optional[Dict[str, Any]] = db.get_video(video_id)
+
+    if video:
+        return api_response(data=video)
+    else:
+        return api_response(message="视频不存在", code=404)
 
 
 @app.route('/api/videos/category', methods=['GET'])

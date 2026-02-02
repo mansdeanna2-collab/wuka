@@ -1,15 +1,17 @@
 <template>
-  <nav class="bottom-nav">
-    <router-link 
-      v-for="item in navItems" 
-      :key="item.path"
-      :to="item.path"
-      class="nav-item"
-      :class="{ active: isActive(item.path) }"
-    >
-      <span class="nav-icon">{{ item.icon }}</span>
-      <span class="nav-label">{{ item.label }}</span>
-    </router-link>
+  <nav class="bottom-nav" aria-label="Bottom navigation / 底部导航">
+    <ul class="nav-items">
+      <li v-for="item in navItems" :key="item.path" class="nav-item-wrapper">
+        <router-link 
+          :to="item.path"
+          class="nav-item"
+          :class="{ active: isActive(item.path) }"
+        >
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span class="nav-label">{{ item.label }}</span>
+        </router-link>
+      </li>
+    </ul>
   </nav>
 </template>
 
@@ -46,9 +48,6 @@ export default {
   bottom: 0;
   left: 0;
   right: 0;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
   background: rgba(26, 26, 46, 0.98);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding: 8px 0;
@@ -56,6 +55,22 @@ export default {
   z-index: 1000;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+.nav-items {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
 }
 
 .nav-item {
