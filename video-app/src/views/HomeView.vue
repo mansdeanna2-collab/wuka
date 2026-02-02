@@ -329,14 +329,18 @@ export default {
     },
     
     // Setup intersection observer for lazy loading more categories
-    setupIntersectionObserver() {
+    // Optional retryCount parameter to limit recursion (max 5 retries = 500ms total wait)
+    setupIntersectionObserver(retryCount = 0) {
+      const MAX_RETRIES = 5
+      
       // Guard: check if trigger element exists
       if (!this.$refs.loadMoreTrigger) {
         // If element doesn't exist yet but should (hasMoreCategories is true), 
-        // retry after a short delay to wait for DOM update
-        if (this.hasMoreCategories && !this.isFilteredView) {
+        // retry after a short delay to wait for DOM update.
+        // This handles timing issues when activated() is called before the template is fully rendered.
+        if (this.hasMoreCategories && !this.isFilteredView && retryCount < MAX_RETRIES) {
           setTimeout(() => {
-            this.setupIntersectionObserver()
+            this.setupIntersectionObserver(retryCount + 1)
           }, 100)
         }
         return
