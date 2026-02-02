@@ -15,33 +15,33 @@
       </div>
     </div>
     
-    <div class="menu-list">
-      <div class="menu-item">
+    <ul class="menu-list">
+      <li class="menu-item">
         <span class="menu-icon">📜</span>
         <span class="menu-text">观看历史</span>
         <span class="menu-arrow">→</span>
-      </div>
-      <div class="menu-item">
+      </li>
+      <li class="menu-item">
         <span class="menu-icon">⭐</span>
         <span class="menu-text">我的收藏</span>
         <span class="menu-arrow">→</span>
-      </div>
-      <div class="menu-item">
+      </li>
+      <li class="menu-item">
         <span class="menu-icon">💰</span>
         <span class="menu-text">我的金币</span>
         <span class="menu-arrow">→</span>
-      </div>
-      <div class="menu-item">
+      </li>
+      <li class="menu-item">
         <span class="menu-icon">⚙️</span>
         <span class="menu-text">设置</span>
         <span class="menu-arrow">→</span>
-      </div>
-      <div class="menu-item">
+      </li>
+      <li class="menu-item">
         <span class="menu-icon">❓</span>
         <span class="menu-text">帮助与反馈</span>
         <span class="menu-arrow">→</span>
-      </div>
-    </div>
+      </li>
+    </ul>
   </div>
 </template>
 
@@ -125,6 +125,9 @@ export default {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 15px;
   overflow: hidden;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .menu-item {
