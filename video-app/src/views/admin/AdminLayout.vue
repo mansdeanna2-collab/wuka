@@ -4,6 +4,7 @@
     <aside class="sidebar">
       <div class="sidebar-header">
         <h1 class="admin-logo">🎬 管理后台</h1>
+        <span v-if="isStandaloneMode" class="standalone-badge">独立模式</span>
       </div>
       
       <nav class="sidebar-nav">
@@ -20,7 +21,11 @@
       </nav>
       
       <div class="sidebar-footer">
-        <router-link to="/" class="back-to-site">
+        <a v-if="isStandaloneMode" :href="frontendUrl" class="back-to-site">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-text">返回前台</span>
+        </a>
+        <router-link v-else to="/" class="back-to-site">
           <span class="nav-icon">🏠</span>
           <span class="nav-text">返回前台</span>
         </router-link>
@@ -41,20 +46,25 @@
 </template>
 
 <script>
+import { isStandaloneMode, getFrontendUrl, getAdminPath } from '@/utils/adminUtils'
+
 export default {
   name: 'AdminLayout',
-  data() {
-    return {
-      menuItems: [
-        { path: '/admin/dashboard', icon: '📊', label: '仪表盘' },
-        { path: '/admin/nav-categories', icon: '📁', label: '导航分类管理' }
-      ]
-    }
-  },
   computed: {
+    // Use shared utility for standalone mode detection
+    isStandaloneMode,
+    menuItems() {
+      return [
+        { path: getAdminPath('dashboard'), icon: '📊', label: '仪表盘' },
+        { path: getAdminPath('nav-categories'), icon: '📁', label: '导航分类管理' }
+      ]
+    },
     currentPageTitle() {
       const currentItem = this.menuItems.find(item => this.isActive(item.path))
       return currentItem ? currentItem.label : '管理后台'
+    },
+    frontendUrl() {
+      return getFrontendUrl()
     }
   },
   methods: {
@@ -99,6 +109,19 @@ export default {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin: 0;
+}
+
+.standalone-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 8px;
+  background: linear-gradient(135deg, #ff8c00, #ffd700);
+  border-radius: 10px;
+  font-size: 0.7em;
+  font-weight: 600;
+  color: #1a1a2e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .sidebar-nav {

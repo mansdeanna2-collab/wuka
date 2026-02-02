@@ -7,9 +7,12 @@
     "inject-eov": "node scripts/inject-eov.js",
     "predev": "npm run inject-eov",
     "dev": "vite",
+    "dev:admin": "vite --config vite.admin.config.js",
     "prebuild": "npm run inject-eov",
     "build": "vite build",
+    "build:admin": "vite build --config vite.admin.config.js",
     "preview": "vite preview",
+    "preview:admin": "vite preview --config vite.admin.config.js --port 8899",
     "lint": "eslint src --ext .vue,.js,.ts",
     "lint:fix": "eslint src --ext .vue,.js,.ts --fix",
     "type-check": "vue-tsc --noEmit"

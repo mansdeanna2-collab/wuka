@@ -26,6 +26,9 @@
           />
           <div class="slide-overlay">
             <h3 class="slide-title">{{ video.video_title }}</h3>
+            <div v-if="video.video_category" class="slide-category">
+              {{ video.video_category }}
+            </div>
           </div>
         </div>
       </div>
@@ -212,6 +215,10 @@ export default {
   border-radius: 20px;
   overflow: hidden;
   margin-bottom: 20px;
+  /* Purple border to distinguish from regular videos */
+  border: 2px solid transparent;
+  background: linear-gradient(#0f0f1a, #0f0f1a) padding-box,
+              linear-gradient(135deg, #7c3aed, #a855f7, #7c3aed) border-box;
 }
 
 .carousel-container {
@@ -244,7 +251,7 @@ export default {
   left: 0;
   right: 0;
   padding: 20px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
 }
 
 .slide-title {
@@ -256,15 +263,28 @@ export default {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  margin: 0;
+}
+
+.slide-category {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 10px;
+  background: rgba(124, 58, 237, 0.2);
+  border: 1px solid rgba(124, 58, 237, 0.4);
+  border-radius: 12px;
+  font-size: 0.75em;
+  color: #a855f7;
 }
 
 .carousel-indicators {
   position: absolute;
-  bottom: 10px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   gap: 8px;
+  z-index: 10;
 }
 
 .indicator {
@@ -274,12 +294,14 @@ export default {
   background: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   transition: all 0.3s;
+  border: 1px solid rgba(124, 58, 237, 0.3);
 }
 
 .indicator.active {
-  background: #00d4ff;
-  width: 20px;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  width: 24px;
   border-radius: 4px;
+  border-color: #7c3aed;
 }
 
 @media (max-width: 480px) {
@@ -296,13 +318,18 @@ export default {
     font-size: 1em;
   }
   
+  .slide-category {
+    font-size: 0.65em;
+    margin-top: 6px;
+  }
+  
   .indicator {
     width: 6px;
     height: 6px;
   }
   
   .indicator.active {
-    width: 16px;
+    width: 18px;
   }
 }
 </style>

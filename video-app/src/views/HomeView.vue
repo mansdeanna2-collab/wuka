@@ -70,7 +70,7 @@
         class="load-more-categories"
       >
         <div v-if="loadingMoreCategories" class="loading-spinner"></div>
-        <span v-else>向上滑动加载更多分类...</span>
+        <span v-else>继续滑动加载更多分类...</span>
       </div>
       
       <!-- No More Content Message -->
@@ -154,7 +154,7 @@ export default {
   MAX_REFRESH_OFFSET: 20,
   VIDEOS_PER_CATEGORY: 5,
   INITIAL_CATEGORIES_COUNT: 4,
-  MAX_CATEGORIES_COUNT: 8,
+  LOAD_MORE_BATCH_SIZE: 4, // Load 4 more categories each time on scroll
   LOAD_MORE_DELAY: 300, // ms delay for smooth UX when loading more categories
   beforeRouteLeave(to, from, next) {
     if (to.name === 'player') {
@@ -200,16 +200,16 @@ export default {
     currentSubcategories() {
       return this.mainCategorySubcategories[this.activeMainCategory] || []
     },
-    // All category sections for home view (show max 8 subcategories based on main category)
+    // All category sections for home view (show all bound subcategories based on main category)
     categorySections() {
       if (this.isFilteredView) {
         return []
       }
       const subcategories = this.currentSubcategories
       // Filter to show only subcategories that have videos, maintaining the order from subcategories list
+      // No longer limited by MAX_CATEGORIES_COUNT - show all bound categories
       return subcategories
         .filter(cat => this.categoryVideos[cat]?.length > 0)
-        .slice(0, this.$options.MAX_CATEGORIES_COUNT)
         .map(cat => ({
           category: cat,
           videos: this.categoryVideos[cat] || []
@@ -339,17 +339,38 @@ export default {
       }
     },
     
-    // Load more categories on scroll
+    // Load more categories on scroll (load 4 more each time)
     loadMoreCategories() {
       if (this.loadingMoreCategories || !this.hasMoreCategories) return
       
       this.loadingMoreCategories = true
+      const previousCount = this.visibleCategoriesCount
       
       // Small delay for smooth UX transition
       setTimeout(() => {
-        this.visibleCategoriesCount = this.$options.MAX_CATEGORIES_COUNT
+        // Increment by LOAD_MORE_BATCH_SIZE (4) each time instead of jumping to max
+        this.visibleCategoriesCount += this.$options.LOAD_MORE_BATCH_SIZE
         this.loadingMoreCategories = false
+        
+        // Load data only for newly visible categories
+        this.loadMoreCategoriesData(previousCount)
       }, this.$options.LOAD_MORE_DELAY)
+    },
+    
+    // Load videos for newly visible categories only
+    async loadMoreCategoriesData(fromIndex) {
+      const subcategories = this.currentSubcategories
+      const currentMainCategory = this.activeMainCategory
+      
+      // Only check categories from the previous count to the new count
+      // This avoids redundant filtering of categories that already have data
+      const categoriesToLoad = subcategories
+        .slice(fromIndex, this.visibleCategoriesCount)
+        .filter(cat => !this.categoryVideos[cat] || this.categoryVideos[cat].length === 0)
+      
+      if (categoriesToLoad.length > 0 && !this.usingMockData) {
+        await this.loadCategoriesData(categoriesToLoad, this.$options.VIDEOS_PER_CATEGORY, currentMainCategory)
+      }
     },
     
     // Handle main category tab click
@@ -478,11 +499,15 @@ export default {
       const firstBatchCategories = subcategories.slice(0, this.$options.INITIAL_CATEGORIES_COUNT)
       await this.loadCategoriesData(firstBatchCategories, videosPerCategory, currentMainCategory)
       
-      // Then, load remaining categories in background (lazy loading)
-      const remainingCategories = subcategories.slice(this.$options.INITIAL_CATEGORIES_COUNT, this.$options.MAX_CATEGORIES_COUNT)
-      if (remainingCategories.length > 0) {
-        // Load remaining categories asynchronously without blocking UI
-        this.loadCategoriesData(remainingCategories, videosPerCategory, currentMainCategory)
+      // Then, load the next batch of categories in background (for when user scrolls)
+      // Load only a reasonable batch, not all at once
+      const nextBatchCategories = subcategories.slice(
+        this.$options.INITIAL_CATEGORIES_COUNT, 
+        this.$options.INITIAL_CATEGORIES_COUNT + this.$options.LOAD_MORE_BATCH_SIZE
+      )
+      if (nextBatchCategories.length > 0) {
+        // Load next batch asynchronously without blocking UI
+        this.loadCategoriesData(nextBatchCategories, videosPerCategory, currentMainCategory)
       }
     },
     
