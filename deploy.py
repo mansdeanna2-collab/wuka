@@ -630,13 +630,15 @@ def wait_for_service_healthy(compose_cmd: str, service: str, timeout: int = 60) 
     return False
 
 
-def deploy_application(base_dir: str, build: bool = True) -> bool:
+def deploy_application(base_dir: str, build: bool = True,
+                       no_cache: bool = False) -> bool:
     """
     部署应用
 
     Args:
         base_dir: 项目根目录
         build: 是否重新构建镜像
+        no_cache: 是否禁用Docker缓存强制重新构建
 
     Returns:
         是否部署成功
@@ -648,7 +650,11 @@ def deploy_application(base_dir: str, build: bool = True) -> bool:
 
     if build:
         print_step("正在构建Docker镜像...")
-        code, _, _ = run_command(f"{compose_cmd} build")
+        build_cmd = f"{compose_cmd} build"
+        if no_cache:
+            build_cmd += " --no-cache"
+            print_step("使用 --no-cache 强制重新构建...")
+        code, _, _ = run_command(build_cmd)
         if code != 0:
             print_error("构建镜像失败")
             return False
@@ -752,6 +758,7 @@ def main():
   sudo python3 deploy.py              # 完整部署
   sudo python3 deploy.py --check      # 仅检查依赖
   sudo python3 deploy.py --no-build   # 不重新构建镜像
+  sudo python3 deploy.py --force-rebuild  # 强制重新构建(禁用缓存)
   sudo python3 deploy.py --stop       # 停止应用
   sudo python3 deploy.py --restart    # 重启应用
   sudo python3 deploy.py --logs       # 查看日志
@@ -763,6 +770,8 @@ def main():
                         help='仅检查依赖，不部署')
     parser.add_argument('--no-build', action='store_true',
                         help='不重新构建镜像')
+    parser.add_argument('--force-rebuild', action='store_true',
+                        help='强制重新构建镜像(禁用Docker缓存)')
     parser.add_argument('--stop', action='store_true',
                         help='停止应用')
     parser.add_argument('--restart', action='store_true',
@@ -790,6 +799,11 @@ def main():
     if not check_root():
         print_error("请使用 sudo 运行此脚本")
         print("示例: sudo python3 deploy.py")
+        sys.exit(1)
+
+    # 检查冲突的参数
+    if args.no_build and args.force_rebuild:
+        print_error("--no-build 和 --force-rebuild 不能同时使用")
         sys.exit(1)
 
     # 处理不同的操作
@@ -827,7 +841,8 @@ def main():
         sys.exit(1)
 
     # 部署应用
-    if not deploy_application(base_dir, build=not args.no_build):
+    if not deploy_application(base_dir, build=not args.no_build,
+                              no_cache=args.force_rebuild):
         print_error("部署失败")
         sys.exit(1)
 
@@ -836,6 +851,7 @@ def main():
     print(f"  查看日志: sudo python3 {os.path.basename(__file__)} --logs")
     print(f"  停止应用: sudo python3 {os.path.basename(__file__)} --stop")
     print(f"  重启应用: sudo python3 {os.path.basename(__file__)} --restart")
+    print(f"  强制重建: sudo python3 {os.path.basename(__file__)} --force-rebuild")
     print(f"  清理资源: sudo python3 {os.path.basename(__file__)} --clean")
 
 
