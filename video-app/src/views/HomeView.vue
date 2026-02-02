@@ -23,7 +23,7 @@
       <button
         v-for="(cat, index) in displayCategories"
         :key="cat.video_category || index"
-        :class="['tab-btn', { active: selectedCategory === cat.video_category }]"
+        :class="['tab-btn', { active: cat.video_category === '' && !isFilteredView }]"
         @click="handleCategoryClick(cat.video_category)"
       >
         {{ cat.label || cat.video_category }}
@@ -63,13 +63,12 @@
         @more="viewMoreCategory(cat.category)"
       />
 
-      <!-- Filtered Videos Grid (Category/Search View) -->
+      <!-- Filtered Videos Grid (Search View) -->
       <div v-if="isFilteredView && filteredVideos.length > 0" class="filtered-view">
         <div class="filtered-header">
           <h2 class="filtered-title">
-            {{ searchKeyword ? `"${searchKeyword}" 的搜索结果` : selectedCategory }}
+            "{{ searchKeyword }}" 的搜索结果
           </h2>
-          <span class="filtered-count">共 {{ filteredVideos.length }} 个视频</span>
         </div>
         <div class="videos-grid">
           <VideoCard
@@ -84,11 +83,11 @@
       <!-- Empty State for Filtered View -->
       <div v-if="isFilteredView && filteredVideos.length === 0 && !loading" class="empty-filtered">
         <div class="empty-icon">🔍</div>
-        <p>{{ searchKeyword ? '未找到相关视频' : '该分类暂无视频' }}</p>
+        <p>未找到相关视频</p>
         <button class="btn btn-primary" @click="goHome">返回首页</button>
       </div>
 
-      <!-- Load More (for when viewing a single category or search results) -->
+      <!-- Load More (for search results) -->
       <div v-if="isFilteredView && (hasMore || loadingMore)" class="load-more">
         <button 
           class="btn btn-secondary" 
@@ -149,7 +148,6 @@ export default {
       categoryVideos: {}, // { category: videos[] }
       carouselVideos: [],
       searchKeyword: '',
-      selectedCategory: '',
       loading: true,
       loadingMore: false,
       error: false,
@@ -187,29 +185,22 @@ export default {
           videos: this.categoryVideos[cat.video_category] || []
         }))
     },
-    // Check if we're in filtered view (search or specific category)
+    // Check if we're in filtered view (search only now, category is separate view)
     isFilteredView() {
-      return this.searchKeyword.trim() !== '' || this.selectedCategory !== ''
+      return this.searchKeyword.trim() !== ''
     }
   },
   watch: {
     '$route'(to, from) {
-      if (from.name === 'player' && (to.name === 'home' || to.name === 'category' || to.name === 'search')) {
+      if (from.name === 'player' && (to.name === 'home' || to.name === 'search')) {
         this.shouldRestoreScroll = true
-        if (to.name === 'category') {
-          this.selectedCategory = to.params.category || ''
-        }
         return
       }
       
-      if (to.name === 'category') {
-        this.selectedCategory = to.params.category || ''
-        this.loadFilteredVideos()
-      } else if (to.name === 'search') {
+      if (to.name === 'search') {
         this.searchKeyword = to.query.q || ''
         this.handleSearch()
       } else if (to.name === 'home') {
-        this.selectedCategory = ''
         this.searchKeyword = ''
         // Clear filtered videos only if it has data to avoid unnecessary re-renders
         if (this.filteredVideos.length > 0) {
@@ -252,10 +243,8 @@ export default {
   },
   methods: {
     async init() {
-      // Check route params
-      if (this.$route.name === 'category') {
-        this.selectedCategory = this.$route.params.category || ''
-      } else if (this.$route.name === 'search') {
+      // Check route params (only search now, category is separate view)
+      if (this.$route.name === 'search') {
         this.searchKeyword = this.$route.query.q || ''
       }
       
@@ -373,27 +362,19 @@ export default {
         let videos = []
         
         if (this.usingMockData) {
-          // Use mock data
+          // Use mock data for search
           if (this.searchKeyword) {
             videos = searchMockVideos(this.searchKeyword, this.limit)
-          } else if (this.selectedCategory) {
-            videos = getMockVideosByCategory(this.selectedCategory, this.limit)
           }
         } else {
-          // Try API first
+          // Try API first for search
           if (this.searchKeyword) {
             result = await videoApi.searchVideos(this.searchKeyword, this.limit)
-          } else if (this.selectedCategory) {
-            result = await videoApi.getVideosByCategory(this.selectedCategory, this.limit)
-          }
-          videos = extractArrayData(result)
-          
-          // Fallback to mock if no results
-          if (videos.length === 0) {
-            if (this.searchKeyword) {
+            videos = extractArrayData(result)
+            
+            // Fallback to mock if no results
+            if (videos.length === 0) {
               videos = searchMockVideos(this.searchKeyword, this.limit)
-            } else if (this.selectedCategory) {
-              videos = getMockVideosByCategory(this.selectedCategory, this.limit)
             }
           }
         }
@@ -405,8 +386,6 @@ export default {
         // Fallback to mock data
         if (this.searchKeyword) {
           this.filteredVideos = searchMockVideos(this.searchKeyword, this.limit)
-        } else if (this.selectedCategory) {
-          this.filteredVideos = getMockVideosByCategory(this.selectedCategory, this.limit)
         }
         this.hasMore = false
       } finally {
@@ -431,13 +410,13 @@ export default {
         let result
         if (this.searchKeyword) {
           result = await videoApi.searchVideos(this.searchKeyword, this.limit, offset)
-        } else if (this.selectedCategory) {
-          result = await videoApi.getVideosByCategory(this.selectedCategory, this.limit, offset)
         }
         
-        const newVideos = extractArrayData(result)
-        this.filteredVideos = [...this.filteredVideos, ...newVideos]
-        this.hasMore = newVideos.length >= this.limit
+        if (result) {
+          const newVideos = extractArrayData(result)
+          this.filteredVideos = [...this.filteredVideos, ...newVideos]
+          this.hasMore = newVideos.length >= this.limit
+        }
       } catch (e) {
         console.error('Load more error:', e)
       } finally {
@@ -446,7 +425,6 @@ export default {
     },
     
     handleCategoryClick(category) {
-      this.selectedCategory = category
       this.searchKeyword = ''
       
       if (category) {
@@ -499,7 +477,6 @@ export default {
     },
     
     goHome() {
-      this.selectedCategory = ''
       this.searchKeyword = ''
       this.$router.push({ name: 'home' })
     },
@@ -521,13 +498,12 @@ export default {
 
 /* Header */
 .header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   background: linear-gradient(180deg, rgba(26, 26, 46, 0.98) 0%, rgba(26, 26, 46, 0.95) 100%);
-  padding: 12px 0;
-  margin: 0 -15px;
-  padding-left: 15px;
-  padding-right: 15px;
+  padding: 12px 15px;
   z-index: 100;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -597,12 +573,20 @@ export default {
 
 /* Category Tabs */
 .category-tabs {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
   display: flex;
   gap: 8px;
-  padding: 12px 0;
+  padding: 12px 15px;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  background: linear-gradient(180deg, rgba(26, 26, 46, 0.98) 0%, rgba(26, 26, 46, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 99;
 }
 
 .category-tabs::-webkit-scrollbar {
@@ -610,14 +594,16 @@ export default {
 }
 
 .tab-btn {
-  padding: 8px 12px;
+  padding: 8px 16px;
   background: transparent;
   border: none;
   color: #aaa;
-  font-size: 0.9em;
+  font-size: 1.1em;
+  font-weight: 500;
   cursor: pointer;
   transition: color 0.3s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tab-btn:hover {
@@ -630,7 +616,8 @@ export default {
 
 /* Main Content */
 .main-content {
-  padding: 10px 0;
+  padding-top: 110px;
+  padding-bottom: 10px;
 }
 
 /* States */
@@ -641,6 +628,7 @@ export default {
   align-items: center;
   justify-content: center;
   padding: 80px 20px;
+  padding-top: 150px;
   text-align: center;
 }
 
@@ -737,9 +725,7 @@ export default {
   }
   
   .header {
-    margin: 0 -12px;
-    padding-left: 12px;
-    padding-right: 12px;
+    padding: 10px 12px;
   }
   
   .header-content {
@@ -770,12 +756,17 @@ export default {
   
   .category-tabs {
     gap: 6px;
-    padding: 10px 0;
+    padding: 10px 12px;
+    top: 50px;
+  }
+  
+  .main-content {
+    padding-top: 100px;
   }
   
   .tab-btn {
-    padding: 6px 10px;
-    font-size: 0.8em;
+    padding: 6px 12px;
+    font-size: 1em;
   }
   
   .videos-grid {
@@ -801,7 +792,6 @@ export default {
   }
   
   .header {
-    margin: 0 -10px;
     padding: 10px;
   }
   
@@ -809,9 +799,18 @@ export default {
     font-size: 0.9em;
   }
   
+  .category-tabs {
+    padding: 10px;
+    top: 46px;
+  }
+  
+  .main-content {
+    padding-top: 95px;
+  }
+  
   .tab-btn {
-    padding: 5px 8px;
-    font-size: 0.75em;
+    padding: 5px 10px;
+    font-size: 0.95em;
   }
   
   .videos-grid {
@@ -835,9 +834,11 @@ export default {
   }
   
   .header {
-    margin: 0 -30px;
-    padding-left: 30px;
-    padding-right: 30px;
+    padding: 15px 30px;
+  }
+  
+  .category-tabs {
+    padding: 12px 30px;
   }
   
   .logo {
