@@ -39,7 +39,7 @@
     <div class="quick-links">
       <h3 class="section-title">快捷操作</h3>
       <div class="links-grid">
-        <router-link :to="isStandaloneMode ? '/nav-categories' : '/admin/nav-categories'" class="quick-link">
+        <router-link :to="getAdminPath('nav-categories')" class="quick-link">
           <span class="link-icon">📁</span>
           <span class="link-text">管理导航分类</span>
         </router-link>
@@ -93,6 +93,7 @@
 <script>
 import { videoApi } from '@/api'
 import { getNavCategories } from '@/utils/navCategoryManager'
+import { isStandaloneMode, getFrontendUrl, getAdminPath } from '@/utils/adminUtils'
 
 export default {
   name: 'AdminDashboard',
@@ -107,23 +108,18 @@ export default {
     totalBoundCategories() {
       return this.navCategories.reduce((sum, nav) => sum + nav.subcategories.length, 0)
     },
-    isStandaloneMode() {
-      // Detect standalone mode by checking if current port is 8899
-      return window.location.port === '8899'
-    },
+    // Use shared utility for standalone mode detection
+    isStandaloneMode,
     frontendUrl() {
-      // In standalone mode, the frontend is on a different port (3000 by default)
-      if (this.isStandaloneMode) {
-        const currentHost = window.location.hostname
-        return `http://${currentHost}:3000`
-      }
-      return '/'
+      return getFrontendUrl()
     }
   },
   mounted() {
     this.loadData()
   },
   methods: {
+    // Use shared utility for admin path generation
+    getAdminPath,
     async loadData() {
       this.loading = true
       try {

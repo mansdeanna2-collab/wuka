@@ -46,54 +46,30 @@
 </template>
 
 <script>
+import { isStandaloneMode, getFrontendUrl, getAdminPath } from '@/utils/adminUtils'
+
 export default {
   name: 'AdminLayout',
-  data() {
-    return {
-      menuItems: [
-        { path: this.getAdminPath('dashboard'), icon: '📊', label: '仪表盘' },
-        { path: this.getAdminPath('nav-categories'), icon: '📁', label: '导航分类管理' }
-      ],
-      // Detect if running in standalone admin mode (port 8899) or embedded mode
-      isStandaloneMode: this.detectStandaloneMode()
-    }
-  },
   computed: {
+    // Use shared utility for standalone mode detection
+    isStandaloneMode,
+    menuItems() {
+      return [
+        { path: getAdminPath('dashboard'), icon: '📊', label: '仪表盘' },
+        { path: getAdminPath('nav-categories'), icon: '📁', label: '导航分类管理' }
+      ]
+    },
     currentPageTitle() {
       const currentItem = this.menuItems.find(item => this.isActive(item.path))
       return currentItem ? currentItem.label : '管理后台'
     },
     frontendUrl() {
-      // In standalone mode, the frontend is on a different port (3000 by default)
-      if (this.isStandaloneMode) {
-        const currentHost = window.location.hostname
-        return `http://${currentHost}:3000`
-      }
-      return '/'
+      return getFrontendUrl()
     }
   },
   methods: {
     isActive(path) {
       return this.$route.path === path || this.$route.path.startsWith(path + '/')
-    },
-    detectStandaloneMode() {
-      // Detect standalone mode by checking if current port is 8899
-      return window.location.port === '8899'
-    },
-    getAdminPath(page) {
-      // In standalone mode, paths are relative to root (e.g., /dashboard)
-      // In embedded mode, paths are under /admin (e.g., /admin/dashboard)
-      if (this.detectStandaloneMode()) {
-        return `/${page}`
-      }
-      return `/admin/${page}`
-    },
-    goToFrontend() {
-      if (this.isStandaloneMode) {
-        window.location.href = this.frontendUrl
-      } else {
-        this.$router.push('/')
-      }
     }
   }
 }

@@ -344,6 +344,7 @@ export default {
       if (this.loadingMoreCategories || !this.hasMoreCategories) return
       
       this.loadingMoreCategories = true
+      const previousCount = this.visibleCategoriesCount
       
       // Small delay for smooth UX transition
       setTimeout(() => {
@@ -351,19 +352,20 @@ export default {
         this.visibleCategoriesCount += this.$options.LOAD_MORE_BATCH_SIZE
         this.loadingMoreCategories = false
         
-        // Reload categories data for newly visible categories if needed
-        this.loadMoreCategoriesData()
+        // Load data only for newly visible categories
+        this.loadMoreCategoriesData(previousCount)
       }, this.$options.LOAD_MORE_DELAY)
     },
     
-    // Load videos for categories that don't have data yet
-    async loadMoreCategoriesData() {
+    // Load videos for newly visible categories only
+    async loadMoreCategoriesData(fromIndex) {
       const subcategories = this.currentSubcategories
       const currentMainCategory = this.activeMainCategory
       
-      // Find categories that should be visible but don't have data
+      // Only check categories from the previous count to the new count
+      // This avoids redundant filtering of categories that already have data
       const categoriesToLoad = subcategories
-        .slice(0, this.visibleCategoriesCount)
+        .slice(fromIndex, this.visibleCategoriesCount)
         .filter(cat => !this.categoryVideos[cat] || this.categoryVideos[cat].length === 0)
       
       if (categoriesToLoad.length > 0 && !this.usingMockData) {
