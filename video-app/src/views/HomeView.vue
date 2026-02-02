@@ -211,10 +211,9 @@ export default {
       } else if (to.name === 'home') {
         this.selectedCategory = ''
         this.searchKeyword = ''
-        // Only reload if no data exists (keep-alive should preserve data)
-        if (this.categories.length === 0) {
-          this.init()
-        }
+        this.filteredVideos = []
+        // Reload home data to show all categories
+        this.loadHomeData()
       }
     }
   },
@@ -303,9 +302,9 @@ export default {
       // Load mock carousel videos
       this.carouselVideos = getMockTopVideos(videosPerCategory)
       
-      // Load mock videos for each category
-      const categoriesToLoad = this.categories.slice(0, videosPerCategory)
-      categoriesToLoad.forEach(cat => {
+      // Load mock videos for ALL categories
+      this.categoryVideos = {}
+      this.categories.forEach(cat => {
         this.categoryVideos[cat.video_category] = getMockVideosByCategory(cat.video_category, videosPerCategory)
       })
     },
@@ -332,8 +331,8 @@ export default {
         this.carouselVideos = getMockTopVideos(videosPerCategory)
       }
       
-      // Load videos for each category in parallel (first 5 categories)
-      const categoriesToLoad = this.categories.slice(0, videosPerCategory)
+      // Load videos for ALL categories in parallel (show all categories with 5 videos each)
+      const categoriesToLoad = this.categories
       
       const categoryPromises = categoriesToLoad.map(async (cat) => {
         try {
@@ -351,6 +350,8 @@ export default {
       })
       
       const results = await Promise.all(categoryPromises)
+      // Reset categoryVideos to ensure fresh data
+      this.categoryVideos = {}
       results.forEach(({ category, videos }) => {
         this.categoryVideos[category] = videos
       })
@@ -392,11 +393,6 @@ export default {
         
         this.filteredVideos = videos
         this.hasMore = this.filteredVideos.length >= this.limit
-        
-        // Update category sections to show filtered results
-        if (this.selectedCategory) {
-          this.categoryVideos = { [this.selectedCategory]: this.filteredVideos }
-        }
       } catch (e) {
         console.error('Load filtered videos error:', e)
         // Fallback to mock data
@@ -406,9 +402,6 @@ export default {
           this.filteredVideos = getMockVideosByCategory(this.selectedCategory, this.limit)
         }
         this.hasMore = false
-        if (this.selectedCategory) {
-          this.categoryVideos = { [this.selectedCategory]: this.filteredVideos }
-        }
       } finally {
         this.loading = false
       }
@@ -438,10 +431,6 @@ export default {
         const newVideos = extractArrayData(result)
         this.filteredVideos = [...this.filteredVideos, ...newVideos]
         this.hasMore = newVideos.length >= this.limit
-        
-        if (this.selectedCategory) {
-          this.categoryVideos[this.selectedCategory] = this.filteredVideos
-        }
       } catch (e) {
         console.error('Load more error:', e)
       } finally {
