@@ -18,7 +18,7 @@
     </div>
 
     <!-- Featured Game -->
-    <div v-if="featuredGame" class="featured-game" @click="playGame(featuredGame)">
+    <div v-if="featuredGame" class="featured-game" @click="handleGameClick(featuredGame)">
       <div class="featured-badge">🔥 热门推荐</div>
       <div class="featured-content">
         <div class="game-icon-large">{{ featuredGame.icon }}</div>
@@ -29,7 +29,7 @@
             <span class="rating">⭐ {{ featuredGame.rating }}</span>
             <span class="downloads">📥 {{ formatDownloads(featuredGame.downloads) }}</span>
           </div>
-          <button class="play-btn" @click.stop="playGame(featuredGame)">
+          <button class="play-btn" @click.stop="handleGameClick(featuredGame)">
             立即试玩
           </button>
         </div>
@@ -42,7 +42,7 @@
         v-for="game in filteredGames" 
         :key="game.id" 
         class="game-card"
-        @click="playGame(game)"
+        @click="handleGameClick(game)"
       >
         <div class="game-icon">{{ game.icon }}</div>
         <div class="game-info">
@@ -52,7 +52,7 @@
             <span class="rating">⭐ {{ game.rating }}</span>
           </div>
         </div>
-        <button class="get-btn" @click.stop="playGame(game)">获取</button>
+        <button class="get-btn" @click.stop="handleGameClick(game)">获取</button>
       </div>
     </div>
 
@@ -112,7 +112,7 @@ export default {
       }
       return count.toString()
     },
-    playGame(game) {
+    handleGameClick(game) {
       this.showToast(`${game.name} 游戏功能即将上线`)
     },
     showToast(message) {

@@ -18,7 +18,7 @@
     </div>
 
     <!-- Featured Live Stream -->
-    <div v-if="featuredStream" class="featured-stream" @click="watchStream(featuredStream)">
+    <div v-if="featuredStream" class="featured-stream" @click="handleStreamClick">
       <div class="featured-thumbnail">
         <div class="live-badge">🔴 直播中</div>
         <div class="featured-overlay">
@@ -40,7 +40,7 @@
         v-for="stream in filteredStreams" 
         :key="stream.id" 
         class="stream-card"
-        @click="watchStream(stream)"
+        @click="handleStreamClick"
       >
         <div class="stream-thumbnail">
           <div class="live-badge small">🔴</div>
@@ -120,7 +120,7 @@ export default {
       }
       return count.toString()
     },
-    watchStream(_stream) {
+    handleStreamClick() {
       this.showToast('直播功能即将上线，敬请期待')
     },
     showToast(message) {
