@@ -90,9 +90,118 @@ export function formatFileSize(bytes) {
   return `${size.toFixed(unitIndex > 0 ? 1 : 0)} ${units[unitIndex]}`
 }
 
+/**
+ * Validate video URL format
+ * Checks if the URL is a valid video source URL
+ * @param {string} url - The video URL to validate
+ * @returns {boolean} - True if valid, false otherwise
+ */
+export function isValidVideoUrl(url) {
+  if (!url || typeof url !== 'string') return false
+  
+  const trimmed = url.trim()
+  if (!trimmed) return false
+  
+  // Check for common video URL patterns
+  // 1. HTTP/HTTPS URLs (most common)
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    // Check for common video extensions or streaming patterns
+    const videoPatterns = [
+      /\.mp4(\?|$)/i,
+      /\.m3u8(\?|$)/i,
+      /\.webm(\?|$)/i,
+      /\.mov(\?|$)/i,
+      /\.flv(\?|$)/i,
+      /\.avi(\?|$)/i,
+      /\.mkv(\?|$)/i,
+      /\/play\//i,
+      /\/video\//i,
+      /\/stream\//i,
+      /\/hls\//i
+    ]
+    
+    // If any pattern matches, it's likely a video URL
+    if (videoPatterns.some(pattern => pattern.test(trimmed))) {
+      return true
+    }
+    
+    // For URLs without obvious extensions, still consider them valid
+    // as many streaming services use dynamic URLs
+    return true
+  }
+  
+  // 2. Episode format: name$url or name$url#name2$url2
+  if (trimmed.includes('$') || trimmed.includes('#')) {
+    const parts = trimmed.split('#')
+    return parts.every(part => {
+      // All parts in episode format must contain '$'
+      if (!part.includes('$')) {
+        return false
+      }
+      const urlPart = part.split('$')[1]
+      return urlPart && (urlPart.startsWith('http://') || urlPart.startsWith('https://'))
+    })
+  }
+  
+  return false
+}
+
+/**
+ * Extract the main video URL from various formats
+ * Handles episode format: name$url#name2$url2
+ * @param {string} src - The video source string
+ * @returns {string} - The extracted video URL or empty string
+ */
+export function extractVideoUrl(src) {
+  if (!src || typeof src !== 'string') return ''
+  
+  const trimmed = src.trim()
+  if (!trimmed) return ''
+  
+  // If already a valid URL, return it
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed
+  }
+  
+  // Handle episode format: name$url
+  if (trimmed.includes('$')) {
+    const firstPart = trimmed.split('#')[0]
+    const parts = firstPart.split('$')
+    if (parts.length >= 2 && parts[1]) {
+      return parts[1].trim()
+    }
+  }
+  
+  return ''
+}
+
+/**
+ * Get video format/type from URL
+ * @param {string} url - The video URL
+ * @returns {string} - Video type (e.g., 'mp4', 'm3u8', 'unknown')
+ */
+export function getVideoFormat(url) {
+  if (!url || typeof url !== 'string') return 'unknown'
+  
+  const trimmed = url.trim().toLowerCase()
+  
+  if (trimmed.includes('.m3u8')) return 'm3u8'
+  if (trimmed.includes('.mp4')) return 'mp4'
+  if (trimmed.includes('.webm')) return 'webm'
+  if (trimmed.includes('.mov')) return 'mov'
+  if (trimmed.includes('.flv')) return 'flv'
+  if (trimmed.includes('.avi')) return 'avi'
+  if (trimmed.includes('.mkv')) return 'mkv'
+  
+  return 'unknown'
+}
+
 export default {
   formatPlayCount,
   formatDuration,
   formatRelativeTime,
-  formatFileSize
+  formatFileSize,
+  isValidVideoUrl,
+  extractVideoUrl,
+  getVideoFormat
 }

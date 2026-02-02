@@ -95,10 +95,20 @@ const getApiBaseUrl = () => {
   return '/api'
 }
 
+// API configuration constants
+const API_CONFIG = {
+  // Timeout for API requests (10 seconds for better reliability)
+  timeout: 10000,
+  // Maximum retry attempts for failed requests
+  maxRetries: 2,
+  // Retry delay base (exponential backoff: delay * 2^retryCount)
+  retryDelayBase: 500
+}
+
 // Create axios instance with base configuration
 const api = axios.create({
   baseURL: getApiBaseUrl(),
-  timeout: 5000, // Reduced timeout for faster fallback to mock data
+  timeout: API_CONFIG.timeout,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -124,16 +134,18 @@ api.interceptors.response.use(
   async error => {
     const config = error.config
     
-    // Retry logic for network errors (1 retry only for faster fallback)
+    // Retry logic for network errors with configurable retries
     if (
       config &&
-      config.retryCount < 1 &&
+      config.retryCount < API_CONFIG.maxRetries &&
       (!error.response || error.response.status >= 500)
     ) {
       config.retryCount += 1
       
-      // Short delay before retry
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Exponential backoff delay: 500ms for 1st retry, 1000ms for 2nd retry
+      // Formula: baseDelay * 2^(retryCount-1) = 500ms, 1000ms, 2000ms, ...
+      const delay = API_CONFIG.retryDelayBase * Math.pow(2, config.retryCount - 1)
+      await new Promise(resolve => setTimeout(resolve, delay))
       
       return api(config)
     }
@@ -141,11 +153,27 @@ api.interceptors.response.use(
     // Enhanced error logging with more context
     const errorInfo = {
       url: config?.url,
+      method: config?.method?.toUpperCase(),
       status: error.response?.status,
+      statusText: error.response?.statusText,
       message: error.message,
-      retries: config?.retryCount || 0
+      retries: config?.retryCount || 0,
+      timeout: error.code === 'ECONNABORTED'
     }
     console.error('API Error:', errorInfo)
+    
+    // Enhance error object with additional context
+    if (error.code === 'ECONNABORTED') {
+      error.userMessage = '请求超时，请检查网络连接'
+    } else if (!error.response) {
+      error.userMessage = '网络连接失败，请检查网络'
+    } else if (error.response.status >= 500) {
+      error.userMessage = '服务器暂时不可用，请稍后重试'
+    } else if (error.response.status === 404) {
+      error.userMessage = '请求的资源不存在'
+    } else {
+      error.userMessage = '请求失败，请稍后重试'
+    }
     
     return Promise.reject(error)
   }

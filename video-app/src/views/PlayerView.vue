@@ -74,7 +74,7 @@
 import VideoPlayer from '@/components/VideoPlayer.vue'
 import VideoCard from '@/components/VideoCard.vue'
 import { videoApi } from '@/api'
-import { formatPlayCount } from '@/utils/formatUtils'
+import { formatPlayCount, isValidVideoUrl } from '@/utils/formatUtils'
 import { extractArrayData, extractObjectData } from '@/utils/apiUtils'
 
 export default {
@@ -124,13 +124,20 @@ export default {
           return
         }
         
+        // Validate video URL before playing
+        if (!this.video.video_url || !isValidVideoUrl(this.video.video_url)) {
+          console.warn('Invalid video URL:', this.video.video_url?.substring(0, 100))
+          // Don't block - let VideoPlayer handle the error display
+        }
+        
         // Load related videos
         if (this.video.video_category) {
           this.loadRelatedVideos()
         }
       } catch (e) {
         this.error = true
-        this.errorMessage = '加载视频失败'
+        // Use user-friendly error message from API if available
+        this.errorMessage = e.userMessage || '加载视频失败，请检查网络连接'
         console.error('Load video error:', e)
       } finally {
         this.loading = false
@@ -142,7 +149,7 @@ export default {
         // Use the new related videos API which already filters out the current video
         const result = await videoApi.getRelatedVideos(this.video.video_id, 6)
         this.relatedVideos = extractArrayData(result)
-      } catch (_e) {
+      } catch {
         // Fallback to category-based related videos if new API fails
         try {
           const result = await videoApi.getVideosByCategory(this.video.video_category, 6)

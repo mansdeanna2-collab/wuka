@@ -388,8 +388,8 @@ export default {
           await this.loadHomeData()
         }
       } catch (e) {
-        // Fallback to mock data on error
-        console.log('Error loading data, falling back to mock data:', e)
+        // Fallback to mock data on error with better error message
+        console.log('Error loading data, falling back to mock data:', e.userMessage || e.message)
         this.usingMockData = true
         this.categories = getMockCategories()
         await this.loadHomeDataWithMock()
@@ -407,7 +407,7 @@ export default {
         const result = await videoApi.getCategories()
         this.categories = extractArrayData(result)
       } catch (e) {
-        console.error('Load categories error:', e)
+        console.error('Load categories error:', e.userMessage || e.message)
         // Don't throw, let init handle fallback
       }
     },
