@@ -4,6 +4,7 @@
     <aside class="sidebar">
       <div class="sidebar-header">
         <h1 class="admin-logo">🎬 管理后台</h1>
+        <span v-if="isStandaloneMode" class="standalone-badge">独立模式</span>
       </div>
       
       <nav class="sidebar-nav">
@@ -20,7 +21,11 @@
       </nav>
       
       <div class="sidebar-footer">
-        <router-link to="/" class="back-to-site">
+        <a v-if="isStandaloneMode" :href="frontendUrl" class="back-to-site">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-text">返回前台</span>
+        </a>
+        <router-link v-else to="/" class="back-to-site">
           <span class="nav-icon">🏠</span>
           <span class="nav-text">返回前台</span>
         </router-link>
@@ -46,20 +51,49 @@ export default {
   data() {
     return {
       menuItems: [
-        { path: '/admin/dashboard', icon: '📊', label: '仪表盘' },
-        { path: '/admin/nav-categories', icon: '📁', label: '导航分类管理' }
-      ]
+        { path: this.getAdminPath('dashboard'), icon: '📊', label: '仪表盘' },
+        { path: this.getAdminPath('nav-categories'), icon: '📁', label: '导航分类管理' }
+      ],
+      // Detect if running in standalone admin mode (port 8899) or embedded mode
+      isStandaloneMode: this.detectStandaloneMode()
     }
   },
   computed: {
     currentPageTitle() {
       const currentItem = this.menuItems.find(item => this.isActive(item.path))
       return currentItem ? currentItem.label : '管理后台'
+    },
+    frontendUrl() {
+      // In standalone mode, the frontend is on a different port (3000 by default)
+      if (this.isStandaloneMode) {
+        const currentHost = window.location.hostname
+        return `http://${currentHost}:3000`
+      }
+      return '/'
     }
   },
   methods: {
     isActive(path) {
       return this.$route.path === path || this.$route.path.startsWith(path + '/')
+    },
+    detectStandaloneMode() {
+      // Detect standalone mode by checking if current port is 8899
+      return window.location.port === '8899'
+    },
+    getAdminPath(page) {
+      // In standalone mode, paths are relative to root (e.g., /dashboard)
+      // In embedded mode, paths are under /admin (e.g., /admin/dashboard)
+      if (this.detectStandaloneMode()) {
+        return `/${page}`
+      }
+      return `/admin/${page}`
+    },
+    goToFrontend() {
+      if (this.isStandaloneMode) {
+        window.location.href = this.frontendUrl
+      } else {
+        this.$router.push('/')
+      }
     }
   }
 }
@@ -99,6 +133,19 @@ export default {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin: 0;
+}
+
+.standalone-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 8px;
+  background: linear-gradient(135deg, #ff8c00, #ffd700);
+  border-radius: 10px;
+  font-size: 0.7em;
+  font-weight: 600;
+  color: #1a1a2e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .sidebar-nav {
