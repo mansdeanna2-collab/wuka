@@ -101,6 +101,7 @@
 
 <script>
 import { formatImageUrl, safeEncodeURI, loadImageWithBase64Detection } from '@/utils/imageUtils'
+import { isValidVideoUrl, extractVideoUrl, getVideoFormat } from '@/utils/formatUtils'
 
 export default {
   name: 'VideoPlayer',
@@ -223,7 +224,27 @@ export default {
       if (!src) {
         this.currentSrc = ''
         this.episodes = []
+        this.error = true
+        this.errorMessage = '视频地址不存在'
         return
+      }
+      
+      // Validate video URL format
+      if (!isValidVideoUrl(src)) {
+        // Try to extract URL from episode format
+        const extractedUrl = extractVideoUrl(src)
+        if (!extractedUrl && !src.includes('$') && !src.includes('#')) {
+          this.error = true
+          this.errorMessage = '无效的视频地址格式'
+          console.warn('Invalid video URL format:', src.substring(0, 100))
+          return
+        }
+      }
+      
+      // Log video format for debugging
+      const format = getVideoFormat(src)
+      if (format !== 'unknown') {
+        console.log(`Video format detected: ${format}`)
       }
       
       // Parse multiple episodes format: name1$url1#name2$url2
@@ -232,15 +253,27 @@ export default {
         this.episodes = parts.map(part => {
           if (part.includes('$')) {
             const [name, url] = part.split('$')
-            return { name, url }
+            return { name, url: url?.trim() || '' }
           }
-          return { name: '', url: part }
-        })
+          return { name: '', url: part?.trim() || '' }
+        }).filter(ep => ep.url) // Filter out episodes with empty URLs
+        
+        if (this.episodes.length === 0) {
+          this.error = true
+          this.errorMessage = '视频地址解析失败'
+          return
+        }
+        
         this.selectEpisode(0)
       } else if (src.includes('$')) {
         const [name, url] = src.split('$')
-        this.episodes = [{ name, url }]
-        this.currentSrc = url
+        if (!url?.trim()) {
+          this.error = true
+          this.errorMessage = '视频地址解析失败'
+          return
+        }
+        this.episodes = [{ name, url: url.trim() }]
+        this.currentSrc = url.trim()
       } else {
         this.episodes = [{ name: '', url: src }]
         this.currentSrc = src
@@ -249,8 +282,18 @@ export default {
     
     selectEpisode(index) {
       this.currentEpisode = index
-      if (this.episodes[index]) {
-        this.currentSrc = this.episodes[index].url
+      if (this.episodes[index] && this.episodes[index].url) {
+        const url = this.episodes[index].url
+        
+        // Validate URL before setting
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          this.error = true
+          this.errorMessage = '无效的视频链接'
+          console.warn('Invalid episode URL:', url.substring(0, 100))
+          return
+        }
+        
+        this.currentSrc = url
         this.loading = true
         this.error = false
         // Reset autoplay flag for new episode
@@ -266,6 +309,9 @@ export default {
             // Autoplay is now handled in onCanPlay() for consistency
           }
         })
+      } else {
+        this.error = true
+        this.errorMessage = '视频地址不存在'
       }
     },
     
@@ -595,7 +641,10 @@ export default {
     
     // Use shared utilities for image and URL formatting
     formatImageUrl,
-    safeEncodeURI
+    safeEncodeURI,
+    isValidVideoUrl,
+    extractVideoUrl,
+    getVideoFormat
   }
 }
 </script>
