@@ -50,6 +50,7 @@ import os
 import re
 import json
 import logging
+import sqlite3
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
@@ -73,9 +74,6 @@ try:
 except ImportError:
     MYSQL_AVAILABLE = False
     logger.warning("pymysql 未安装，将使用SQLite作为备用数据库")
-
-# 备用SQLite导入
-import sqlite3
 
 
 class VideoDatabase:
@@ -839,9 +837,9 @@ if __name__ == '__main__':
     # 确定使用MySQL还是SQLite
     use_mysql = not args.sqlite
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("🎬 视频数据库管理工具 v2.0")
-    print("="*60)
+    print("=" * 60)
 
     if use_mysql and MYSQL_AVAILABLE:
         print("📡 数据库类型: MySQL")

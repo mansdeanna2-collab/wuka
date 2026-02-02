@@ -264,9 +264,9 @@ class VideoCollector:
             'keyword': keyword,
             'hours': hours
         }
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🚀 开始视频采集任务")
-        print("="*60)
+        print("=" * 60)
 
         if type_id:
             print(f"📌 分类筛选: ID={type_id}")
@@ -423,9 +423,9 @@ class VideoCollector:
                 print(f"⏭️ 共跳过 {self.skipped_count} 个无效视频（图片链接以.txt结尾）")
             return
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("📊 采集数据摘要")
-        print("="*60)
+        print("=" * 60)
         print(f"有效视频数量: {len(self.collected_data)}")
         if self.skipped_count > 0:
             print(f"跳过无效视频: {self.skipped_count} 个（图片链接以.txt结尾）")
@@ -492,9 +492,9 @@ def main():
     # 创建采集器
     collector = VideoCollector(base_url=args.url)
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("🎬 视频采集脚本 v1.0")
-    print("="*60)
+    print("=" * 60)
     print(f"📡 API地址: {args.url}")
 
     # 仅显示分类
