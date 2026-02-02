@@ -221,7 +221,9 @@ export default {
     },
     // Check if there are more categories to load
     hasMoreCategories() {
-      return this.visibleCategoriesCount < this.categorySections.length
+      // Compare against total subcategories, not just loaded categories
+      // This ensures we show "load more" even if not all category data is loaded yet
+      return this.visibleCategoriesCount < this.currentSubcategories.length
     },
     // Check if we're in filtered view (search only now, category is separate view)
     isFilteredView() {
@@ -248,6 +250,18 @@ export default {
         this.visibleCategoriesCount = this.$options.INITIAL_CATEGORIES_COUNT
         // Reload home data to show all categories
         this.loadHomeData()
+      }
+    },
+    // Re-setup intersection observer when hasMoreCategories changes
+    hasMoreCategories(newVal) {
+      if (newVal) {
+        // When there are more categories to load, setup the observer
+        this.$nextTick(() => {
+          this.setupIntersectionObserver()
+        })
+      } else {
+        // When no more categories, cleanup the observer
+        this.cleanupIntersectionObserver()
       }
     }
   },
@@ -316,19 +330,27 @@ export default {
     
     // Setup intersection observer for lazy loading more categories
     setupIntersectionObserver() {
-      if (this.$refs.loadMoreTrigger && !this.intersectionObserver) {
-        this.intersectionObserver = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting && this.hasMoreCategories && !this.loadingMoreCategories) {
-                this.loadMoreCategories()
-              }
-            })
-          },
-          { threshold: 0.1 }
-        )
-        this.intersectionObserver.observe(this.$refs.loadMoreTrigger)
+      // Guard: check if trigger element exists
+      if (!this.$refs.loadMoreTrigger) {
+        return
       }
+      
+      // If observer already exists and is observing the same element, skip
+      if (this.intersectionObserver) {
+        return
+      }
+      
+      this.intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && this.hasMoreCategories && !this.loadingMoreCategories) {
+              this.loadMoreCategories()
+            }
+          })
+        },
+        { threshold: 0.1 }
+      )
+      this.intersectionObserver.observe(this.$refs.loadMoreTrigger)
     },
     
     // Cleanup intersection observer
@@ -384,6 +406,9 @@ export default {
       
       // Scroll to top when switching main categories
       window.scrollTo({ top: 0, behavior: 'smooth' })
+      
+      // Cleanup observer before resetting (will be re-created by watcher)
+      this.cleanupIntersectionObserver()
       
       // Reset visible categories count and reload data for the selected main category
       this.visibleCategoriesCount = this.$options.INITIAL_CATEGORIES_COUNT
@@ -810,7 +835,7 @@ export default {
 
 /* Main Content */
 .main-content {
-  padding-top: 110px;
+  padding-top: 120px;
   padding-bottom: 10px;
 }
 
@@ -991,7 +1016,7 @@ export default {
   }
   
   .main-content {
-    padding-top: 100px;
+    padding-top: 105px;
   }
   
   .tab-btn {
