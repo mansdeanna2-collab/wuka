@@ -649,7 +649,7 @@ class VideoDatabase:
 
         result = []
         for row in rows:
-            row_dict = dict(row) if isinstance(row, dict) else dict(row)
+            row_dict = dict(row)
             # Parse subcategories from JSON string
             subcategories_str = row_dict.get('subcategories', '[]')
             try:

@@ -82,8 +82,8 @@ function saveCacheToStorage(categories) {
  * @returns {Array} Navigation categories array
  */
 export function getNavCategories() {
-  // Return in-memory cache if available
-  if (cachedCategories && cachedCategories.length > 0) {
+  // Return in-memory cache if available (including empty array if admin set zero categories)
+  if (cachedCategories !== null) {
     return cachedCategories
   }
   
