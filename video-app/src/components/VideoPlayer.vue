@@ -256,7 +256,7 @@ export default {
             return { name, url: url?.trim() || '' }
           }
           return { name: '', url: part?.trim() || '' }
-        }).filter(ep => ep.url) // Filter out episodes with empty URLs
+        }).filter(ep => ep.url && ep.url.trim() !== '') // Filter out episodes with empty URLs
         
         if (this.episodes.length === 0) {
           this.error = true
@@ -289,7 +289,7 @@ export default {
         if (!url.startsWith('http://') && !url.startsWith('https://')) {
           this.error = true
           this.errorMessage = '无效的视频链接'
-          console.warn('Invalid episode URL:', url.substring(0, 100))
+          console.warn('Invalid episode URL:', url.slice(0, 100))
           return
         }
         

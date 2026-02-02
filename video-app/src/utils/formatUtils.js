@@ -134,8 +134,12 @@ export function isValidVideoUrl(url) {
   if (trimmed.includes('$') || trimmed.includes('#')) {
     const parts = trimmed.split('#')
     return parts.every(part => {
-      const url = part.includes('$') ? part.split('$')[1] : part
-      return url && (url.startsWith('http://') || url.startsWith('https://'))
+      // All parts in episode format must contain '$'
+      if (!part.includes('$')) {
+        return false
+      }
+      const urlPart = part.split('$')[1]
+      return urlPart && (urlPart.startsWith('http://') || urlPart.startsWith('https://'))
     })
   }
   
@@ -163,7 +167,7 @@ export function extractVideoUrl(src) {
   if (trimmed.includes('$')) {
     const firstPart = trimmed.split('#')[0]
     const parts = firstPart.split('$')
-    if (parts.length >= 2) {
+    if (parts.length >= 2 && parts[1]) {
       return parts[1].trim()
     }
   }

@@ -192,8 +192,7 @@ export default {
     },
     
     // Use shared formatPlayCount from formatUtils
-    formatPlayCount,
-    isValidVideoUrl
+    formatPlayCount
   }
 }
 </script>

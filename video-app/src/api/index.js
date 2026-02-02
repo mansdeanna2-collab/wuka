@@ -142,7 +142,8 @@ api.interceptors.response.use(
     ) {
       config.retryCount += 1
       
-      // Exponential backoff delay
+      // Exponential backoff delay: 500ms for 1st retry, 1000ms for 2nd retry
+      // Formula: baseDelay * 2^(retryCount-1) = 500ms, 1000ms, 2000ms, ...
       const delay = API_CONFIG.retryDelayBase * Math.pow(2, config.retryCount - 1)
       await new Promise(resolve => setTimeout(resolve, delay))
       
