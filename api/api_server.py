@@ -273,6 +273,64 @@ def update_play_count(video_id: int) -> Tuple[Response, int]:
         return api_response(message="视频不存在", code=404)
 
 
+@app.route('/api/videos/random', methods=['GET'])
+@handle_errors
+def get_random_videos() -> Tuple[Response, int]:
+    """
+    获取随机视频推荐 (Get random video recommendations)
+
+    Query参数 (Query parameters):
+        limit: 返回数量 (默认10, 最大50) / Return count (default 10, max 50)
+        category: 可选分类过滤 / Optional category filter
+    """
+    limit: int = max(1, min(int(request.args.get('limit', 10)), 50))
+    category: str = request.args.get('category', '').strip()
+
+    with get_db() as db:
+        if category:
+            videos: List[Dict[str, Any]] = db.get_videos_by_category(
+                category, limit=limit * 2, offset=0
+            )
+        else:
+            videos = db.get_all_videos(limit=limit * 2, offset=0)
+
+    # Shuffle and return random subset
+    import random
+    random.shuffle(videos)
+    return api_response(data=videos[:limit])
+
+
+@app.route('/api/videos/related/<int:video_id>', methods=['GET'])
+@handle_errors
+def get_related_videos(video_id: int) -> Tuple[Response, int]:
+    """
+    获取相关视频 (Get related videos based on category)
+
+    Query参数 (Query parameters):
+        limit: 返回数量 (默认6, 最大20) / Return count (default 6, max 20)
+    """
+    limit: int = max(1, min(int(request.args.get('limit', 6)), 20))
+
+    with get_db() as db:
+        # Get the current video to find its category
+        video: Optional[Dict[str, Any]] = db.get_video(video_id)
+        if not video:
+            return api_response(message="视频不存在", code=404)
+
+        # Get videos from the same category
+        category = video.get('video_category', '')
+        if category:
+            related: List[Dict[str, Any]] = db.get_videos_by_category(
+                category, limit=limit + 1, offset=0
+            )
+            # Filter out the current video
+            related = [v for v in related if v.get('video_id') != video_id][:limit]
+        else:
+            related = []
+
+    return api_response(data=related)
+
+
 @app.route('/api/categories', methods=['GET'])
 @handle_errors
 def get_categories() -> Tuple[Response, int]:

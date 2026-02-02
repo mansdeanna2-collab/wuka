@@ -139,12 +139,18 @@ export default {
     
     async loadRelatedVideos() {
       try {
-        const result = await videoApi.getVideosByCategory(this.video.video_category, 6)
-        const videos = extractArrayData(result)
-        // Filter out current video
-        this.relatedVideos = videos.filter(v => v.video_id !== this.video.video_id)
-      } catch (e) {
-        console.error('Load related videos error:', e)
+        // Use the new related videos API which already filters out the current video
+        const result = await videoApi.getRelatedVideos(this.video.video_id, 6)
+        this.relatedVideos = extractArrayData(result)
+      } catch (_e) {
+        // Fallback to category-based related videos if new API fails
+        try {
+          const result = await videoApi.getVideosByCategory(this.video.video_category, 6)
+          const videos = extractArrayData(result)
+          this.relatedVideos = videos.filter(v => v.video_id !== this.video.video_id)
+        } catch (fallbackError) {
+          console.error('Load related videos error:', fallbackError)
+        }
       }
     },
     
