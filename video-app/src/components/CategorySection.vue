@@ -1,7 +1,11 @@
 <template>
   <div class="category-section">
     <div class="section-header">
-      <h2 class="section-title">{{ title }}</h2>
+      <div class="title-left">
+        <span class="yellow-dot"></span>
+        <h2 class="section-title">{{ title }}</h2>
+      </div>
+      <span class="more-link" @click="$emit('more')">更多</span>
     </div>
     
     <div class="videos-grid" v-if="videos.length > 0">
@@ -166,10 +170,24 @@ export default {
 
 .section-header {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
   padding: 0 5px;
+}
+
+.title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.yellow-dot {
+  width: 8px;
+  height: 8px;
+  background: #ffc107;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .section-title {
@@ -178,10 +196,21 @@ export default {
   color: #fff;
 }
 
+.more-link {
+  font-size: 0.85em;
+  color: #7c3aed;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.more-link:hover {
+  color: #6d28d9;
+}
+
 .section-actions {
   display: flex;
-  justify-content: center;
-  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 15px;
   padding: 10px 0;
 }
@@ -192,20 +221,34 @@ export default {
   justify-content: center;
   gap: 6px;
   padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: none;
   border-radius: 20px;
-  color: #aaa;
   font-size: 0.9em;
   cursor: pointer;
   transition: all 0.3s;
   min-width: 100px;
 }
 
-.action-btn:hover {
-  color: #00d4ff;
-  background: rgba(0, 212, 255, 0.15);
-  border-color: rgba(0, 212, 255, 0.3);
+.refresh-btn {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+}
+
+.refresh-btn:hover {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.more-btn {
+  background: rgba(249, 115, 22, 0.15);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  color: #f97316;
+}
+
+.more-btn:hover {
+  background: rgba(249, 115, 22, 0.25);
+  border-color: rgba(249, 115, 22, 0.5);
 }
 
 .action-btn:active {
@@ -386,12 +429,20 @@ export default {
     margin-bottom: 10px;
   }
   
+  .yellow-dot {
+    width: 6px;
+    height: 6px;
+  }
+  
   .section-title {
     font-size: 1em;
   }
   
+  .more-link {
+    font-size: 0.75em;
+  }
+  
   .section-actions {
-    gap: 12px;
     margin-top: 12px;
     padding: 8px 0;
   }

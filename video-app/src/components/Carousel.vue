@@ -209,7 +209,7 @@ export default {
 .carousel {
   position: relative;
   width: 100%;
-  border-radius: 12px;
+  border-radius: 20px;
   overflow: hidden;
   margin-bottom: 20px;
 }
@@ -284,7 +284,7 @@ export default {
 
 @media (max-width: 480px) {
   .carousel {
-    border-radius: 8px;
+    border-radius: 16px;
     margin-bottom: 15px;
   }
   
