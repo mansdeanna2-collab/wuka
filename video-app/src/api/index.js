@@ -215,6 +215,20 @@ export const videoApi = {
     return cachedGet('/videos/top', { limit })
   },
 
+  // Get random video recommendations
+  getRandomVideos(limit = 10, category = '') {
+    const params = { limit }
+    if (category) {
+      params.category = category
+    }
+    return api.get('/videos/random', { params })
+  },
+
+  // Get related videos based on current video's category
+  getRelatedVideos(videoId, limit = 6) {
+    return cachedGet(`/videos/related/${videoId}`, { limit })
+  },
+
   // Update play count (no cache - POST request)
   updatePlayCount(videoId) {
     return api.post(`/videos/${videoId}/play`)
@@ -223,6 +237,11 @@ export const videoApi = {
   // Get database statistics
   getStatistics() {
     return cachedGet('/statistics')
+  },
+
+  // Health check
+  healthCheck() {
+    return api.get('/health')
   },
 
   // Clear all cached data (useful for force refresh)
