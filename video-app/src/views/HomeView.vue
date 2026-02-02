@@ -157,7 +157,7 @@ export default {
   LOAD_MORE_BATCH_SIZE: 4, // Load 4 more categories each time on scroll
   LOAD_MORE_DELAY: 300, // ms delay for smooth UX when loading more categories
   beforeRouteLeave(to, from, next) {
-    if (to.name === 'player') {
+    if (to.name === 'player' || to.name === 'category') {
       const routePath = from.fullPath
       const scrollY = getCurrentScrollPosition()
       saveScrollPosition(routePath, scrollY)
@@ -232,7 +232,7 @@ export default {
   },
   watch: {
     '$route'(to, from) {
-      if (from.name === 'player' && (to.name === 'home' || to.name === 'search')) {
+      if ((from.name === 'player' || from.name === 'category') && (to.name === 'home' || to.name === 'search')) {
         this.shouldRestoreScroll = true
         return
       }
@@ -332,6 +332,13 @@ export default {
     setupIntersectionObserver() {
       // Guard: check if trigger element exists
       if (!this.$refs.loadMoreTrigger) {
+        // If element doesn't exist yet but should (hasMoreCategories is true), 
+        // retry after a short delay to wait for DOM update
+        if (this.hasMoreCategories && !this.isFilteredView) {
+          setTimeout(() => {
+            this.setupIntersectionObserver()
+          }, 100)
+        }
         return
       }
       
@@ -835,7 +842,7 @@ export default {
 
 /* Main Content */
 .main-content {
-  padding-top: 120px;
+  padding-top: 130px;
   padding-bottom: 10px;
 }
 
@@ -1016,7 +1023,7 @@ export default {
   }
   
   .main-content {
-    padding-top: 105px;
+    padding-top: 115px;
   }
   
   .tab-btn {
@@ -1060,7 +1067,7 @@ export default {
   }
   
   .main-content {
-    padding-top: 95px;
+    padding-top: 105px;
   }
   
   .tab-btn {
