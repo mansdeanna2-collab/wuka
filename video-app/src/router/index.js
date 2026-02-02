@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import PlayerView from '@/views/PlayerView.vue'
+import CategoryView from '@/views/CategoryView.vue'
 import DarkWebView from '@/views/DarkWebView.vue'
 import LiveView from '@/views/LiveView.vue'
 import GamesView from '@/views/GamesView.vue'
@@ -23,7 +24,7 @@ const routes = [
   {
     path: '/category/:category',
     name: 'category',
-    component: HomeView,
+    component: CategoryView,
     meta: { title: '分类视频' }
   },
   {
@@ -62,10 +63,10 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
-    // When returning from player to home/category/search, let the component handle scroll restoration
+    // When returning from player to home/search, let the component handle scroll restoration
     // This works together with keep-alive's activated/deactivated hooks in HomeView
     // Return a Promise that never resolves to prevent browser default scroll behavior
-    if (from.name === 'player' && (to.name === 'home' || to.name === 'category' || to.name === 'search')) {
+    if (from.name === 'player' && (to.name === 'home' || to.name === 'search')) {
       // Return a Promise that waits for our custom scroll restoration to complete
       // This prevents Vue Router from interfering with our scroll position
       return new Promise((resolve) => {
@@ -84,8 +85,8 @@ const router = createRouter({
     }
     
     // For new routes within home views, scroll to top for new content
-    if ((from.name === 'home' || from.name === 'category' || from.name === 'search') && 
-        (to.name === 'home' || to.name === 'category' || to.name === 'search')) {
+    if ((from.name === 'home' || from.name === 'search') && 
+        (to.name === 'home' || to.name === 'search')) {
       return { top: 0 }
     }
     
