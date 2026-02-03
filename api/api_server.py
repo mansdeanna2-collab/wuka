@@ -28,10 +28,12 @@ import os
 import sys
 import logging
 import time
+from datetime import datetime
 from functools import wraps
 from contextlib import contextmanager
 from typing import Any, Callable, cast, Dict, Generator, List, Optional, Tuple, TypeVar
 
+import requests as http_requests
 from flask import Flask, jsonify, request, Response, g
 from flask_cors import CORS
 
@@ -570,9 +572,6 @@ def check_new_videos() -> Tuple[Response, int]:
     检查新视频 (Check for new videos from source)
     从采集源检查是否有新的视频可以采集
     """
-    import requests as http_requests
-    from datetime import datetime
-
     # 采集API配置 - 使用环境变量或默认值
     api_url = os.environ.get('COLLECTOR_API_URL', 'https://api.sq03.shop/api.php/provide/vod/')
     hours: int = max(1, min(int(request.args.get('hours', 24)), 168))
@@ -636,9 +635,6 @@ def collect_videos() -> Tuple[Response, int]:
         max_pages: 最大采集页数 (可选, 默认1)
         skip_duplicates: 是否跳过已存在的视频 (可选, 默认true)
     """
-    import requests as http_requests
-    from datetime import datetime
-
     # 获取请求参数
     data = request.get_json() or {}
     type_id = data.get('type_id')
@@ -672,7 +668,7 @@ def collect_videos() -> Tuple[Response, int]:
     collected_videos = []
     skipped_count = 0
     duplicate_count = 0
-    error_message = None
+    pages_processed = 0
 
     try:
         with get_db() as db:
@@ -691,6 +687,8 @@ def collect_videos() -> Tuple[Response, int]:
                 source_videos = page_data.get('list', [])
                 if not source_videos:
                     break
+                
+                pages_processed += 1
 
                 for video in source_videos:
                     # 验证视频有效性
@@ -735,7 +733,7 @@ def collect_videos() -> Tuple[Response, int]:
             'collected_count': len(collected_videos),
             'skipped_count': skipped_count,
             'duplicate_count': duplicate_count,
-            'pages_processed': max_pages,
+            'pages_processed': pages_processed,
             'type_id': type_id,
             'hours': hours,
             'collected_at': datetime.now().isoformat(),
@@ -762,8 +760,6 @@ def get_source_categories() -> Tuple[Response, int]:
     获取采集源分类列表 (Get source categories)
     从采集源API获取可用的视频分类
     """
-    import requests as http_requests
-
     api_url = os.environ.get('COLLECTOR_API_URL', 'https://api.sq03.shop/api.php/provide/vod/')
 
     try:
