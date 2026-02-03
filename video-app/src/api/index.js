@@ -311,6 +311,11 @@ export const videoApi = {
     return api.post('/admin/videos', videoData)
   },
 
+  // Update an existing video
+  updateVideo(videoId, videoData) {
+    return api.put(`/admin/videos/${videoId}`, videoData)
+  },
+
   // Delete a video
   deleteVideo(videoId) {
     return api.delete(`/admin/videos/${videoId}`)
