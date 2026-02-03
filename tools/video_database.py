@@ -717,6 +717,10 @@ class VideoDatabase:
         rows = cursor.fetchall()
         return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
 
+    # SQL expression for normalizing video titles (removing spaces and common separators)
+    # Used in find_duplicates to identify similar titles like "海绵宝宝" and "海绵宝 宝"
+    TITLE_NORMALIZE_SQL = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(video_title, ' ', ''), '　', ''), '-', ''), '_', ''), '.', '')"
+
     def find_duplicates(self, check_type: str = 'title') -> List[Dict[str, Any]]:
         """
         查找重复视频 (Find duplicate videos by title or image)
@@ -734,57 +738,35 @@ class VideoDatabase:
 
         if check_type == 'title':
             # 查找标题重复的视频 (忽略空格和常见分隔符)
-            # 使用 REPLACE 移除空格、全角空格、以及常见的分隔符后进行比较
+            # 使用 TITLE_NORMALIZE_SQL 移除空格、全角空格、以及常见的分隔符后进行比较
             # 这样 "海绵宝宝" 和 "海绵宝 宝" 会被识别为相同标题
-            if self.use_mysql:
-                # MySQL 版本 - 移除空格和常见分隔符
-                cursor.execute('''
-                    SELECT 
-                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(video_title, ' ', ''), '　', ''), '-', ''), '_', ''), '.', '') as normalized_title,
-                        COUNT(*) as duplicate_count
-                    FROM videos
-                    WHERE video_title IS NOT NULL AND video_title != ''
-                    GROUP BY normalized_title
-                    HAVING COUNT(*) > 1
-                    ORDER BY duplicate_count DESC
-                    LIMIT 100
-                ''')
-            else:
-                # SQLite 版本 - 移除空格和常见分隔符
-                cursor.execute('''
-                    SELECT 
-                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(video_title, ' ', ''), '　', ''), '-', ''), '_', ''), '.', '') as normalized_title,
-                        COUNT(*) as duplicate_count
-                    FROM videos
-                    WHERE video_title IS NOT NULL AND video_title != ''
-                    GROUP BY normalized_title
-                    HAVING COUNT(*) > 1
-                    ORDER BY duplicate_count DESC
-                    LIMIT 100
-                ''')
+            cursor.execute(f'''
+                SELECT 
+                    {self.TITLE_NORMALIZE_SQL} as normalized_title,
+                    COUNT(*) as duplicate_count
+                FROM videos
+                WHERE video_title IS NOT NULL AND video_title != ''
+                GROUP BY normalized_title
+                HAVING COUNT(*) > 1
+                ORDER BY duplicate_count DESC
+                LIMIT 100
+            ''')
             duplicate_groups = cursor.fetchall()
 
             result = []
+            placeholder = '%s' if self.use_mysql else '?'
+            
             for group in duplicate_groups:
                 group_dict = dict(group) if isinstance(group, dict) else dict(group)
                 normalized_title = group_dict['normalized_title']
-                placeholder = '%s' if self.use_mysql else '?'
 
                 # 使用相同的规范化方式查找所有匹配的视频
-                if self.use_mysql:
-                    cursor.execute(
-                        f'''SELECT video_id, video_title, video_image, video_category, upload_time 
-                            FROM videos 
-                            WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(video_title, ' ', ''), '　', ''), '-', ''), '_', ''), '.', '') = {placeholder}''',
-                        (normalized_title,)
-                    )
-                else:
-                    cursor.execute(
-                        f'''SELECT video_id, video_title, video_image, video_category, upload_time 
-                            FROM videos 
-                            WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(video_title, ' ', ''), '　', ''), '-', ''), '_', ''), '.', '') = {placeholder}''',
-                        (normalized_title,)
-                    )
+                cursor.execute(
+                    f'''SELECT video_id, video_title, video_image, video_category, upload_time 
+                        FROM videos 
+                        WHERE {self.TITLE_NORMALIZE_SQL} = {placeholder}''',
+                    (normalized_title,)
+                )
                 videos = cursor.fetchall()
                 
                 # 使用第一个视频的原始标题作为显示值
