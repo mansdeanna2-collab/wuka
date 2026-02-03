@@ -627,6 +627,7 @@ class VideoDatabase:
             'total_videos': total_videos,
             'total_plays': total_plays,
             'category_count': category_count,
+            'total_categories': category_count,  # Alias for frontend compatibility
             'average_plays': round(avg_plays, 2)
         }
 
