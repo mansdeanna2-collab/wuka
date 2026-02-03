@@ -696,6 +696,159 @@ class VideoDatabase:
             logger.error(f"保存导航分类失败: {e}")
             return False
 
+    # ==================== 视频管理功能 (Video Management Features) ====================
+
+    def get_category_stats(self) -> List[Dict[str, Any]]:
+        """
+        获取各分类视频统计 (Get video count statistics by category)
+
+        Returns:
+            分类统计列表，包含分类名和视频数量
+        """
+        cursor = self.connection.cursor()
+        cursor.execute('''
+            SELECT video_category, COUNT(*) as video_count
+            FROM videos
+            WHERE video_category IS NOT NULL AND video_category != ''
+            GROUP BY video_category
+            ORDER BY video_count DESC
+        ''')
+        rows = cursor.fetchall()
+        return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
+
+    def find_duplicates(self, check_type: str = 'title') -> List[Dict[str, Any]]:
+        """
+        查找重复视频 (Find duplicate videos by title or image)
+
+        Args:
+            check_type: 'title' 按标题查找, 'image' 按图片URL查找
+
+        Returns:
+            重复视频列表，每组包含重复的视频信息
+        """
+        cursor = self.connection.cursor()
+
+        if check_type == 'title':
+            # 查找标题重复的视频
+            cursor.execute('''
+                SELECT video_title, COUNT(*) as duplicate_count
+                FROM videos
+                WHERE video_title IS NOT NULL AND video_title != ''
+                GROUP BY video_title
+                HAVING COUNT(*) > 1
+                ORDER BY duplicate_count DESC
+                LIMIT 100
+            ''')
+            duplicate_groups = cursor.fetchall()
+
+            result = []
+            for group in duplicate_groups:
+                group_dict = dict(group) if isinstance(group, dict) else dict(group)
+                title = group_dict['video_title']
+                placeholder = '%s' if self.use_mysql else '?'
+
+                cursor.execute(
+                    f'SELECT video_id, video_title, video_image, video_category, upload_time FROM videos WHERE video_title = {placeholder}',
+                    (title,)
+                )
+                videos = cursor.fetchall()
+                result.append({
+                    'duplicate_value': title,
+                    'duplicate_type': 'title',
+                    'count': group_dict['duplicate_count'],
+                    'videos': [dict(v) if isinstance(v, dict) else dict(v) for v in videos]
+                })
+
+            return result
+
+        else:  # check_type == 'image'
+            # 查找图片URL重复的视频
+            cursor.execute('''
+                SELECT video_image, COUNT(*) as duplicate_count
+                FROM videos
+                WHERE video_image IS NOT NULL AND video_image != ''
+                GROUP BY video_image
+                HAVING COUNT(*) > 1
+                ORDER BY duplicate_count DESC
+                LIMIT 100
+            ''')
+            duplicate_groups = cursor.fetchall()
+
+            result = []
+            for group in duplicate_groups:
+                group_dict = dict(group) if isinstance(group, dict) else dict(group)
+                image = group_dict['video_image']
+                placeholder = '%s' if self.use_mysql else '?'
+
+                cursor.execute(
+                    f'SELECT video_id, video_title, video_image, video_category, upload_time FROM videos WHERE video_image = {placeholder}',
+                    (image,)
+                )
+                videos = cursor.fetchall()
+                result.append({
+                    'duplicate_value': image,
+                    'duplicate_type': 'image',
+                    'count': group_dict['duplicate_count'],
+                    'videos': [dict(v) if isinstance(v, dict) else dict(v) for v in videos]
+                })
+
+            return result
+
+    def get_next_video_id(self) -> int:
+        """
+        获取下一个可用的视频ID (Get next available video ID)
+
+        Returns:
+            下一个视频ID
+        """
+        cursor = self.connection.cursor()
+        cursor.execute('SELECT COALESCE(MAX(video_id), 0) + 1 as next_id FROM videos')
+        row = cursor.fetchone()
+        return row['next_id'] if isinstance(row, dict) else row[0]
+
+    def get_collection_status(self, hours: int = 24) -> Dict[str, Any]:
+        """
+        获取采集状态统计 (Get collection status statistics)
+
+        Args:
+            hours: 统计多少小时内的采集数据
+
+        Returns:
+            采集状态统计信息
+        """
+        cursor = self.connection.cursor()
+
+        # 总视频数
+        cursor.execute('SELECT COUNT(*) as cnt FROM videos')
+        row = cursor.fetchone()
+        total_videos = row['cnt'] if isinstance(row, dict) else row[0]
+
+        # 分类统计
+        cursor.execute('''
+            SELECT COUNT(DISTINCT video_category) as cnt FROM videos
+            WHERE video_category IS NOT NULL AND video_category != ''
+        ''')
+        row = cursor.fetchone()
+        total_categories = row['cnt'] if isinstance(row, dict) else row[0]
+
+        # 最新采集时间 (基于created_at或upload_time)
+        cursor.execute('''
+            SELECT MAX(created_at) as latest FROM videos
+        ''')
+        row = cursor.fetchone()
+        latest_collection = row['latest'] if isinstance(row, dict) else row[0]
+
+        # 按分类统计视频数量
+        category_stats = self.get_category_stats()
+
+        return {
+            'total_videos': total_videos,
+            'total_categories': total_categories,
+            'latest_collection_time': latest_collection,
+            'category_breakdown': category_stats[:10],  # Top 10 categories
+            'hours_checked': hours
+        }
+
     def close(self) -> None:
         """关闭数据库连接"""
         if self.connection:
