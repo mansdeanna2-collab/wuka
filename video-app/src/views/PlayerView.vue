@@ -368,8 +368,8 @@ export default {
   .back-btn {
     padding: 6px 12px;
     font-size: 13px;
-    /* Ensure minimum touch target */
-    min-height: 40px;
+    /* Ensure minimum touch target per Apple HIG */
+    min-height: 44px;
   }
   
   .nav-bar .title {

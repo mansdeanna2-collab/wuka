@@ -883,17 +883,17 @@ export default {
   .speed-select {
     padding: 5px 8px;
     font-size: 12px;
-    /* Ensure minimum touch target */
-    min-height: 40px;
+    /* Ensure minimum touch target per Apple HIG */
+    min-height: 44px;
   }
   
   .control-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     font-size: 16px;
-    /* Ensure minimum touch target */
-    min-width: 40px;
-    min-height: 40px;
+    /* Ensure minimum touch target per Apple HIG */
+    min-width: 44px;
+    min-height: 44px;
   }
   
   .episode-list {
@@ -903,8 +903,8 @@ export default {
   .episode-btn {
     padding: 6px 12px;
     font-size: 12px;
-    /* Ensure minimum touch target */
-    min-height: 40px;
+    /* Ensure minimum touch target per Apple HIG */
+    min-height: 44px;
   }
 }
 

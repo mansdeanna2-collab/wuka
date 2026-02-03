@@ -25,7 +25,7 @@
       <div class="play-icon" aria-hidden="true">
         <span class="play-arrow"></span>
       </div>
-      <div v-if="video.video_duration" class="duration" aria-label="时长">
+      <div v-if="video.video_duration" class="duration">
         {{ video.video_duration }}
       </div>
     </div>
