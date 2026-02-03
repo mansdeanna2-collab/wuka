@@ -80,42 +80,6 @@
       >
         <span>暂无更多内容</span>
       </div>
-
-      <!-- Filtered Videos Grid (Search View) -->
-      <div v-if="isFilteredView && filteredVideos.length > 0" class="filtered-view">
-        <div class="filtered-header">
-          <h2 class="filtered-title">
-            "{{ searchKeyword }}" 的搜索结果
-          </h2>
-        </div>
-        <div class="videos-grid">
-          <VideoCard
-            v-for="video in filteredVideos"
-            :key="video.video_id"
-            :video="video"
-            @click="playVideo"
-          />
-        </div>
-      </div>
-
-      <!-- Empty State for Filtered View -->
-      <div v-if="isFilteredView && filteredVideos.length === 0 && !loading" class="empty-filtered">
-        <div class="empty-icon">🔍</div>
-        <p>未找到相关视频</p>
-        <button class="btn btn-primary" @click="goHome">返回首页</button>
-      </div>
-
-      <!-- Load More (for search results) -->
-      <div v-if="isFilteredView && (hasMore || loadingMore)" class="load-more">
-        <button 
-          class="btn btn-secondary" 
-          @click="loadMore"
-          :disabled="loadingMore"
-        >
-          <span v-if="loadingMore" class="loading-spinner small"></span>
-          {{ loadingMore ? '加载中...' : '加载更多' }}
-        </button>
-      </div>
     </div>
 
     <!-- Bottom spacing for nav bar -->
@@ -126,7 +90,6 @@
 <script>
 import Carousel from '@/components/Carousel.vue'
 import CategorySection from '@/components/CategorySection.vue'
-import VideoCard from '@/components/VideoCard.vue'
 import { videoApi } from '@/api'
 import { 
   saveScrollPosition, 
@@ -138,8 +101,7 @@ import { extractArrayData } from '@/utils/apiUtils'
 import { 
   getMockCategories, 
   getMockVideosByCategory, 
-  getMockTopVideos,
-  searchMockVideos
+  getMockTopVideos
 } from '@/utils/mockData'
 import { getMainCategories, getSubcategoryMapping, fetchNavCategories } from '@/utils/navCategoryManager'
 
@@ -147,8 +109,7 @@ export default {
   name: 'HomeView',
   components: {
     Carousel,
-    CategorySection,
-    VideoCard
+    CategorySection
   },
   // Constants
   MAX_REFRESH_OFFSET: 20,
@@ -171,17 +132,11 @@ export default {
       carouselVideos: [],
       searchKeyword: '',
       loading: true,
-      loadingMore: false,
       loadingMoreCategories: false,
       error: false,
       errorMessage: '',
-      page: 1,
-      limit: 20,
-      hasMore: true,
       shouldRestoreScroll: false,
       searchDebounceTimer: null,
-      // For filtered view (search or single category)
-      filteredVideos: [],
       // Flag to indicate using mock data
       usingMockData: false,
       // Main category tabs (大分类) - loaded from navCategoryManager
@@ -202,9 +157,6 @@ export default {
     },
     // All category sections for home view (show all bound subcategories based on main category)
     categorySections() {
-      if (this.isFilteredView) {
-        return []
-      }
       const subcategories = this.currentSubcategories
       // Filter to show only subcategories that have videos, maintaining the order from subcategories list
       // No longer limited by MAX_CATEGORIES_COUNT - show all bound categories
@@ -224,28 +176,17 @@ export default {
       // Compare against total subcategories, not just loaded categories
       // This ensures we show "load more" even if not all category data is loaded yet
       return this.visibleCategoriesCount < this.currentSubcategories.length
-    },
-    // Check if we're in filtered view (search only now, category is separate view)
-    isFilteredView() {
-      return this.searchKeyword.trim() !== ''
     }
   },
   watch: {
     '$route'(to, from) {
-      if ((from.name === 'player' || from.name === 'category') && (to.name === 'home' || to.name === 'search')) {
+      if ((from.name === 'player' || from.name === 'category') && to.name === 'home') {
         this.shouldRestoreScroll = true
         return
       }
       
-      if (to.name === 'search') {
-        this.searchKeyword = to.query.q || ''
-        this.handleSearch()
-      } else if (to.name === 'home') {
+      if (to.name === 'home') {
         this.searchKeyword = ''
-        // Clear filtered videos only if it has data to avoid unnecessary re-renders
-        if (this.filteredVideos.length > 0) {
-          this.filteredVideos = []
-        }
         // Reset visible categories count
         this.visibleCategoriesCount = this.$options.INITIAL_CATEGORIES_COUNT
         // Reload home data to show all categories
@@ -441,11 +382,6 @@ export default {
     },
     
     async init() {
-      // Check route params (only search now, category is separate view)
-      if (this.$route.name === 'search') {
-        this.searchKeyword = this.$route.query.q || ''
-      }
-      
       this.loading = true
       this.error = false
       this.usingMockData = false
@@ -469,11 +405,7 @@ export default {
           this.categories = getMockCategories()
         }
         
-        if (this.isFilteredView) {
-          await this.loadFilteredVideos()
-        } else {
-          await this.loadHomeData()
-        }
+        await this.loadHomeData()
       } catch (e) {
         // Fallback to mock data on error with better error message
         console.log('Error loading data, falling back to mock data:', e.userMessage || e.message)
@@ -597,77 +529,6 @@ export default {
       this.categoryVideos = newCategoryVideos
     },
     
-    async loadFilteredVideos() {
-      this.loading = true
-      this.page = 1
-      
-      try {
-        let result
-        let videos = []
-        
-        if (this.usingMockData) {
-          // Use mock data for search
-          if (this.searchKeyword) {
-            videos = searchMockVideos(this.searchKeyword, this.limit)
-          }
-        } else {
-          // Try API first for search
-          if (this.searchKeyword) {
-            result = await videoApi.searchVideos(this.searchKeyword, this.limit)
-            videos = extractArrayData(result)
-            
-            // Fallback to mock if no results
-            if (videos.length === 0) {
-              videos = searchMockVideos(this.searchKeyword, this.limit)
-            }
-          }
-        }
-        
-        this.filteredVideos = videos
-        this.hasMore = this.filteredVideos.length >= this.limit
-      } catch (e) {
-        console.error('Load filtered videos error:', e)
-        // Fallback to mock data
-        if (this.searchKeyword) {
-          this.filteredVideos = searchMockVideos(this.searchKeyword, this.limit)
-        }
-        this.hasMore = false
-      } finally {
-        this.loading = false
-      }
-    },
-    
-    async loadMore() {
-      if (this.loading || this.loadingMore) return
-      
-      // Mock data doesn't support pagination
-      if (this.usingMockData) {
-        this.hasMore = false
-        return
-      }
-      
-      this.loadingMore = true
-      this.page++
-      const offset = (this.page - 1) * this.limit
-      
-      try {
-        let result
-        if (this.searchKeyword) {
-          result = await videoApi.searchVideos(this.searchKeyword, this.limit, offset)
-        }
-        
-        if (result) {
-          const newVideos = extractArrayData(result)
-          this.filteredVideos = [...this.filteredVideos, ...newVideos]
-          this.hasMore = newVideos.length >= this.limit
-        }
-      } catch (e) {
-        console.error('Load more error:', e)
-      } finally {
-        this.loadingMore = false
-      }
-    },
-    
     handleCategoryClick(category) {
       this.searchKeyword = ''
       
@@ -681,7 +542,6 @@ export default {
     handleSearch() {
       if (this.searchKeyword.trim()) {
         this.$router.push({ name: 'search', query: { q: this.searchKeyword } })
-        this.loadFilteredVideos()
       }
     },
     
@@ -693,14 +553,6 @@ export default {
       if (this.searchKeyword.trim()) {
         this.searchDebounceTimer = setTimeout(() => {
           this.handleSearch()
-        }, 500)
-      } else {
-        this.searchDebounceTimer = setTimeout(() => {
-          if (!this.searchKeyword.trim()) {
-            if (this.$route.name === 'search') {
-              this.$router.push({ name: 'home' })
-            }
-          }
         }, 500)
       }
     },
@@ -718,11 +570,6 @@ export default {
     
     viewMoreCategory(category) {
       this.$router.push({ name: 'category', params: { category } })
-    },
-    
-    goHome() {
-      this.searchKeyword = ''
-      this.$router.push({ name: 'home' })
     },
     
     playVideo(video) {

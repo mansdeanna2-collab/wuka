@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import PlayerView from '@/views/PlayerView.vue'
 import CategoryView from '@/views/CategoryView.vue'
+import SearchView from '@/views/SearchView.vue'
 import DarkWebView from '@/views/DarkWebView.vue'
 import LiveView from '@/views/LiveView.vue'
 import GamesView from '@/views/GamesView.vue'
@@ -30,7 +31,7 @@ const routes = [
   {
     path: '/search',
     name: 'search',
-    component: HomeView,
+    component: SearchView,
     meta: { title: '搜索结果' }
   },
   {

@@ -547,6 +547,30 @@ def delete_video(video_id: int) -> Tuple[Response, int]:
         return api_response(message="视频不存在或删除失败", code=404)
 
 
+@app.route('/api/admin/videos/<int:video_id>', methods=['PUT'])
+@handle_errors
+def update_video(video_id: int) -> Tuple[Response, int]:
+    """
+    更新视频 (Update a video)
+    """
+    data = request.get_json()
+    if not data:
+        return api_response(message="请提供视频数据", code=400)
+
+    with get_db() as db:
+        # Check if video exists
+        existing_video: Optional[Dict[str, Any]] = db.get_video(video_id)
+        if not existing_video:
+            return api_response(message="视频不存在", code=404)
+
+        success: bool = db.update_video(video_id, data)
+
+    if success:
+        return api_response(message="视频更新成功")
+    else:
+        return api_response(message="更新失败", code=500)
+
+
 @app.route('/api/admin/collection-status', methods=['GET'])
 @handle_errors
 def get_collection_status() -> Tuple[Response, int]:

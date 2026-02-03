@@ -33,6 +33,16 @@
           :key="cat.video_category"
           class="stat-card"
         >
+          <img 
+            v-if="cat.sample_image" 
+            :src="formatImageUrl(cat.sample_image)" 
+            :alt="cat.video_category"
+            class="stat-image"
+            @error="handleImageError"
+          />
+          <div v-else class="stat-image-placeholder">
+            🎬
+          </div>
           <div class="stat-info">
             <span class="stat-category">{{ cat.video_category || '未分类' }}</span>
             <span class="stat-count">{{ cat.video_count }} 个视频</span>
@@ -320,11 +330,11 @@
             <div class="loading-spinner"></div>
             <p>加载中...</p>
           </div>
-          <div v-else class="videos-grid">
+          <div v-else class="videos-list">
             <div 
               v-for="video in categoryVideos" 
               :key="video.video_id"
-              class="video-card"
+              class="video-item"
             >
               <img 
                 v-if="video.video_image" 
@@ -335,13 +345,75 @@
               />
               <div class="video-info">
                 <span class="video-title">{{ video.video_title }}</span>
-                <span class="video-meta">ID: {{ video.video_id }}</span>
+                <span class="video-meta">
+                  ID: {{ video.video_id }} | 分类: {{ video.video_category || '未分类' }} | 播放: {{ video.play_count || 0 }}
+                </span>
+                <span class="video-meta">
+                  时长: {{ video.video_duration || '未知' }} | 上传: {{ video.upload_time || '未知' }}
+                </span>
               </div>
+              <div class="video-actions">
+                <button 
+                  class="btn btn-secondary btn-sm"
+                  @click="openEditVideoModal(video)"
+                >
+                  编辑
+                </button>
+                <button 
+                  class="btn btn-danger btn-sm"
+                  @click="confirmDeleteVideo(video)"
+                >
+                  删除
+                </button>
+              </div>
+            </div>
+            <div v-if="categoryVideos.length === 0" class="empty-state">
+              <p>该分类暂无视频</p>
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="closeCategoryModal">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Video Modal -->
+    <div v-if="showEditVideoModal" class="modal-overlay" @click.self="showEditVideoModal = false">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>编辑视频</h3>
+          <button class="close-btn" @click="showEditVideoModal = false">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>视频ID</label>
+            <input :value="editingVideo.video_id" type="text" class="form-input" disabled />
+          </div>
+          <div class="form-group">
+            <label>视频标题 *</label>
+            <input v-model="editingVideo.video_title" type="text" class="form-input" placeholder="输入视频标题" />
+          </div>
+          <div class="form-group">
+            <label>视频URL *</label>
+            <input v-model="editingVideo.video_url" type="text" class="form-input" placeholder="输入视频播放地址" />
+          </div>
+          <div class="form-group">
+            <label>封面图片URL</label>
+            <input v-model="editingVideo.video_image" type="text" class="form-input" placeholder="输入封面图片地址" />
+          </div>
+          <div class="form-group">
+            <label>分类</label>
+            <input v-model="editingVideo.video_category" type="text" class="form-input" placeholder="输入视频分类" />
+          </div>
+          <div class="form-group">
+            <label>时长</label>
+            <input v-model="editingVideo.video_duration" type="text" class="form-input" placeholder="例如: 01:30:00" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="showEditVideoModal = false">取消</button>
+          <button class="btn btn-primary" @click="updateVideo">保存</button>
         </div>
       </div>
     </div>
@@ -458,6 +530,17 @@ export default {
       // Delete confirmation
       showDeleteModal: false,
       deletingVideo: null,
+      
+      // Edit video modal
+      showEditVideoModal: false,
+      editingVideo: {
+        video_id: null,
+        video_title: '',
+        video_url: '',
+        video_image: '',
+        video_category: '',
+        video_duration: ''
+      },
       
       // Collection Status
       collectionHours: 24,
@@ -613,9 +696,53 @@ export default {
         if (this.activeTab === 'manage') {
           this.searchVideos()
         }
+        // Refresh category videos if modal is open
+        if (this.showCategoryModal && this.viewingCategory) {
+          this.viewCategoryVideos(this.viewingCategory)
+        }
       } catch (e) {
         console.error('Delete video error:', e)
         this.showToast('删除视频失败', 'error')
+      }
+    },
+    
+    // Open edit video modal
+    openEditVideoModal(video) {
+      this.editingVideo = {
+        video_id: video.video_id,
+        video_title: video.video_title || '',
+        video_url: video.video_url || '',
+        video_image: video.video_image || '',
+        video_category: video.video_category || '',
+        video_duration: video.video_duration || ''
+      }
+      this.showEditVideoModal = true
+    },
+    
+    // Update video
+    async updateVideo() {
+      if (!this.editingVideo.video_id || !this.editingVideo.video_title || !this.editingVideo.video_url) {
+        this.showToast('请填写必填字段', 'error')
+        return
+      }
+      
+      try {
+        await videoApi.updateVideo(this.editingVideo.video_id, this.editingVideo)
+        this.showToast(`视频 "${this.truncateText(this.editingVideo.video_title, 20)}" 更新成功`, 'success')
+        this.showEditVideoModal = false
+        
+        // Refresh data
+        this.loadCategoryStats()
+        if (this.activeTab === 'manage') {
+          this.searchVideos()
+        }
+        // Refresh category videos if modal is open
+        if (this.showCategoryModal && this.viewingCategory) {
+          this.viewCategoryVideos(this.viewingCategory)
+        }
+      } catch (e) {
+        console.error('Update video error:', e)
+        this.showToast('更新视频失败', 'error')
       }
     },
     
@@ -943,6 +1070,27 @@ export default {
   color: #00d4ff;
 }
 
+.stat-image {
+  width: 60px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3e 100%);
+  flex-shrink: 0;
+}
+
+.stat-image-placeholder {
+  width: 60px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3e 100%);
+  border-radius: 6px;
+  font-size: 1.2em;
+  flex-shrink: 0;
+}
+
 /* Duplicates List */
 .duplicates-list {
   display: flex;
@@ -1036,6 +1184,12 @@ export default {
 .video-meta {
   font-size: 0.8em;
   color: #888;
+}
+
+.video-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 /* Videos Grid */

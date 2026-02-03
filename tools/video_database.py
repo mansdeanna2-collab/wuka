@@ -704,18 +704,71 @@ class VideoDatabase:
         获取各分类视频统计 (Get video count statistics by category)
 
         Returns:
-            分类统计列表，包含分类名和视频数量
+            分类统计列表，包含分类名、视频数量和示例图片
         """
         cursor = self.connection.cursor()
-        cursor.execute('''
-            SELECT video_category, COUNT(*) as video_count
-            FROM videos
-            WHERE video_category IS NOT NULL AND video_category != ''
-            GROUP BY video_category
-            ORDER BY video_count DESC
-        ''')
+        
+        if self.use_mysql:
+            # MySQL: Use a subquery with ROW_NUMBER() or a correlated subquery
+            # This approach uses a LEFT JOIN with a derived table that finds the latest video per category
+            cursor.execute('''
+                SELECT 
+                    c.video_category,
+                    c.video_count,
+                    v.video_image as sample_image
+                FROM (
+                    SELECT video_category, COUNT(*) as video_count
+                    FROM videos
+                    WHERE video_category IS NOT NULL AND video_category != ''
+                    GROUP BY video_category
+                ) c
+                LEFT JOIN videos v ON v.video_id = (
+                    SELECT v2.video_id 
+                    FROM videos v2 
+                    WHERE v2.video_category = c.video_category 
+                    AND v2.video_image IS NOT NULL 
+                    AND v2.video_image != ''
+                    ORDER BY v2.upload_time DESC 
+                    LIMIT 1
+                )
+                ORDER BY c.video_count DESC
+            ''')
+        else:
+            # SQLite: Similar approach with correlated subquery
+            cursor.execute('''
+                SELECT 
+                    c.video_category,
+                    c.video_count,
+                    (
+                        SELECT v.video_image 
+                        FROM videos v 
+                        WHERE v.video_category = c.video_category 
+                        AND v.video_image IS NOT NULL 
+                        AND v.video_image != ''
+                        ORDER BY v.upload_time DESC 
+                        LIMIT 1
+                    ) as sample_image
+                FROM (
+                    SELECT video_category, COUNT(*) as video_count
+                    FROM videos
+                    WHERE video_category IS NOT NULL AND video_category != ''
+                    GROUP BY video_category
+                ) c
+                ORDER BY c.video_count DESC
+            ''')
+        
         rows = cursor.fetchall()
-        return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
+        
+        result = []
+        for row in rows:
+            row_dict = dict(row) if isinstance(row, dict) else dict(row)
+            result.append({
+                'video_category': row_dict['video_category'],
+                'video_count': row_dict['video_count'],
+                'sample_image': row_dict.get('sample_image') or ''
+            })
+        
+        return result
 
     # SQL expression for normalizing video titles (removing spaces and common separators)
     # Used in find_duplicates to identify similar titles like "海绵宝宝" and "海绵宝 宝"

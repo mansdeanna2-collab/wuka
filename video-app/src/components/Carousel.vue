@@ -24,12 +24,6 @@
             class="slide-image"
             @error="handleImageError"
           />
-          <div class="slide-overlay">
-            <h3 class="slide-title">{{ video.video_title }}</h3>
-            <div v-if="video.video_category" class="slide-category">
-              {{ video.video_category }}
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -214,6 +208,7 @@ export default {
   width: 100%;
   border-radius: 20px;
   overflow: hidden;
+  margin-top: 15px;
   margin-bottom: 20px;
   /* Purple border to distinguish from regular videos */
   border: 2px solid transparent;
@@ -243,38 +238,6 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.slide-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 20px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
-}
-
-.slide-title {
-  color: #fff;
-  font-size: 1.2em;
-  font-weight: 600;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  margin: 0;
-}
-
-.slide-category {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 3px 10px;
-  background: rgba(124, 58, 237, 0.2);
-  border: 1px solid rgba(124, 58, 237, 0.4);
-  border-radius: 12px;
-  font-size: 0.75em;
-  color: #a855f7;
 }
 
 .carousel-indicators {
