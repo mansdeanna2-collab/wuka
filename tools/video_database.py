@@ -720,9 +720,12 @@ class VideoDatabase:
     def find_duplicates(self, check_type: str = 'title') -> List[Dict[str, Any]]:
         """
         查找重复视频 (Find duplicate videos by title or image)
+        
+        对于标题查重，会移除空格和特殊字符进行比较，
+        例如 "海绵宝宝" 和 "海绵宝 宝" 会被识别为重复。
 
         Args:
-            check_type: 'title' 按标题查找, 'image' 按图片URL查找
+            check_type: 'title' 按标题查找 (忽略空格), 'image' 按图片URL查找
 
         Returns:
             重复视频列表，每组包含重复的视频信息
@@ -730,34 +733,69 @@ class VideoDatabase:
         cursor = self.connection.cursor()
 
         if check_type == 'title':
-            # 查找标题重复的视频
-            cursor.execute('''
-                SELECT video_title, COUNT(*) as duplicate_count
-                FROM videos
-                WHERE video_title IS NOT NULL AND video_title != ''
-                GROUP BY video_title
-                HAVING COUNT(*) > 1
-                ORDER BY duplicate_count DESC
-                LIMIT 100
-            ''')
+            # 查找标题重复的视频 (忽略空格和常见分隔符)
+            # 使用 REPLACE 移除空格、全角空格、以及常见的分隔符后进行比较
+            # 这样 "海绵宝宝" 和 "海绵宝 宝" 会被识别为相同标题
+            if self.use_mysql:
+                # MySQL 版本 - 移除空格和常见分隔符
+                cursor.execute('''
+                    SELECT 
+                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(video_title, ' ', ''), '　', ''), '-', ''), '_', ''), '.', '') as normalized_title,
+                        COUNT(*) as duplicate_count
+                    FROM videos
+                    WHERE video_title IS NOT NULL AND video_title != ''
+                    GROUP BY normalized_title
+                    HAVING COUNT(*) > 1
+                    ORDER BY duplicate_count DESC
+                    LIMIT 100
+                ''')
+            else:
+                # SQLite 版本 - 移除空格和常见分隔符
+                cursor.execute('''
+                    SELECT 
+                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(video_title, ' ', ''), '　', ''), '-', ''), '_', ''), '.', '') as normalized_title,
+                        COUNT(*) as duplicate_count
+                    FROM videos
+                    WHERE video_title IS NOT NULL AND video_title != ''
+                    GROUP BY normalized_title
+                    HAVING COUNT(*) > 1
+                    ORDER BY duplicate_count DESC
+                    LIMIT 100
+                ''')
             duplicate_groups = cursor.fetchall()
 
             result = []
             for group in duplicate_groups:
                 group_dict = dict(group) if isinstance(group, dict) else dict(group)
-                title = group_dict['video_title']
+                normalized_title = group_dict['normalized_title']
                 placeholder = '%s' if self.use_mysql else '?'
 
-                cursor.execute(
-                    f'SELECT video_id, video_title, video_image, video_category, upload_time FROM videos WHERE video_title = {placeholder}',
-                    (title,)
-                )
+                # 使用相同的规范化方式查找所有匹配的视频
+                if self.use_mysql:
+                    cursor.execute(
+                        f'''SELECT video_id, video_title, video_image, video_category, upload_time 
+                            FROM videos 
+                            WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(video_title, ' ', ''), '　', ''), '-', ''), '_', ''), '.', '') = {placeholder}''',
+                        (normalized_title,)
+                    )
+                else:
+                    cursor.execute(
+                        f'''SELECT video_id, video_title, video_image, video_category, upload_time 
+                            FROM videos 
+                            WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(video_title, ' ', ''), '　', ''), '-', ''), '_', ''), '.', '') = {placeholder}''',
+                        (normalized_title,)
+                    )
                 videos = cursor.fetchall()
+                
+                # 使用第一个视频的原始标题作为显示值
+                video_list = [dict(v) if isinstance(v, dict) else dict(v) for v in videos]
+                display_title = video_list[0]['video_title'] if video_list else normalized_title
+                
                 result.append({
-                    'duplicate_value': title,
+                    'duplicate_value': display_title,
                     'duplicate_type': 'title',
                     'count': group_dict['duplicate_count'],
-                    'videos': [dict(v) if isinstance(v, dict) else dict(v) for v in videos]
+                    'videos': video_list
                 })
 
             return result
