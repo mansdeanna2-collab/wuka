@@ -309,6 +309,16 @@ export const videoApi = {
     return api.post('/admin/carousel', { items })
   },
 
+  // Upload an image file (multipart/form-data). Returns { url, filename }
+  // wrapped in the standard API envelope, so read result.data.url.
+  uploadImage(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/admin/upload-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  },
+
   // ==================== Admin Video Management ====================
 
   // Get videos in a specific category (for admin viewing)

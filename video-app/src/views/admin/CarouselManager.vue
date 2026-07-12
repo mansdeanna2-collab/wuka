@@ -108,10 +108,28 @@
             <input
               v-model="imageForm.image_url"
               type="text"
-              placeholder="https://example.com/banner.jpg"
+              placeholder="https://example.com/banner.jpg 或点击下方按钮上传"
               class="cm-input"
             />
           </label>
+          <div class="cm-upload-row">
+            <input
+              ref="imageFileInput"
+              type="file"
+              accept="image/*"
+              class="cm-file-hidden"
+              @change="onImageFileSelected"
+            />
+            <button
+              class="btn btn-secondary"
+              :disabled="uploading"
+              @click="triggerImageUpload"
+            >
+              <AppIcon name="image" :size="16" />
+              {{ uploading ? '上传中...' : '上传本地图片' }}
+            </button>
+            <span class="cm-upload-hint">支持 png/jpg/gif/webp，最大 10MB</span>
+          </div>
           <div class="cm-field-row">
             <label class="cm-field">
               <span class="cm-label">标题（可选）</span>
@@ -281,6 +299,9 @@ export default {
         link_url: ''
       },
 
+      // Local image upload state
+      uploading: false,
+
       // Incrementing id used to give every carousel entry a stable v-for key
       uidCounter: 0,
 
@@ -377,6 +398,49 @@ export default {
       if (this.isInCarousel(video.video_id)) return
       this.carouselList.push(this.normalizeItem({ ...video, item_type: 'video' }))
       this.showToast('已添加到轮播图，记得点击保存', 'info')
+    },
+
+    triggerImageUpload() {
+      if (this.uploading) return
+      const input = this.$refs.imageFileInput
+      if (input) input.click()
+    },
+
+    async onImageFileSelected(event) {
+      const input = event.target
+      const file = input && input.files && input.files[0]
+      if (!file) return
+
+      if (!file.type || !file.type.startsWith('image/')) {
+        this.showToast('请选择图片文件', 'error')
+        input.value = ''
+        return
+      }
+      // 10MB limit, matches the backend MAX_CONTENT_LENGTH
+      if (file.size > 10 * 1024 * 1024) {
+        this.showToast('图片过大，最大 10MB', 'error')
+        input.value = ''
+        return
+      }
+
+      this.uploading = true
+      try {
+        const result = await videoApi.uploadImage(file)
+        const url = result && result.data && result.data.url
+        if (url) {
+          this.imageForm.image_url = url
+          this.showToast('图片上传成功，点击“添加图片到轮播图”', 'success')
+        } else {
+          this.showToast('上传失败：未返回图片地址', 'error')
+        }
+      } catch (e) {
+        console.error('Upload image error:', e)
+        this.showToast('图片上传失败', 'error')
+      } finally {
+        this.uploading = false
+        // Allow selecting the same file again
+        input.value = ''
+      }
     },
 
     addImageToCarousel() {
@@ -575,6 +639,22 @@ export default {
 .cm-image-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.cm-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cm-file-hidden {
+  display: none;
+}
+
+.cm-upload-hint {
+  font-size: 0.78em;
+  color: var(--admin-text-muted);
 }
 
 .cm-picker-header {
