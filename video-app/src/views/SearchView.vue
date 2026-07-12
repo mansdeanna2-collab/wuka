@@ -29,11 +29,12 @@
     <!-- Search Results -->
     <div v-else class="main-content">
       <!-- Search Results Header -->
-      <div v-if="searchKeyword && !loading" class="results-header">
-        <h2 class="results-title">
-          "{{ searchKeyword }}" 的搜索结果
-          <span class="results-count" v-if="videos.length > 0">({{ videos.length }}个)</span>
-        </h2>
+      <div v-if="searchKeyword && !loading && videos.length > 0" class="results-header">
+        <div class="results-title">
+          <span class="results-label">搜索结果</span>
+          <span class="results-keyword">"{{ searchKeyword }}"</span>
+        </div>
+        <span class="results-count" v-if="videos.length > 0">{{ videos.length }} 个视频</span>
       </div>
 
       <!-- Videos Grid -->
@@ -48,15 +49,26 @@
 
       <!-- Empty State -->
       <div v-if="!loading && videos.length === 0 && searchKeyword" class="empty-state">
-        <div class="empty-icon">🔍</div>
-        <p>未找到 "{{ searchKeyword }}" 相关视频</p>
-        <button class="btn btn-primary" @click="goBack">返回首页</button>
+        <div class="empty-icon empty-icon--search">
+          <span class="empty-icon-glow"></span>
+          <AppIcon name="search" :size="44" :stroke-width="1.6" />
+        </div>
+        <h3 class="empty-title">未找到相关视频</h3>
+        <p class="empty-desc">没有找到与 <b>"{{ searchKeyword }}"</b> 匹配的内容，换个关键词试试吧</p>
+        <button class="btn btn-primary" @click="goBack">
+          <AppIcon name="home" :size="18" />
+          返回首页
+        </button>
       </div>
 
       <!-- Initial State (no search yet) -->
       <div v-if="!loading && videos.length === 0 && !searchKeyword" class="empty-state">
-        <div class="empty-icon">🎬</div>
-        <p>请输入关键词搜索视频</p>
+        <div class="empty-icon empty-icon--initial">
+          <span class="empty-icon-glow"></span>
+          <AppIcon name="search" :size="44" :stroke-width="1.6" />
+        </div>
+        <h3 class="empty-title">发现精彩视频</h3>
+        <p class="empty-desc">输入关键词，搜索你感兴趣的内容</p>
       </div>
 
       <!-- Load More -->
@@ -245,21 +257,27 @@ export default {
   display: flex;
   align-items: center;
   max-width: 400px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  padding-left: 12px;
-  transition: all 0.3s;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 22px;
+  padding-left: 14px;
+  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
 }
 
 .search-box:focus-within {
+  background: rgba(255, 255, 255, 0.12);
   border-color: #7c3aed;
-  box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
 }
 
 .search-box .search-icon {
-  color: #888;
+  color: #9aa;
   flex-shrink: 0;
+  transition: color 0.25s;
+}
+
+.search-box:focus-within .search-icon {
+  color: #a78bfa;
 }
 
 .search-box input {
@@ -280,19 +298,25 @@ export default {
 
 .search-btn {
   flex-shrink: 0;
-  padding: 8px 18px;
-  background: #7c3aed;
+  padding: 9px 20px;
+  margin: 3px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
   border: none;
-  border-radius: 20px;
+  border-radius: 18px;
   color: #fff;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: transform 0.2s, box-shadow 0.25s, filter 0.2s;
 }
 
 .search-btn:hover {
-  background: #6d28d9;
+  filter: brightness(1.08);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+}
+
+.search-btn:active {
+  transform: scale(0.96);
 }
 
 /* Main Content */
@@ -302,21 +326,47 @@ export default {
 
 /* Results Header */
 .results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
   margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .results-title {
-  font-size: 1.2em;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 1.15em;
   font-weight: 600;
   color: #fff;
-  margin: 0;
+  min-width: 0;
+}
+
+.results-label {
+  color: #cfd2e0;
+  flex-shrink: 0;
+}
+
+.results-keyword {
+  color: #a78bfa;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .results-count {
-  font-size: 0.85em;
-  color: #888;
-  font-weight: 400;
-  margin-left: 8px;
+  font-size: 0.82em;
+  color: #b9bcc9;
+  font-weight: 500;
+  padding: 4px 12px;
+  background: rgba(124, 58, 237, 0.15);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  border-radius: 999px;
+  flex-shrink: 0;
 }
 
 /* Videos Grid */
@@ -367,18 +417,81 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 50vh;
+  min-height: 55vh;
   text-align: center;
+  padding: 20px;
+  animation: fadeInUp 0.5s ease both;
 }
 
 .empty-icon {
-  font-size: 4em;
-  margin-bottom: 15px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 110px;
+  height: 110px;
+  margin-bottom: 24px;
+  border-radius: 50%;
+  color: #a78bfa;
+  background: radial-gradient(circle at 50% 40%, rgba(124, 58, 237, 0.22), rgba(124, 58, 237, 0.04));
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  animation: floaty 4s ease-in-out infinite;
 }
 
-.empty-state p {
-  color: #888;
-  margin-bottom: 20px;
+.empty-icon-glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.35), transparent 70%);
+  filter: blur(8px);
+  opacity: 0.7;
+  animation: pulse 2.6s ease-in-out infinite;
+  z-index: -1;
+}
+
+.empty-icon--search {
+  color: #00d4ff;
+  background: radial-gradient(circle at 50% 40%, rgba(0, 212, 255, 0.18), rgba(0, 212, 255, 0.03));
+  border-color: rgba(0, 212, 255, 0.25);
+}
+
+.empty-icon--search .empty-icon-glow {
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.3), transparent 70%);
+}
+
+.empty-title {
+  font-size: 1.15em;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+.empty-desc {
+  color: #9296a6;
+  font-size: 0.92em;
+  line-height: 1.6;
+  max-width: 320px;
+  margin: 0 0 24px;
+}
+
+.empty-desc b {
+  color: #c9c2ff;
+  font-weight: 600;
+}
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.08); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Buttons */
@@ -386,22 +499,29 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 20px;
+  gap: 8px;
+  padding: 11px 24px;
   border: none;
-  border-radius: 20px;
+  border-radius: 22px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: transform 0.2s, box-shadow 0.25s, filter 0.2s, background 0.25s;
+}
+
+.btn:active {
+  transform: scale(0.96);
 }
 
 .btn-primary {
   background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
   color: #fff;
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.35);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #8b47f5 0%, #7c3aed 100%);
+  filter: brightness(1.08);
+  box-shadow: 0 8px 22px rgba(124, 58, 237, 0.45);
 }
 
 .btn-secondary {

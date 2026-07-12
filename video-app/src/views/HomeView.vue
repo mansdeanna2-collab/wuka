@@ -3,7 +3,10 @@
     <!-- Header with App Name and Search -->
     <header class="header">
       <div class="header-content">
-        <h1 class="logo">🎬 悟空视频</h1>
+        <h1 class="logo">
+          <span class="logo-mark"><AppIcon name="play-circle" :size="22" :stroke-width="2" /></span>
+          <span class="logo-text">悟空视频</span>
+        </h1>
         <div class="search-box">
           <AppIcon class="search-icon" name="search" :size="16" />
           <input
@@ -39,7 +42,7 @@
 
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
-      <div class="error-icon">⚠️</div>
+      <div class="error-icon"><AppIcon name="alert" :size="40" :stroke-width="1.6" /></div>
       <p>{{ errorMessage }}</p>
       <button class="btn btn-primary" @click="init">重试</button>
     </div>
@@ -614,13 +617,34 @@ export default {
 }
 
 .logo {
-  font-size: 1.2em;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 1.25em;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  color: #fff;
+  background: linear-gradient(135deg, #00d4ff, #7c3aed);
+  box-shadow: 0 3px 10px rgba(124, 58, 237, 0.4);
+}
+
+.logo-text {
+  font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", -apple-system, sans-serif;
   background: linear-gradient(90deg, #00d4ff, #7c3aed);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  white-space: nowrap;
 }
 
 .search-box {
@@ -757,7 +781,15 @@ export default {
 }
 
 .error-icon {
-  font-size: 4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  color: #f59e0b;
+  background: radial-gradient(circle at 50% 40%, rgba(245, 158, 11, 0.18), rgba(245, 158, 11, 0.04));
+  border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
 .error-state .btn {
