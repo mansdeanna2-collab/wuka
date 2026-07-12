@@ -3,6 +3,7 @@ import AdminLayout from '@/views/admin/AdminLayout.vue'
 import AdminDashboard from '@/views/admin/AdminDashboard.vue'
 import NavCategoriesManager from '@/views/admin/NavCategoriesManager.vue'
 import VideoManagement from '@/views/admin/VideoManagement.vue'
+import VideoCollection from '@/views/admin/VideoCollection.vue'
 
 const routes = [
   {
@@ -31,6 +32,12 @@ const routes = [
         name: 'admin-video-management',
         component: VideoManagement,
         meta: { title: '视频管理' }
+      },
+      {
+        path: 'collection',
+        name: 'admin-collection',
+        component: VideoCollection,
+        meta: { title: '视频采集' }
       }
     ]
   }

@@ -57,7 +57,8 @@ export default {
       return [
         { path: getAdminPath('dashboard'), icon: '📊', label: '仪表盘' },
         { path: getAdminPath('nav-categories'), icon: '📁', label: '导航分类管理' },
-        { path: getAdminPath('video-management'), icon: '🎬', label: '视频管理' }
+        { path: getAdminPath('video-management'), icon: '🎬', label: '视频管理' },
+        { path: getAdminPath('collection'), icon: '📥', label: '视频采集' }
       ]
     },
     currentPageTitle() {
@@ -80,14 +81,15 @@ export default {
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background: #0f0f1a;
+  background: var(--admin-bg);
 }
 
 /* Sidebar */
 .sidebar {
   width: 240px;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16162a 100%);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--admin-surface);
+  border-right: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow-sm);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -99,13 +101,13 @@ export default {
 
 .sidebar-header {
   padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .admin-logo {
   font-size: 1.3em;
   font-weight: 700;
-  background: linear-gradient(90deg, #00d4ff, #7c3aed);
+  background: linear-gradient(90deg, var(--admin-accent-ink), var(--admin-primary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -116,11 +118,11 @@ export default {
   display: inline-block;
   margin-top: 8px;
   padding: 3px 8px;
-  background: linear-gradient(135deg, #ff8c00, #ffd700);
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
   border-radius: 10px;
   font-size: 0.7em;
   font-weight: 600;
-  color: #1a1a2e;
+  color: #fff;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -136,22 +138,23 @@ export default {
   align-items: center;
   gap: 12px;
   padding: 12px 15px;
-  color: #a0a0b0;
+  color: var(--admin-text-muted);
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   margin-bottom: 5px;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
 .nav-link:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  background: var(--admin-surface-2);
+  color: var(--admin-text);
 }
 
 .nav-link.active {
-  background: linear-gradient(90deg, rgba(124, 58, 237, 0.2) 0%, rgba(0, 212, 255, 0.2) 100%);
-  color: #00d4ff;
-  border-left: 3px solid #00d4ff;
+  background: var(--admin-primary-soft);
+  color: var(--admin-primary-dark);
+  border-left: 3px solid var(--admin-primary);
+  font-weight: 600;
 }
 
 .nav-icon {
@@ -165,7 +168,7 @@ export default {
 
 .sidebar-footer {
   padding: 15px 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--admin-border);
 }
 
 .back-to-site {
@@ -173,15 +176,15 @@ export default {
   align-items: center;
   gap: 12px;
   padding: 12px 15px;
-  color: #7c3aed;
+  color: var(--admin-primary);
   text-decoration: none;
-  border-radius: 8px;
-  transition: all 0.3s;
+  border-radius: var(--admin-radius-sm);
+  transition: all 0.2s;
 }
 
 .back-to-site:hover {
-  background: rgba(124, 58, 237, 0.1);
-  color: #9f67ff;
+  background: var(--admin-primary-soft);
+  color: var(--admin-primary-dark);
 }
 
 /* Main Content */
@@ -194,9 +197,9 @@ export default {
 }
 
 .content-header {
-  background: rgba(26, 26, 46, 0.95);
+  background: rgba(255, 255, 255, 0.85);
   padding: 20px 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--admin-border);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -208,7 +211,7 @@ export default {
   margin: 0;
   font-size: 1.4em;
   font-weight: 600;
-  color: #fff;
+  color: var(--admin-text);
 }
 
 .content-body {
@@ -249,7 +252,7 @@ export default {
     width: 100%;
     position: relative;
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--admin-border);
   }
   
   .sidebar-header {

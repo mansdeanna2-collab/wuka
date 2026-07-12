@@ -154,19 +154,20 @@ export default {
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16162a 100%);
-  border-radius: 12px;
+  background: var(--admin-surface);
+  border-radius: var(--admin-radius);
   padding: 20px;
   display: flex;
   align-items: center;
   gap: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow-sm);
   transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .stat-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--admin-shadow);
 }
 
 .stat-icon {
@@ -176,7 +177,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(124, 58, 237, 0.15);
+  background: var(--admin-primary-soft);
   border-radius: 12px;
 }
 
@@ -187,13 +188,13 @@ export default {
 .stat-value {
   font-size: 1.8em;
   font-weight: 700;
-  color: #fff;
+  color: var(--admin-text);
   line-height: 1.2;
 }
 
 .stat-label {
   font-size: 0.9em;
-  color: #a0a0b0;
+  color: var(--admin-text-muted);
   margin-top: 5px;
 }
 
@@ -201,10 +202,10 @@ export default {
 .section-title {
   font-size: 1.1em;
   font-weight: 600;
-  color: #fff;
+  color: var(--admin-text);
   margin: 0 0 15px 0;
   padding-left: 10px;
-  border-left: 3px solid #00d4ff;
+  border-left: 3px solid var(--admin-accent);
 }
 
 /* Quick Links */
@@ -223,17 +224,19 @@ export default {
   align-items: center;
   gap: 10px;
   padding: 15px 20px;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(0, 212, 255, 0.15) 100%);
-  border: 1px solid rgba(124, 58, 237, 0.3);
-  border-radius: 10px;
-  color: #fff;
+  background: var(--admin-primary-soft);
+  border: 1px solid var(--admin-primary-border);
+  border-radius: var(--admin-radius);
+  color: var(--admin-primary-dark);
   text-decoration: none;
-  transition: all 0.3s;
+  font-weight: 500;
+  transition: all 0.2s;
 }
 
 .quick-link:hover {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(0, 212, 255, 0.25) 100%);
+  background: rgba(124, 58, 237, 0.16);
   transform: translateY(-2px);
+  box-shadow: var(--admin-shadow-sm);
 }
 
 .link-icon {
@@ -256,16 +259,17 @@ export default {
 }
 
 .nav-card {
-  background: rgba(26, 26, 46, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
   padding: 15px;
-  transition: all 0.3s;
+  box-shadow: var(--admin-shadow-sm);
+  transition: all 0.2s;
 }
 
 .nav-card:hover {
-  border-color: rgba(0, 212, 255, 0.3);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border-color: var(--admin-accent-border);
+  box-shadow: var(--admin-shadow);
 }
 
 .nav-card-header {
@@ -274,18 +278,18 @@ export default {
   align-items: center;
   margin-bottom: 12px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .nav-name {
   font-weight: 600;
-  color: #fff;
+  color: var(--admin-text);
   font-size: 1.05em;
 }
 
 .nav-count {
   font-size: 0.85em;
-  color: #7c3aed;
+  color: var(--admin-primary);
 }
 
 .nav-card-body {
@@ -300,19 +304,19 @@ export default {
 
 .subcategory-tag {
   padding: 4px 10px;
-  background: rgba(0, 212, 255, 0.1);
-  border: 1px solid rgba(0, 212, 255, 0.3);
+  background: var(--admin-accent-soft);
+  border: 1px solid var(--admin-accent-border);
   border-radius: 15px;
   font-size: 0.8em;
-  color: #00d4ff;
+  color: var(--admin-accent-ink);
 }
 
 .subcategory-more {
   padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--admin-surface-3);
   border-radius: 15px;
   font-size: 0.8em;
-  color: #888;
+  color: var(--admin-text-muted);
 }
 
 /* Mobile responsive */

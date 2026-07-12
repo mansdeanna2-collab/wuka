@@ -669,7 +669,7 @@ def collect_videos() -> Tuple[Response, int]:
     # 采集API配置
     api_url = os.environ.get('COLLECTOR_API_URL', 'https://api.sq03.shop/api.php/provide/vod/')
 
-    # 域名替换配置 (与video_collector.py一致)
+    # 域名替换配置 (Domain replacement configuration)
     domain_replacements = {
         'vip.sq03.shop': 'd34zpx35a2d8cd.cloudfront.net'
     }

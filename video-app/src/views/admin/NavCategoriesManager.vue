@@ -464,41 +464,42 @@ export default {
   gap: 8px;
   padding: 10px 20px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   font-size: 0.95em;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
   color: #fff;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #8b47f5 0%, #7c3aed 100%);
+  filter: brightness(1.05);
   transform: translateY(-1px);
+  box-shadow: var(--admin-shadow-sm);
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: #a0a0b0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--admin-surface);
+  color: var(--admin-text-muted);
+  border: 1px solid var(--admin-border-strong);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: var(--admin-surface-2);
+  color: var(--admin-text);
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: linear-gradient(135deg, var(--admin-danger) 0%, var(--admin-danger-dark) 100%);
   color: #fff;
 }
 
 .btn-danger:hover {
-  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+  filter: brightness(1.05);
 }
 
 .btn-icon {
@@ -507,17 +508,17 @@ export default {
 
 .btn-small {
   padding: 5px 12px;
-  background: rgba(0, 212, 255, 0.15);
-  border: 1px solid rgba(0, 212, 255, 0.3);
-  color: #00d4ff;
-  border-radius: 5px;
+  background: var(--admin-accent-soft);
+  border: 1px solid var(--admin-accent-border);
+  color: var(--admin-accent-ink);
+  border-radius: var(--admin-radius-sm);
   font-size: 0.8em;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
 .btn-small:hover {
-  background: rgba(0, 212, 255, 0.25);
+  background: rgba(14, 165, 233, 0.16);
 }
 
 /* Loading State */
@@ -530,15 +531,15 @@ export default {
 
 .loading-state p {
   margin-top: 15px;
-  color: #888;
+  color: var(--admin-text-muted);
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  border: 3px solid var(--admin-border);
   border-radius: 50%;
-  border-top-color: #00d4ff;
+  border-top-color: var(--admin-primary);
   animation: spin 1s ease-in-out infinite;
 }
 
@@ -560,16 +561,17 @@ export default {
 }
 
 .category-card {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16162a 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
   overflow: hidden;
-  transition: all 0.3s;
+  box-shadow: var(--admin-shadow-sm);
+  transition: all 0.2s;
 }
 
 .category-card:hover {
-  border-color: rgba(124, 58, 237, 0.3);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  border-color: var(--admin-primary-border);
+  box-shadow: var(--admin-shadow);
 }
 
 .card-header {
@@ -577,8 +579,8 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  background: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--admin-surface-2);
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .card-title-section {
@@ -593,7 +595,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #7c3aed 0%, #00d4ff 100%);
+  background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-accent) 100%);
   border-radius: 50%;
   font-weight: 600;
   font-size: 0.85em;
@@ -610,12 +612,12 @@ export default {
   margin: 0;
   font-size: 1.1em;
   font-weight: 600;
-  color: #fff;
+  color: var(--admin-text);
 }
 
 .category-key {
   font-size: 0.8em;
-  color: #888;
+  color: var(--admin-text-muted);
 }
 
 .card-actions {
@@ -630,26 +632,26 @@ export default {
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
   font-size: 1em;
 }
 
 .edit-btn {
-  background: rgba(59, 130, 246, 0.15);
+  background: rgba(59, 130, 246, 0.12);
 }
 
 .edit-btn:hover {
-  background: rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.22);
 }
 
 .delete-btn {
-  background: rgba(239, 68, 68, 0.15);
+  background: var(--admin-danger-soft);
 }
 
 .delete-btn:hover {
-  background: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.2);
 }
 
 .card-body {
@@ -669,7 +671,7 @@ export default {
 
 .section-label {
   font-size: 0.9em;
-  color: #a0a0b0;
+  color: var(--admin-text-muted);
   font-weight: 500;
 }
 
@@ -684,11 +686,11 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  background: rgba(0, 212, 255, 0.1);
-  border: 1px solid rgba(0, 212, 255, 0.3);
+  background: var(--admin-accent-soft);
+  border: 1px solid var(--admin-accent-border);
   border-radius: 15px;
   font-size: 0.85em;
-  color: #00d4ff;
+  color: var(--admin-accent-ink);
 }
 
 .remove-tag {
@@ -703,7 +705,7 @@ export default {
 }
 
 .empty-subcategories {
-  color: #666;
+  color: var(--admin-text-faint);
   font-size: 0.9em;
   font-style: italic;
 }
@@ -724,7 +726,7 @@ export default {
 }
 
 .empty-state p {
-  color: #888;
+  color: var(--admin-text-muted);
   margin-bottom: 20px;
 }
 
@@ -735,7 +737,7 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(15, 23, 42, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -744,14 +746,15 @@ export default {
 }
 
 .modal {
-  background: #1a1a2e;
-  border-radius: 12px;
+  background: var(--admin-surface);
+  border-radius: var(--admin-radius);
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-shadow: var(--admin-shadow-lg);
 }
 
 .modal-large {
@@ -767,14 +770,14 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--admin-surface-2);
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .modal-header h3 {
   margin: 0;
   font-size: 1.1em;
-  color: #fff;
+  color: var(--admin-text);
 }
 
 .close-btn {
@@ -785,14 +788,14 @@ export default {
   justify-content: center;
   background: none;
   border: none;
-  color: #888;
+  color: var(--admin-text-faint);
   font-size: 1.5em;
   cursor: pointer;
   transition: color 0.2s;
 }
 
 .close-btn:hover {
-  color: #fff;
+  color: var(--admin-text);
 }
 
 .modal-body {
@@ -802,7 +805,7 @@ export default {
 }
 
 .modal-desc {
-  color: #a0a0b0;
+  color: var(--admin-text-muted);
   margin-bottom: 20px;
   font-size: 0.9em;
   line-height: 1.5;
@@ -816,40 +819,41 @@ export default {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #fff;
+  color: var(--admin-text);
 }
 
 .form-input {
   width: 100%;
   padding: 12px 15px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  color: #fff;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
+  color: var(--admin-text);
   font-size: 0.95em;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+  border-color: var(--admin-primary);
+  box-shadow: 0 0 0 3px var(--admin-primary-soft);
 }
 
 .form-input:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
+  background: var(--admin-surface-2);
 }
 
 .form-input::placeholder {
-  color: #666;
+  color: var(--admin-text-faint);
 }
 
 .form-hint {
   display: block;
   margin-top: 5px;
   font-size: 0.8em;
-  color: #888;
+  color: var(--admin-text-muted);
 }
 
 .modal-footer {
@@ -857,8 +861,8 @@ export default {
   justify-content: flex-end;
   gap: 10px;
   padding: 15px 20px;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--admin-surface-2);
+  border-top: 1px solid var(--admin-border);
 }
 
 /* Subcategories Modal */
@@ -870,7 +874,7 @@ export default {
 .available-section h4 {
   margin: 0 0 12px 0;
   font-size: 0.95em;
-  color: #a0a0b0;
+  color: var(--admin-text-muted);
 }
 
 .selected-tags {
@@ -884,21 +888,21 @@ export default {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(0, 212, 255, 0.2) 100%);
-  border: 1px solid rgba(124, 58, 237, 0.4);
+  background: var(--admin-primary-soft);
+  border: 1px solid var(--admin-primary-border);
   border-radius: 15px;
   font-size: 0.85em;
-  color: #fff;
+  color: var(--admin-primary-dark);
 }
 
 .empty-selected {
-  color: #666;
+  color: var(--admin-text-faint);
   font-size: 0.85em;
   font-style: italic;
 }
 
 .available-section {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--admin-border);
   padding-top: 20px;
 }
 
@@ -906,7 +910,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #888;
+  color: var(--admin-text-muted);
   font-size: 0.9em;
 }
 
@@ -921,44 +925,44 @@ export default {
   flex-direction: column;
   align-items: flex-start;
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
 .category-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--admin-surface-3);
+  border-color: var(--admin-border-strong);
 }
 
 .category-btn.selected {
-  background: rgba(0, 212, 255, 0.15);
-  border-color: rgba(0, 212, 255, 0.5);
+  background: var(--admin-accent-soft);
+  border-color: var(--admin-accent-border);
 }
 
 .cat-name {
   font-size: 0.9em;
-  color: #fff;
+  color: var(--admin-text);
   font-weight: 500;
 }
 
 .cat-count {
   font-size: 0.75em;
-  color: #888;
+  color: var(--admin-text-muted);
   margin-top: 2px;
 }
 
 .empty-categories {
-  color: #888;
+  color: var(--admin-text-muted);
   font-size: 0.9em;
   text-align: center;
   padding: 20px;
 }
 
 .warning-text {
-  color: #ef4444;
+  color: var(--admin-danger-dark);
   font-size: 0.9em;
 }
 
@@ -968,24 +972,21 @@ export default {
   bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.9);
+  background: #1e293b;
   color: #fff;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   font-size: 0.9em;
   z-index: 2000;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--admin-shadow-lg);
 }
 
 .toast-message.success {
-  background: rgba(34, 197, 94, 0.95);
-  border-color: rgba(34, 197, 94, 0.5);
+  background: var(--admin-success);
 }
 
 .toast-message.error {
-  background: rgba(239, 68, 68, 0.95);
-  border-color: rgba(239, 68, 68, 0.5);
+  background: var(--admin-danger);
 }
 
 .toast-enter-active,
@@ -1004,33 +1005,33 @@ export default {
   .action-bar {
     flex-direction: column;
   }
-  
+
   .btn {
     justify-content: center;
   }
-  
+
   .card-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-  
+
   .card-actions {
     width: 100%;
     justify-content: flex-end;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .modal {
     margin: 10px;
     max-height: 85vh;
   }
-  
+
   .available-grid {
     grid-template-columns: repeat(2, 1fr);
   }
