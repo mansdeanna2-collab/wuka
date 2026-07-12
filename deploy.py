@@ -415,8 +415,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (include devDependencies so build tools like vite
+# are available even when NODE_ENV=production is set in the build environment)
+RUN npm ci --include=dev
 
 # Copy source code
 COPY . .
