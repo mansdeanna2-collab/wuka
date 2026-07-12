@@ -1,4 +1,18 @@
 /* Global Styles */
+:root {
+  /* Refined modern font stack with strong Chinese support */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', 'PingFang SC', 'HarmonyOS Sans SC', 'Hiragino Sans GB',
+    'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans SC', 'Source Han Sans SC',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  /* Brand palette */
+  --color-accent: #00d4ff;
+  --color-accent-2: #7c3aed;
+  --color-bg-start: #1a1a2e;
+  --color-bg-end: #16213e;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -8,8 +22,10 @@
 html, body {
   width: 100%;
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  font-family: var(--font-sans);
+  font-feature-settings: 'kern' 1, 'liga' 1, 'cv02' 1, 'cv11' 1;
+  text-rendering: optimizeLegibility;
+  background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
   color: #fff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -139,33 +155,6 @@ button, a, select, input[type="file"] {
     width: 32px;
     height: 32px;
   }
-}
-
-/* Utility classes for responsive hiding */
-.hide-mobile {
-  display: block;
-}
-
-.show-mobile {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .hide-mobile {
-    display: none;
-  }
-  
-  .show-mobile {
-    display: block;
-  }
-}
-
-/* Prevent text selection on interactive elements */
-.no-select {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
 }
 
 /* Video element improvements for H5 */

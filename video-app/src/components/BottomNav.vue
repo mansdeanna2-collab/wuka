@@ -7,7 +7,7 @@
           class="nav-item"
           :class="{ active: isActive(item.path) }"
         >
-          <span class="nav-icon">{{ item.icon }}</span>
+          <AppIcon class="nav-icon" :name="item.icon" :size="24" />
           <span class="nav-label">{{ item.label }}</span>
         </router-link>
       </li>
@@ -16,16 +16,19 @@
 </template>
 
 <script>
+import AppIcon from '@/components/AppIcon.vue'
+
 export default {
   name: 'BottomNav',
+  components: { AppIcon },
   data() {
     return {
       navItems: [
-        { path: '/', icon: '🏠', label: '首页' },
-        { path: '/darkweb', icon: '🌐', label: '暗网' },
-        { path: '/live', icon: '📺', label: '直播' },
-        { path: '/games', icon: '🎮', label: '游戏' },
-        { path: '/profile', icon: '👤', label: '我的' }
+        { path: '/', icon: 'home', label: '首页' },
+        { path: '/darkweb', icon: 'globe', label: '暗网' },
+        { path: '/live', icon: 'tv', label: '直播' },
+        { path: '/games', icon: 'gamepad', label: '游戏' },
+        { path: '/profile', icon: 'user', label: '我的' }
       ]
     }
   },
@@ -78,10 +81,11 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   padding: 5px 15px;
-  color: #888;
+  color: #8a8aa0;
   text-decoration: none;
-  transition: all 0.3s;
+  transition: color 0.25s ease, transform 0.25s ease;
   min-width: 60px;
 }
 
@@ -93,14 +97,23 @@ export default {
   color: #00d4ff;
 }
 
+.nav-item:active {
+  transform: scale(0.94);
+}
+
 .nav-icon {
-  font-size: 1.4em;
-  margin-bottom: 3px;
+  transition: transform 0.25s ease;
+}
+
+.nav-item.active .nav-icon {
+  transform: translateY(-1px) scale(1.08);
+  filter: drop-shadow(0 2px 8px rgba(0, 212, 255, 0.45));
 }
 
 .nav-label {
   font-size: 0.7em;
   font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 /* Mobile responsive */
@@ -111,7 +124,8 @@ export default {
   }
   
   .nav-icon {
-    font-size: 1.2em;
+    width: 22px;
+    height: 22px;
   }
   
   .nav-label {
