@@ -289,6 +289,19 @@ export const videoApi = {
     return api.post('/nav-categories/reset')
   },
 
+  // ==================== Home Carousel (Admin Settings) ====================
+
+  // Get home carousel videos (admin-selected videos only)
+  getCarousel() {
+    // Don't cache - admin settings should always be fresh
+    return api.get('/carousel')
+  },
+
+  // Save home carousel videos (list of video ids, in display order)
+  saveCarousel(videoIds) {
+    return api.post('/admin/carousel', { video_ids: videoIds })
+  },
+
   // ==================== Admin Video Management ====================
 
   // Get videos in a specific category (for admin viewing)

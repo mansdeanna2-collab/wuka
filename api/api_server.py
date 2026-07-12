@@ -444,6 +444,57 @@ def reset_nav_categories() -> Tuple[Response, int]:
         return api_response(message="重置失败", code=500)
 
 
+@app.route('/api/carousel', methods=['GET'])
+@handle_errors
+def get_carousel() -> Tuple[Response, int]:
+    """
+    获取首页轮播图视频 (Get home carousel videos)
+
+    仅返回管理员在后台手动选择的视频。
+    如果未配置，返回空列表，前端将隐藏轮播图，
+    这样新增视频只会显示在其所属分类，而不会自动出现在轮播图。
+    """
+    with get_db() as db:
+        videos: List[Dict[str, Any]] = db.get_carousel_videos()
+
+    return api_response(data=videos)
+
+
+@app.route('/api/admin/carousel', methods=['POST'])
+@handle_errors
+def save_carousel() -> Tuple[Response, int]:
+    """
+    保存首页轮播图配置 (Save home carousel videos)
+
+    请求体 (Request body):
+        { "video_ids": [1, 2, 3] }  或直接传视频ID数组 [1, 2, 3]
+    """
+    data = request.get_json()
+
+    # 兼容两种格式：{ "video_ids": [...] } 或直接数组 [...]
+    if isinstance(data, dict):
+        video_ids = data.get('video_ids')
+    else:
+        video_ids = data
+
+    if not isinstance(video_ids, list):
+        return api_response(message="请提供有效的视频ID列表", code=400)
+
+    # 验证每个ID都是整数 (Validate every id is an integer)
+    try:
+        normalized_ids: List[int] = [int(vid) for vid in video_ids]
+    except (TypeError, ValueError):
+        return api_response(message="视频ID必须为整数", code=400)
+
+    with get_db() as db:
+        success: bool = db.save_carousel_videos(normalized_ids)
+
+    if success:
+        return api_response(message="轮播图配置已保存")
+    else:
+        return api_response(message="保存失败", code=500)
+
+
 # ==================== 视频管理API (Video Management API) ====================
 
 @app.route('/api/admin/category-stats', methods=['GET'])

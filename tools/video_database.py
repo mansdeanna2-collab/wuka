@@ -180,6 +180,29 @@ class VideoDatabase:
             except pymysql.err.OperationalError:
                 pass
 
+            # 创建导航分类配置表 (Create nav_categories table for global admin settings)
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS nav_categories (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    category_key VARCHAR(100) UNIQUE NOT NULL,
+                    label VARCHAR(100) NOT NULL,
+                    subcategories TEXT,
+                    sort_order INT DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+            ''')
+
+            # 创建轮播图配置表 (Create carousel_items table for admin-managed home carousel)
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS carousel_items (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    video_id INT NOT NULL,
+                    sort_order INT DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+            ''')
+
             self.connection.commit()
             self._log(f"✅ MySQL数据库初始化完成: {self.mysql_config['database']}")
         except Exception as e:
@@ -244,6 +267,17 @@ class VideoDatabase:
                 sort_order INTEGER DEFAULT 0,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # 创建轮播图配置表 (Create carousel_items table for admin-managed home carousel)
+        # 轮播图内容由管理员在后台手动选择，不再自动展示新增视频
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS carousel_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                video_id INTEGER NOT NULL,
+                sort_order INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
         ''')
 
@@ -695,6 +729,7 @@ class VideoDatabase:
         """
         try:
             cursor = self.connection.cursor()
+            placeholder = '%s' if self.use_mysql else '?'
 
             # 删除所有现有分类 (Delete all existing categories)
             cursor.execute('DELETE FROM nav_categories')
@@ -702,16 +737,68 @@ class VideoDatabase:
             # 插入新的分类 (Insert new categories)
             for i, cat in enumerate(categories):
                 subcategories_json = json.dumps(cat.get('subcategories', []), ensure_ascii=False)
-                cursor.execute('''
-                    INSERT INTO nav_categories (category_key, label, subcategories, sort_order)
-                    VALUES (?, ?, ?, ?)
-                ''', (cat['key'], cat['label'], subcategories_json, i))
+                cursor.execute(
+                    f'''INSERT INTO nav_categories (category_key, label, subcategories, sort_order)
+                    VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})''',
+                    (cat['key'], cat['label'], subcategories_json, i))
 
             self.connection.commit()
             self._log(f"✅ 保存了 {len(categories)} 个导航分类")
             return True
         except Exception as e:
             logger.error(f"保存导航分类失败: {e}")
+            return False
+
+    # ==================== 轮播图管理 (Carousel Management) ====================
+
+    def get_carousel_videos(self) -> List[Dict[str, Any]]:
+        """
+        获取首页轮播图视频列表 (Get home carousel videos)
+
+        返回管理员在后台手动选择的视频，按配置顺序排列。
+        通过 JOIN videos 表获取完整视频信息；已删除的视频会自动被排除。
+        如果管理员未配置轮播图，返回空列表（前端将隐藏轮播图）。
+
+        Returns:
+            视频列表
+        """
+        cursor = self.connection.cursor()
+        cursor.execute('''
+            SELECT v.* FROM carousel_items c
+            JOIN videos v ON c.video_id = v.video_id
+            ORDER BY c.sort_order ASC, c.id ASC
+        ''')
+        rows = cursor.fetchall()
+        return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
+
+    def save_carousel_videos(self, video_ids: List[int]) -> bool:
+        """
+        保存首页轮播图配置 (Save carousel videos - replaces all)
+
+        Args:
+            video_ids: 视频ID列表，按展示顺序排列
+
+        Returns:
+            成功返回True，失败返回False
+        """
+        try:
+            cursor = self.connection.cursor()
+            placeholder = '%s' if self.use_mysql else '?'
+
+            # 删除所有现有轮播图配置 (Delete all existing carousel items)
+            cursor.execute('DELETE FROM carousel_items')
+
+            # 按顺序插入新的轮播图视频 (Insert new carousel items in order)
+            for i, video_id in enumerate(video_ids):
+                cursor.execute(
+                    f'INSERT INTO carousel_items (video_id, sort_order) VALUES ({placeholder}, {placeholder})',
+                    (int(video_id), i))
+
+            self.connection.commit()
+            self._log(f"✅ 保存了 {len(video_ids)} 个轮播图视频")
+            return True
+        except Exception as e:
+            logger.error(f"保存轮播图配置失败: {e}")
             return False
 
     # ==================== 视频管理功能 (Video Management Features) ====================

@@ -464,16 +464,17 @@ export default {
         return
       }
       
-      // Load carousel videos (top played videos only)
-      // Note: if API returns an empty list (no videos have play counts yet),
-      // hide the carousel instead of showing mock data, so admin-added videos
-      // only appear in their category sections
+      // Load carousel videos (admin-selected videos only)
+      // The home carousel is now managed from the admin console. It only shows
+      // videos the admin explicitly picked, so newly added videos appear only in
+      // their category sections and never automatically in the carousel.
+      // If nothing is configured, keep the carousel empty so it stays hidden.
       try {
-        const topResult = await videoApi.getTopVideos(videosPerCategory)
-        this.carouselVideos = extractArrayData(topResult)
+        const carouselResult = await videoApi.getCarousel()
+        this.carouselVideos = extractArrayData(carouselResult)
       } catch (e) {
-        console.error('Load top videos error:', e)
-        this.carouselVideos = getMockTopVideos(videosPerCategory)
+        console.error('Load carousel videos error:', e)
+        this.carouselVideos = []
       }
       
       // Get current subcategories based on active main category
