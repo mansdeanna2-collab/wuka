@@ -29,7 +29,7 @@
     <!-- Search Results -->
     <div v-else class="main-content">
       <!-- Search Results Header -->
-      <div v-if="searchKeyword && !loading" class="results-header">
+      <div v-if="searchKeyword && !loading && videos.length > 0" class="results-header">
         <div class="results-title">
           <span class="results-label">搜索结果</span>
           <span class="results-keyword">"{{ searchKeyword }}"</span>

@@ -68,12 +68,12 @@
     <!-- Action buttons below videos -->
     <div class="section-actions" v-if="videos.length > 0">
       <button class="action-btn refresh-btn" @click="$emit('refresh')">
-        <span class="refresh-icon">🔄</span>
+        <AppIcon class="refresh-icon" name="refresh" :size="15" :stroke-width="2" />
         换一换
       </button>
       <button class="action-btn more-btn" @click="$emit('more')">
         查看更多
-        <span class="arrow-icon">→</span>
+        <AppIcon class="arrow-icon" name="chevron-right" :size="15" :stroke-width="2" />
       </button>
     </div>
     
@@ -87,9 +87,13 @@
 <script>
 import { formatImageUrl, loadImageWithBase64Detection } from '@/utils/imageUtils'
 import { formatPlayCount } from '@/utils/formatUtils'
+import AppIcon from '@/components/AppIcon.vue'
 
 export default {
   name: 'CategorySection',
+  components: {
+    AppIcon
+  },
   props: {
     title: {
       type: String,
@@ -264,11 +268,11 @@ export default {
 }
 
 .refresh-icon {
-  font-size: 0.8em;
+  display: inline-flex;
 }
 
 .arrow-icon {
-  font-size: 0.9em;
+  display: inline-flex;
 }
 
 .videos-grid {

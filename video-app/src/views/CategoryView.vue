@@ -17,7 +17,7 @@
 
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
-      <div class="error-icon">⚠️</div>
+      <div class="error-icon"><AppIcon name="alert" :size="40" :stroke-width="1.6" /></div>
       <p>{{ errorMessage }}</p>
       <button class="btn btn-primary" @click="loadVideos">重试</button>
     </div>
@@ -257,7 +257,15 @@ export default {
 }
 
 .error-icon {
-  font-size: 4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  color: #f59e0b;
+  background: radial-gradient(circle at 50% 40%, rgba(245, 158, 11, 0.18), rgba(245, 158, 11, 0.04));
+  border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
 .error-state .btn {
