@@ -54,6 +54,9 @@ const ICONS = {
   filter: ['M3 5h18l-7 8v6l-4 2v-8L3 5Z'],
   'chevron-down': ['m6 9 6 6 6-6'],
   check: ['m5 12 5 5L20 7'],
+  image: ['M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z', 'M8.5 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z', 'm4 17 5-5 4 4 3-3 4 4'],
+  'arrow-up': ['M12 19V5', 'm6 11 6-6 6 6'],
+  'arrow-down': ['M12 5v14', 'm6 13 6 6 6-6'],
 }
 
 export default {

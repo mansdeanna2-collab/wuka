@@ -62,6 +62,7 @@ export default {
       return [
         { path: getAdminPath('dashboard'), icon: 'dashboard', label: '仪表盘' },
         { path: getAdminPath('nav-categories'), icon: 'folder', label: '导航分类管理' },
+        { path: getAdminPath('carousel'), icon: 'image', label: '轮播图管理' },
         { path: getAdminPath('video-management'), icon: 'film', label: '视频管理' },
         { path: getAdminPath('collection'), icon: 'download', label: '视频采集' }
       ]

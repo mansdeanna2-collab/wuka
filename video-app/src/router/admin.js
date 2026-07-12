@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AdminLayout from '@/views/admin/AdminLayout.vue'
 import AdminDashboard from '@/views/admin/AdminDashboard.vue'
 import NavCategoriesManager from '@/views/admin/NavCategoriesManager.vue'
+import CarouselManager from '@/views/admin/CarouselManager.vue'
 import VideoManagement from '@/views/admin/VideoManagement.vue'
 import VideoCollection from '@/views/admin/VideoCollection.vue'
 
@@ -26,6 +27,12 @@ const routes = [
         name: 'admin-nav-categories',
         component: NavCategoriesManager,
         meta: { title: '导航分类管理' }
+      },
+      {
+        path: 'carousel',
+        name: 'admin-carousel',
+        component: CarouselManager,
+        meta: { title: '轮播图管理' }
       },
       {
         path: 'video-management',
