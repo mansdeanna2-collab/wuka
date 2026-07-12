@@ -49,9 +49,11 @@
 
     <!-- Main Content -->
     <div v-else class="main-content" ref="mainContent">
-      <!-- Carousel Banner (always rendered; shows a placeholder when the
-           admin has not configured any carousel items) -->
+      <!-- Carousel Banner (only shown on the 推荐/recommend main category;
+           shows a placeholder when the admin has not configured any carousel
+           items). Other main categories such as 动漫 do not display it. -->
       <Carousel 
+        v-if="activeMainCategory === 'recommend'"
         :videos="carouselVideos"
         @click="playVideo"
       />
@@ -118,7 +120,6 @@ export default {
     AppIcon
   },
   // Constants
-  MAX_REFRESH_OFFSET: 20,
   VIDEOS_PER_CATEGORY: 5,
   INITIAL_CATEGORIES_COUNT: 4,
   LOAD_MORE_BATCH_SIZE: 4, // Load 4 more categories each time on scroll
@@ -135,6 +136,8 @@ export default {
     return {
       categories: [],
       categoryVideos: {}, // { category: videos[] }
+      // Rotating offset per category so 换一换 pulls a fresh batch each time
+      refreshOffsets: {}, // { category: offset }
       carouselVideos: [],
       searchKeyword: '',
       loading: true,
@@ -485,6 +488,8 @@ export default {
       
       // Clear category videos before loading new data for this main category
       this.categoryVideos = {}
+      // Reset per-category 换一换 offsets for the freshly loaded main category
+      this.refreshOffsets = {}
       
       // First, load only the first 4 categories (visible categories)
       const firstBatchCategories = subcategories.slice(0, this.$options.INITIAL_CATEGORIES_COUNT)
@@ -566,10 +571,30 @@ export default {
     
     async refreshCategory(category) {
       try {
-        // Get random offset for variety
-        const randomOffset = Math.floor(Math.random() * this.$options.MAX_REFRESH_OFFSET)
-        const result = await videoApi.getVideosByCategory(category, this.$options.VIDEOS_PER_CATEGORY, randomOffset)
-        this.categoryVideos[category] = extractArrayData(result)
+        const pageSize = this.$options.VIDEOS_PER_CATEGORY
+        // Advance to the next batch for this category so 换一换 shows a
+        // different set of videos each time it is clicked.
+        const nextOffset = (this.refreshOffsets[category] || 0) + pageSize
+
+        let result = await videoApi.getVideosByCategory(category, pageSize, nextOffset)
+        let videos = extractArrayData(result)
+
+        if (videos.length > 0) {
+          // Got a fresh batch: remember the offset used for the next click.
+          this.refreshOffsets[category] = nextOffset
+        } else {
+          // Reached the end of the category (offset past the last video):
+          // wrap back to the beginning so the button keeps cycling instead
+          // of blanking out the section.
+          result = await videoApi.getVideosByCategory(category, pageSize, 0)
+          videos = extractArrayData(result)
+          this.refreshOffsets[category] = 0
+        }
+
+        // Never overwrite the section with an empty list.
+        if (videos.length > 0) {
+          this.categoryVideos = { ...this.categoryVideos, [category]: videos }
+        }
       } catch (e) {
         console.error(`Refresh category ${category} error:`, e)
       }
