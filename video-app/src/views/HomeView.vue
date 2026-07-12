@@ -18,7 +18,6 @@
           />
           <button class="search-btn" @click="handleSearch">搜索</button>
         </div>
-        <div class="header-spacer"></div>
       </div>
     </header>
 
@@ -697,11 +696,14 @@ export default {
 }
 
 .search-box {
-  flex: 1;
+  flex: 0 1 auto;
   display: flex;
   align-items: center;
-  max-width: 280px;
-  margin: 0 auto;
+  width: 220px;
+  max-width: 220px;
+  /* Push the search box towards the right side of the header */
+  margin-left: auto;
+  margin-right: 0;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 16px;
@@ -754,10 +756,6 @@ export default {
   background: #6d28d9;
 }
 
-.header-spacer {
-  width: 80px;
-}
-
 /* Category Tabs */
 .category-tabs {
   position: fixed;
@@ -785,12 +783,12 @@ export default {
 }
 
 .tab-btn {
-  padding: 8px 16px;
+  padding: 8px 18px;
   background: transparent;
   border: none;
   color: #fff;
-  font-size: 1.4em;
-  font-weight: 600;
+  font-size: 1.55em;
+  font-weight: 700;
   cursor: pointer;
   transition: color 0.3s;
   white-space: nowrap;
@@ -978,13 +976,9 @@ export default {
     font-size: 1em;
   }
   
-  .header-spacer {
-    display: none;
-  }
-  
   .search-box {
-    flex: 1;
-    max-width: 200px;
+    max-width: 150px;
+    width: 150px;
   }
   
   .search-box input {
@@ -1016,8 +1010,8 @@ export default {
   }
   
   .tab-btn {
-    padding: 6px 12px;
-    font-size: 1em;
+    padding: 6px 14px;
+    font-size: 1.25em;
     /* Ensure minimum touch target */
     min-height: 44px;
   }

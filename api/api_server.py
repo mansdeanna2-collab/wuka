@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import os
 import sys
+import uuid
 import logging
 import time
 from datetime import datetime
@@ -34,7 +35,8 @@ from contextlib import contextmanager
 from typing import Any, Callable, cast, Dict, Generator, List, Optional, Tuple, TypeVar
 
 import requests as http_requests
-from flask import Flask, jsonify, request, Response, g
+from flask import Flask, jsonify, request, Response, g, send_from_directory
+from werkzeug.utils import secure_filename
 from flask_cors import CORS
 
 # 导入视频数据库模块 (在同一目录或父目录中)
@@ -77,6 +79,36 @@ CORS(app, resources={
         "allow_headers": ["Content-Type", "Authorization"]
     }
 })
+
+# ==================== 图片上传配置 (Image Upload Config) ====================
+# 允许上传的图片扩展名 (Allowed image file extensions)
+ALLOWED_IMAGE_EXTENSIONS: set = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'}
+# 单个上传文件的最大大小 (Maximum upload size per request: 10MB)
+MAX_UPLOAD_BYTES: int = 10 * 1024 * 1024
+# 限制请求体大小，防止过大的上传 (Limit request body size to guard uploads)
+app.config['MAX_CONTENT_LENGTH'] = MAX_UPLOAD_BYTES
+
+
+def get_upload_dir() -> str:
+    """
+    获取图片上传目录 (Get the image upload directory)
+
+    优先级 (Priority):
+        1. UPLOAD_DIR 环境变量 (if set and non-empty)
+        2. /app/data/uploads (Docker环境，持久化卷)
+        3. <api目录>/data/uploads (本地开发)
+    目录不存在时会自动创建 (Created automatically if missing).
+    """
+    upload_dir = os.environ.get('UPLOAD_DIR', '').strip()
+    if not upload_dir:
+        if os.path.isdir('/app/data'):
+            upload_dir = '/app/data/uploads'
+        else:
+            upload_dir = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), 'data', 'uploads'
+            )
+    os.makedirs(upload_dir, exist_ok=True)
+    return upload_dir
 
 
 # 请求计时中间件 (Request timing middleware)
@@ -538,6 +570,66 @@ def save_carousel() -> Tuple[Response, int]:
         return api_response(message="保存失败", code=500)
 
 
+# ==================== 图片上传API (Image Upload API) ====================
+
+@app.route('/api/admin/upload-image', methods=['POST'])
+@handle_errors
+def upload_image() -> Tuple[Response, int]:
+    """
+    上传图片 (Upload an image file)
+
+    接收 multipart/form-data，字段名为 ``file``。
+    保存到上传目录并返回可访问的绝对URL，供轮播图等使用。
+
+    Returns:
+        { "url": "http://host/api/uploads/<name>", "filename": "<name>" }
+    """
+    if 'file' not in request.files:
+        return api_response(message="未找到上传文件", code=400)
+
+    file = request.files['file']
+    if not file or not file.filename:
+        return api_response(message="未选择文件", code=400)
+
+    # 校验扩展名 (Validate the file extension)
+    ext = ''
+    if '.' in file.filename:
+        ext = file.filename.rsplit('.', 1)[1].lower()
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        return api_response(
+            message="仅支持 png/jpg/jpeg/gif/webp/bmp 图片", code=400
+        )
+
+    # 校验MIME类型 (Validate the reported MIME type)
+    if file.mimetype and not file.mimetype.startswith('image/'):
+        return api_response(message="文件类型必须为图片", code=400)
+
+    # 使用随机文件名，避免路径穿越与覆盖 (Random name avoids traversal/overwrite)
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    # secure_filename 作为额外防护 (secure_filename as an extra safeguard)
+    filename = secure_filename(filename)
+
+    upload_dir = get_upload_dir()
+    filepath = os.path.join(upload_dir, filename)
+    file.save(filepath)
+
+    url = request.host_url.rstrip('/') + '/api/uploads/' + filename
+    return api_response(
+        data={'url': url, 'filename': filename}, message="上传成功"
+    )
+
+
+@app.route('/api/uploads/<path:filename>', methods=['GET'])
+def serve_upload(filename: str) -> Response:
+    """
+    提供已上传的图片 (Serve an uploaded image)
+
+    使用 send_from_directory 防止路径穿越 (Prevents path traversal).
+    """
+    upload_dir = get_upload_dir()
+    return send_from_directory(upload_dir, filename)
+
+
 # ==================== 视频管理API (Video Management API) ====================
 
 @app.route('/api/admin/category-stats', methods=['GET'])
@@ -909,6 +1001,12 @@ def not_found(e: Exception) -> Tuple[Response, int]:
 def method_not_allowed(e: Exception) -> Tuple[Response, int]:
     """405 错误处理 (405 error handler)"""
     return api_response(message="方法不允许", code=405)
+
+
+@app.errorhandler(413)
+def payload_too_large(e: Exception) -> Tuple[Response, int]:
+    """413 错误处理 (413 error handler - upload too large)"""
+    return api_response(message="上传文件过大（最大10MB）", code=413)
 
 
 @app.errorhandler(500)
