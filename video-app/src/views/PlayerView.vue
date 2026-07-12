@@ -91,7 +91,10 @@ export default {
       relatedVideos: [],
       loading: true,
       error: false,
-      errorMessage: ''
+      errorMessage: '',
+      // Guard so play count is only reported once per loaded video, not on
+      // every `play` event (resume-after-pause and seeking also fire `play`).
+      hasCountedPlay: false
     }
   },
   watch: {
@@ -115,7 +118,8 @@ export default {
       
       this.loading = true
       this.error = false
-      
+      // New video load: allow its play count to be reported once again.
+      this.hasCountedPlay = false
       try {
         const result = await videoApi.getVideo(videoId)
         this.video = extractObjectData(result)
@@ -164,8 +168,14 @@ export default {
     },
     
     async onPlay() {
-      // Update play count with race condition protection
+      // Only count a play once per loaded video. The <video> `play` event also
+      // fires when resuming after a pause or after seeking, which previously
+      // inflated the play count with duplicate requests.
+      if (this.hasCountedPlay) return
       const videoId = this.video.video_id
+      if (!videoId) return
+      this.hasCountedPlay = true
+      // Update play count with race condition protection
       try {
         await videoApi.updatePlayCount(videoId)
         // Only increment if we're still on the same video
@@ -173,6 +183,8 @@ export default {
           this.video.play_count++
         }
       } catch (e) {
+        // Allow a retry on the next play event if the request failed.
+        this.hasCountedPlay = false
         console.error('Update play count error:', e)
       }
     },
