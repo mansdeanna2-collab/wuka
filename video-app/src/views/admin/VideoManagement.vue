@@ -59,6 +59,8 @@
             :src="formatImageUrl(video.video_image)"
             :alt="video.video_title"
             class="video-thumb"
+            referrerpolicy="no-referrer"
+            loading="lazy"
             @error="handleImageError"
           />
           <div v-else class="video-thumb-placeholder">
@@ -70,6 +72,7 @@
               <span class="meta-tag">ID: {{ video.video_id }}</span>
               <span class="meta-tag category">{{ video.video_category || '未分类' }}</span>
               <span class="meta-tag">播放 {{ video.play_count || 0 }}</span>
+              <span v-if="video.video_duration" class="meta-tag">时长 {{ video.video_duration }}</span>
             </span>
           </div>
           <div class="video-actions">
@@ -109,11 +112,25 @@
           </div>
           <div class="form-group">
             <label>视频URL *</label>
-            <input v-model="editingVideo.video_url" type="text" class="form-input" placeholder="输入视频播放地址" />
+            <input
+              v-model="editingVideo.video_url"
+              type="text"
+              class="form-input"
+              placeholder="输入视频播放地址"
+              @blur="autoDetectDuration(editingVideo)"
+            />
           </div>
           <div class="form-group">
             <label>封面图片URL</label>
             <input v-model="editingVideo.video_image" type="text" class="form-input" placeholder="输入封面图片地址" />
+            <div v-if="editingVideo.video_image" class="image-preview">
+              <img
+                :src="formatImageUrl(editingVideo.video_image)"
+                alt="封面预览"
+                referrerpolicy="no-referrer"
+                @error="handleImageError"
+              />
+            </div>
           </div>
           <div class="form-group">
             <label>分类</label>
@@ -121,7 +138,17 @@
           </div>
           <div class="form-group">
             <label>时长</label>
-            <input v-model="editingVideo.video_duration" type="text" class="form-input" placeholder="例如: 01:30:00" />
+            <div class="duration-row">
+              <input v-model="editingVideo.video_duration" type="text" class="form-input" placeholder="例如: 01:30:00" />
+              <button
+                class="btn btn-secondary btn-sm"
+                :disabled="detectingDuration || !editingVideo.video_url"
+                @click="detectDuration(editingVideo)"
+              >
+                <AppIcon name="refresh" :size="14" />
+                {{ detectingDuration ? '读取中...' : '读取时长' }}
+              </button>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -147,11 +174,25 @@
           </div>
           <div class="form-group">
             <label>视频URL *</label>
-            <input v-model="newVideo.video_url" type="text" class="form-input" placeholder="输入视频播放地址" />
+            <input
+              v-model="newVideo.video_url"
+              type="text"
+              class="form-input"
+              placeholder="输入视频播放地址"
+              @blur="autoDetectDuration(newVideo)"
+            />
           </div>
           <div class="form-group">
             <label>封面图片URL</label>
             <input v-model="newVideo.video_image" type="text" class="form-input" placeholder="输入封面图片地址" />
+            <div v-if="newVideo.video_image" class="image-preview">
+              <img
+                :src="formatImageUrl(newVideo.video_image)"
+                alt="封面预览"
+                referrerpolicy="no-referrer"
+                @error="handleImageError"
+              />
+            </div>
           </div>
           <div class="form-group">
             <label>分类</label>
@@ -159,7 +200,17 @@
           </div>
           <div class="form-group">
             <label>时长</label>
-            <input v-model="newVideo.video_duration" type="text" class="form-input" placeholder="例如: 01:30:00" />
+            <div class="duration-row">
+              <input v-model="newVideo.video_duration" type="text" class="form-input" placeholder="例如: 01:30:00" />
+              <button
+                class="btn btn-secondary btn-sm"
+                :disabled="detectingDuration || !newVideo.video_url"
+                @click="detectDuration(newVideo)"
+              >
+                <AppIcon name="refresh" :size="14" />
+                {{ detectingDuration ? '读取中...' : '读取时长' }}
+              </button>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -243,6 +294,9 @@ export default {
         video_duration: ''
       },
 
+      // Duration auto-detection state
+      detectingDuration: false,
+
       // Toast
       toastMessage: '',
       toastType: ''
@@ -324,9 +378,24 @@ export default {
       }
 
       try {
-        await videoApi.addVideo(this.newVideo)
+        const result = await videoApi.addVideo(this.newVideo)
+        // Clear API cache so lists (front & admin) reflect the new video immediately
+        videoApi.clearCache()
         this.showToast('视频添加成功', 'success')
         this.showAddVideoModal = false
+
+        // Optimistically prepend the new video to the list for instant UI feedback
+        const newId = result?.data?.video_id
+        const addedVideo = {
+          ...this.newVideo,
+          video_id: newId,
+          play_count: 0
+        }
+        const matchesFilter = !this.filterCategory || addedVideo.video_category === this.filterCategory
+        if (newId && matchesFilter && !this.videoSearchKeyword) {
+          this.managedVideos = [addedVideo, ...this.managedVideos]
+        }
+
         this.newVideo = {
           video_title: '',
           video_url: '',
@@ -334,6 +403,7 @@ export default {
           video_category: '',
           video_duration: ''
         }
+        // Re-fetch in background to stay in sync with the server
         this.searchVideos()
       } catch (e) {
         console.error('Add video error:', e)
@@ -351,10 +421,14 @@ export default {
 
       try {
         await videoApi.deleteVideo(this.deletingVideo.video_id)
+        // Clear API cache so lists reflect the deletion immediately
+        videoApi.clearCache()
+        // Remove from the local list instantly (real-time UI update)
+        const deletedId = this.deletingVideo.video_id
+        this.managedVideos = this.managedVideos.filter(v => v.video_id !== deletedId)
         this.showToast('视频删除成功', 'success')
         this.showDeleteModal = false
         this.deletingVideo = null
-        this.searchVideos()
       } catch (e) {
         console.error('Delete video error:', e)
         this.showToast('删除视频失败', 'error')
@@ -383,13 +457,144 @@ export default {
 
       try {
         await videoApi.updateVideo(this.editingVideo.video_id, this.editingVideo)
+        // Clear API cache so lists reflect the update immediately
+        videoApi.clearCache()
+        // Patch the local list item instantly (real-time UI update)
+        const idx = this.managedVideos.findIndex(v => v.video_id === this.editingVideo.video_id)
+        if (idx !== -1) {
+          this.managedVideos.splice(idx, 1, { ...this.managedVideos[idx], ...this.editingVideo })
+        }
         this.showToast(`视频 "${this.truncateText(this.editingVideo.video_title, 20)}" 更新成功`, 'success')
         this.showEditVideoModal = false
-        this.searchVideos()
       } catch (e) {
         console.error('Update video error:', e)
         this.showToast('更新视频失败', 'error')
       }
+    },
+
+    // Auto-detect duration on URL blur when the duration field is still empty
+    autoDetectDuration(target) {
+      if (target.video_url && !target.video_duration) {
+        this.detectDuration(target, true)
+      }
+    },
+
+    // Read the real duration from the video file's metadata
+    async detectDuration(target, silent = false) {
+      const url = (target.video_url || '').trim()
+      if (!url || this.detectingDuration) return
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        if (!silent) this.showToast('请输入有效的视频地址', 'error')
+        return
+      }
+
+      this.detectingDuration = true
+      try {
+        const seconds = await this.loadVideoDuration(url)
+        target.video_duration = this.formatDurationHMS(seconds)
+        if (!silent) this.showToast('时长读取成功', 'success')
+      } catch (e) {
+        console.warn('Detect duration failed:', e)
+        if (!silent) this.showToast('无法读取视频时长，请手动填写', 'error')
+      } finally {
+        this.detectingDuration = false
+      }
+    },
+
+    // Load video metadata and resolve its duration.
+    // Uses a detached <video> element for regular files, and hls.js for
+    // .m3u8 streams on browsers without native HLS support (e.g. Chrome).
+    loadVideoDuration(url) {
+      const isHls = url.toLowerCase().includes('.m3u8')
+      const probe = document.createElement('video')
+      const nativeHls = !!(
+        probe.canPlayType('application/vnd.apple.mpegurl') ||
+        probe.canPlayType('application/x-mpegURL')
+      )
+      if (isHls && !nativeHls) {
+        return this.loadHlsDuration(url)
+      }
+      return new Promise((resolve, reject) => {
+        probe.preload = 'metadata'
+
+        const cleanup = () => {
+          clearTimeout(timer)
+          probe.onloadedmetadata = null
+          probe.onerror = null
+          probe.removeAttribute('src')
+          probe.load()
+        }
+
+        const timer = setTimeout(() => {
+          cleanup()
+          reject(new Error('读取超时'))
+        }, 20000)
+
+        probe.onloadedmetadata = () => {
+          const duration = probe.duration
+          cleanup()
+          if (isFinite(duration) && duration > 0) {
+            resolve(duration)
+          } else {
+            reject(new Error('无法获取时长'))
+          }
+        }
+        probe.onerror = () => {
+          cleanup()
+          reject(new Error('视频加载失败'))
+        }
+        probe.src = url
+      })
+    },
+
+    // Resolve an HLS stream's total duration via hls.js manifest parsing
+    async loadHlsDuration(url) {
+      const Hls = (await import('hls.js')).default
+      if (!Hls.isSupported()) {
+        throw new Error('浏览器不支持HLS')
+      }
+      return new Promise((resolve, reject) => {
+        const hls = new Hls({ enableWorker: false })
+
+        const cleanup = () => {
+          clearTimeout(timer)
+          try {
+            hls.destroy()
+          } catch { /* ignore */ }
+        }
+
+        const timer = setTimeout(() => {
+          cleanup()
+          reject(new Error('读取超时'))
+        }, 20000)
+
+        hls.on(Hls.Events.LEVEL_LOADED, (event, data) => {
+          const duration = data?.details?.totalduration
+          cleanup()
+          if (isFinite(duration) && duration > 0) {
+            resolve(duration)
+          } else {
+            reject(new Error('无法获取时长'))
+          }
+        })
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          if (data?.fatal) {
+            cleanup()
+            reject(new Error('视频加载失败'))
+          }
+        })
+        hls.loadSource(url)
+        hls.attachMedia(document.createElement('video'))
+      })
+    },
+
+    // Format seconds to HH:MM:SS
+    formatDurationHMS(seconds) {
+      const total = Math.round(seconds)
+      const hrs = Math.floor(total / 3600)
+      const mins = Math.floor((total % 3600) / 60)
+      const secs = total % 60
+      return [hrs, mins, secs].map(n => String(n).padStart(2, '0')).join(':')
     },
 
     // Utility methods
@@ -830,6 +1035,36 @@ export default {
 .warning-text {
   color: var(--admin-danger-dark);
   font-size: 0.9em;
+}
+
+/* Duration input with auto-detect button */
+.duration-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.duration-row .form-input {
+  flex: 1;
+}
+
+.duration-row .btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Cover image preview in modals */
+.image-preview {
+  margin-top: 10px;
+}
+
+.image-preview img {
+  max-width: 160px;
+  max-height: 90px;
+  object-fit: cover;
+  border-radius: var(--admin-radius-sm);
+  border: 1px solid var(--admin-border-strong);
+  background: var(--admin-surface-3);
 }
 
 /* Toast */

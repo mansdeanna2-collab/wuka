@@ -459,6 +459,9 @@ class VideoDatabase:
         """
         获取播放量最高的视频
 
+        只返回有播放量的视频 (play_count > 0)，
+        避免后台新添加的视频（播放量为0）出现在前端轮播图中
+
         Args:
             limit: 返回数量
 
@@ -468,7 +471,7 @@ class VideoDatabase:
         cursor = self.connection.cursor()
         placeholder = '%s' if self.use_mysql else '?'
         cursor.execute(
-            f'SELECT * FROM videos ORDER BY play_count DESC LIMIT {placeholder}',
+            f'SELECT * FROM videos WHERE play_count > 0 ORDER BY play_count DESC LIMIT {placeholder}',
             (limit,)
         )
         rows = cursor.fetchall()
