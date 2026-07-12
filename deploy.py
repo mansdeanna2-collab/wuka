@@ -412,12 +412,26 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
+# npm registry (can be overridden, e.g. https://registry.npmmirror.com for
+# hosts with poor connectivity to registry.npmjs.org)
+ARG NPM_REGISTRY=https://registry.npmjs.org
+
 # Copy package files
 COPY package*.json ./
 
+# Configure npm registry and make network fetches more resilient
+RUN npm config set registry "$NPM_REGISTRY" \\
+    && npm config set fetch-retries 5 \\
+    && npm config set fetch-retry-mintimeout 20000 \\
+    && npm config set fetch-retry-maxtimeout 120000 \\
+    && npm config set fetch-timeout 600000
+
 # Install dependencies (include devDependencies so build tools like vite
-# are available even when NODE_ENV=production is set in the build environment)
-RUN npm ci --include=dev
+# are available even when NODE_ENV=production is set in the build environment).
+# Verify vite is actually installed afterwards: on network timeouts npm can
+# crash with "Exit handler never called!" but still exit 0, leaving an
+# incomplete node_modules that Docker would cache as a "successful" layer.
+RUN npm ci --include=dev && node_modules/.bin/vite --version
 
 # Copy source code
 COPY . .
@@ -540,6 +554,8 @@ services:
     build:
       context: ./video-app
       dockerfile: Dockerfile
+      args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
     container_name: video-frontend
     restart: unless-stopped
     ports:
@@ -610,6 +626,51 @@ def get_compose_command() -> str:
     return "docker-compose -p video-app"
 
 
+DEFAULT_NPM_REGISTRY = "https://registry.npmjs.org"
+MIRROR_NPM_REGISTRY = "https://registry.npmmirror.com"
+
+
+def detect_npm_registry() -> str:
+    """
+    检测可用的npm registry
+
+    前端镜像构建时需要从npm registry下载依赖。如果服务器访问
+    registry.npmjs.org 不稳定(常见于国内服务器)，npm ci 会因网络超时
+    而安装出不完整的 node_modules(npm 存在超时后仍以退出码0结束的bug，
+    即 "Exit handler never called!")，进而导致构建时报 "vite: not found"。
+    这里先探测官方registry的连通性，不通则自动切换到国内镜像。
+    """
+    # 允许用户通过环境变量显式指定
+    env_registry = os.environ.get('NPM_REGISTRY')
+    if env_registry:
+        print_step(f"使用环境变量指定的npm registry: {env_registry}")
+        return env_registry
+
+    print_step("检测npm registry连通性...")
+    code, _, _ = run_command(
+        f"curl -sf -m 10 -o /dev/null {DEFAULT_NPM_REGISTRY}/vite",
+        capture=True, check=False
+    )
+    if code == 0:
+        print_success(f"npm官方registry可用: {DEFAULT_NPM_REGISTRY}")
+        return DEFAULT_NPM_REGISTRY
+
+    print_warning("无法访问 registry.npmjs.org，尝试国内镜像...")
+    code, _, _ = run_command(
+        f"curl -sf -m 10 -o /dev/null {MIRROR_NPM_REGISTRY}/vite",
+        capture=True, check=False
+    )
+    if code == 0:
+        print_success(f"已切换到npm国内镜像: {MIRROR_NPM_REGISTRY}")
+        return MIRROR_NPM_REGISTRY
+
+    print_warning(
+        "官方registry和国内镜像均无法访问，仍使用官方registry，"
+        "构建可能因网络问题失败"
+    )
+    return DEFAULT_NPM_REGISTRY
+
+
 def clean_build_cache(compose_cmd: str) -> None:
     """
     清理可能导致依赖缺失的Docker构建缓存
@@ -671,6 +732,10 @@ def deploy_application(base_dir: str, build: bool = True,
     os.chdir(base_dir)
 
     if build:
+        # 选择可用的npm registry(通过NPM_REGISTRY环境变量传给docker compose
+        # 的build args)，避免因访问registry.npmjs.org超时导致依赖安装不完整
+        os.environ['NPM_REGISTRY'] = detect_npm_registry()
+
         print_step("正在构建Docker镜像...")
         build_cmd = f"{compose_cmd} build"
         if no_cache:
@@ -678,11 +743,11 @@ def deploy_application(base_dir: str, build: bool = True,
             print_step("使用 --no-cache 强制重新构建...")
         code, _, _ = run_command(build_cmd)
         if code != 0:
-            # 常见失败原因是旧的Docker构建缓存导致依赖(如vite)缺失
-            # (例如 "sh: vite: not found")。BuildKit 会复用一个缺少
-            # devDependencies 的 node_modules 缓存层，单纯的 --no-cache
-            # 有时无法清除(frontend 与 admin 共享该缓存层)。因此先主动
-            # 清理镜像与构建缓存，再使用 --no-cache --pull 重新构建。
+            # 常见失败原因:
+            # 1. 网络问题导致npm依赖下载超时(npm可能超时后仍以退出码0结束，
+            #    留下不完整的node_modules缓存层，报 "vite: not found")
+            # 2. 旧的Docker构建缓存中存在缺少devDependencies的node_modules层
+            # 因此先主动清理镜像与构建缓存，再使用 --no-cache --pull 重新构建。
             if not no_cache:
                 print_warning("构建镜像失败，可能是Docker缓存导致依赖缺失")
                 clean_build_cache(compose_cmd)
@@ -692,6 +757,15 @@ def deploy_application(base_dir: str, build: bool = True,
                 )
             if code != 0:
                 print_error("构建镜像失败")
+                print_warning(
+                    "如果日志中出现 \"vite: not found\" 或 npm 报 "
+                    "\"Exit handler never called!\"，通常是服务器访问npm "
+                    "registry网络超时导致依赖安装不完整。可尝试:"
+                )
+                print("  1. 检查服务器到npm registry的网络连通性")
+                print("  2. 使用国内镜像重试: "
+                      "NPM_REGISTRY=https://registry.npmmirror.com "
+                      "sudo -E python3 deploy.py --force-rebuild")
                 return False
         print_success("镜像构建完成")
 
