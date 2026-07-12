@@ -387,6 +387,9 @@ COPY api_server.py .
 
 # Note: video_database.py is mounted at runtime via docker-compose
 
+# Default to SQLite (overridable via docker-compose environment)
+ENV USE_MYSQL=false
+
 # Expose port
 EXPOSE 5000
 
@@ -394,8 +397,8 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \\
     CMD curl -f http://localhost:5000/api/health || exit 1
 
-# Run the application
-CMD ["python", "api_server.py", "--host", "0.0.0.0", "--port", "5000", "--sqlite"]
+# Run the application with a production WSGI server (gunicorn)
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--timeout", "120", "--access-logfile", "-", "api_server:app"]
 '''
         with open(api_dockerfile, 'w') as f:
             f.write(api_dockerfile_content)
