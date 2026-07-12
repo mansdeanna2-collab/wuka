@@ -9,7 +9,7 @@
     >
       <video
         ref="videoElement"
-        :src="safeEncodeURI(currentSrc)"
+        :src="videoSrc"
         :poster="computedPoster"
         controls
         playsinline
@@ -153,7 +153,30 @@ export default {
       // Track source for retry validation (prevent retrying wrong source)
       retrySourceUrl: '',
       // Retry timeout for cleanup
-      retryTimeout: null
+      retryTimeout: null,
+      // hls.js instance (used when the browser lacks native HLS support)
+      hls: null,
+      // hls.js constructor, lazy-loaded only when an HLS stream needs it
+      Hls: null,
+      // Whether the browser can play HLS (.m3u8) natively (Safari/iOS)
+      nativeHlsSupported: false,
+      // Whether Media Source Extensions are available (required by hls.js)
+      mseSupported: false
+    }
+  },
+  computed: {
+    // True when the current source is an HLS stream that must be played via
+    // hls.js because the browser has no native HLS support.
+    useHlsJs() {
+      return getVideoFormat(this.currentSrc) === 'm3u8' &&
+        !this.nativeHlsSupported &&
+        this.mseSupported
+    },
+    // Native src for the <video> element. When hls.js is driving playback we
+    // must leave the native src empty so the browser doesn't try (and fail) to
+    // load the .m3u8 manifest itself.
+    videoSrc() {
+      return this.useHlsJs ? '' : safeEncodeURI(this.currentSrc)
     }
   },
   watch: {
@@ -168,12 +191,34 @@ export default {
       handler(newPoster) {
         this.loadPoster(newPoster)
       }
+    },
+    currentSrc() {
+      // Re-evaluate playback strategy (native vs hls.js) on every source change.
+      this.$nextTick(() => this.setupSource())
     }
+  },
+  created() {
+    // Detect native HLS support once (Safari/iOS play .m3u8 natively).
+    const probe = document.createElement('video')
+    this.nativeHlsSupported = !!(
+      probe.canPlayType('application/vnd.apple.mpegurl') ||
+      probe.canPlayType('application/x-mpegURL')
+    )
+    // Detect Media Source Extensions support (required by hls.js).
+    this.mseSupported = typeof window !== 'undefined' && (
+      'MediaSource' in window ||
+      'ManagedMediaSource' in window ||
+      'WebKitMediaSource' in window
+    )
   },
   mounted() {
     // Listen for fullscreen changes
     document.addEventListener('fullscreenchange', this.handleFullscreenChange)
     document.addEventListener('webkitfullscreenchange', this.handleFullscreenChange)
+    // Handle a source that was set before mount (immediate src watcher).
+    if (this.currentSrc) {
+      this.setupSource()
+    }
   },
   beforeUnmount() {
     document.removeEventListener('fullscreenchange', this.handleFullscreenChange)
@@ -188,8 +233,92 @@ export default {
       clearTimeout(this.retryTimeout)
       this.retryTimeout = null
     }
+    // Tear down hls.js instance to free network/media resources
+    this.destroyHls()
   },
   methods: {
+    // Destroy the current hls.js instance and release its resources.
+    destroyHls() {
+      if (this.hls) {
+        try {
+          this.hls.destroy()
+        } catch (err) {
+          console.warn('Error destroying hls.js instance:', err)
+        }
+        this.hls = null
+      }
+    },
+
+    // Decide how to play the current source: native <video> for regular files
+    // and browsers with native HLS support (Safari/iOS), or hls.js for HLS
+    // (.m3u8) streams on browsers without native support (Chrome/Firefox).
+    // hls.js is dynamically imported so it is only downloaded when needed.
+    async setupSource() {
+      const video = this.$refs.videoElement
+      if (!video) return
+
+      // Always tear down any previous hls.js instance before re-evaluating.
+      this.destroyHls()
+
+      const src = this.currentSrc
+      // Native playback (regular files or native HLS) needs no extra setup;
+      // the reactive :src binding handles it.
+      if (!src || !this.useHlsJs) return
+
+      let Hls
+      try {
+        Hls = (await import('hls.js')).default
+      } catch (err) {
+        console.error('Failed to load hls.js:', err)
+        return
+      }
+
+      // The source may have changed while the module was loading.
+      if (this.currentSrc !== src || !this.useHlsJs) return
+      if (!Hls.isSupported()) return
+
+      this.Hls = Hls
+      // Attach hls.js via Media Source Extensions. videoSrc is already '' here,
+      // so the browser won't attempt a competing native load.
+      const hls = new Hls({ enableWorker: true, lowLatencyMode: false })
+      this.hls = hls
+      hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+        hls.loadSource(safeEncodeURI(src))
+      })
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        this.onHlsError(data)
+      })
+      hls.attachMedia(video)
+    },
+
+    // Handle fatal hls.js errors, attempting recovery where possible.
+    onHlsError(data) {
+      if (!data || !data.fatal || !this.hls || !this.Hls) return
+
+      if (data.type === this.Hls.ErrorTypes.NETWORK_ERROR) {
+        if (this.retryCount < this.maxRetries) {
+          this.retryCount++
+          this.hls.startLoad()
+          return
+        }
+        this.loading = false
+        this.buffering = false
+        this.stopSlowLoadingDetection()
+        this.error = true
+        this.errorMessage = '网络错误，视频加载失败'
+      } else if (data.type === this.Hls.ErrorTypes.MEDIA_ERROR) {
+        // Attempt to recover from media/decoding errors.
+        this.hls.recoverMediaError()
+      } else {
+        this.destroyHls()
+        this.loading = false
+        this.buffering = false
+        this.stopSlowLoadingDetection()
+        this.error = true
+        this.errorMessage = '视频加载失败，请稍后重试'
+      }
+    },
+
     // Clear slow loading detection timeout
     clearSlowLoadingTimeout() {
       if (this.slowLoadingTimeout) {
@@ -304,6 +433,10 @@ export default {
         this.startSlowLoadingDetection()
         
         this.$nextTick(() => {
+          if (this.useHlsJs) {
+            // hls.js drives loading; the currentSrc watcher calls setupSource().
+            return
+          }
           if (this.$refs.videoElement) {
             this.$refs.videoElement.load()
             // Autoplay is now handled in onCanPlay() for consistency
@@ -392,7 +525,9 @@ export default {
           this.loading = true
           this.error = false
           this.startSlowLoadingDetection()
-          if (this.$refs.videoElement) {
+          if (this.useHlsJs) {
+            this.setupSource()
+          } else if (this.$refs.videoElement) {
             this.$refs.videoElement.load()
           }
         }, delay)
@@ -472,7 +607,10 @@ export default {
       // Reset retry count for manual retry (gives user full set of auto-retries again)
       this.retryCount = 0
       this.startSlowLoadingDetection()
-      if (this.$refs.videoElement) {
+      if (this.useHlsJs) {
+        // Rebuild the hls.js pipeline for the current source.
+        this.setupSource()
+      } else if (this.$refs.videoElement) {
         this.$refs.videoElement.load()
       }
     },
