@@ -464,14 +464,13 @@ export default {
         return
       }
       
-      // Load carousel videos (top videos)
+      // Load carousel videos (top played videos only)
+      // Note: if API returns an empty list (no videos have play counts yet),
+      // hide the carousel instead of showing mock data, so admin-added videos
+      // only appear in their category sections
       try {
         const topResult = await videoApi.getTopVideos(videosPerCategory)
         this.carouselVideos = extractArrayData(topResult)
-        // If no videos returned, use mock data
-        if (this.carouselVideos.length === 0) {
-          this.carouselVideos = getMockTopVideos(videosPerCategory)
-        }
       } catch (e) {
         console.error('Load top videos error:', e)
         this.carouselVideos = getMockTopVideos(videosPerCategory)

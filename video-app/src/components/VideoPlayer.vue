@@ -19,7 +19,6 @@
         x5-video-orientation="portrait"
         x-webkit-airplay="allow"
         preload="metadata"
-        crossorigin="anonymous"
         @play="onPlay"
         @pause="onPause"
         @ended="onEnded"
