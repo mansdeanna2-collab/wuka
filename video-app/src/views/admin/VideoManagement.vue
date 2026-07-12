@@ -1,246 +1,90 @@
 <template>
   <div class="video-management-page">
-    <!-- Tab Navigation -->
-    <div class="tab-nav">
-      <button 
-        v-for="tab in tabs" 
-        :key="tab.key"
-        :class="['tab-btn', { active: activeTab === tab.key }]"
-        @click="activeTab = tab.key"
-      >
-        <span class="tab-icon">{{ tab.icon }}</span>
-        {{ tab.label }}
+    <!-- Toolbar -->
+    <div class="vm-toolbar">
+      <div class="toolbar-left">
+        <div class="search-box">
+          <AppIcon name="search" :size="18" class="search-icon" />
+          <input
+            v-model="videoSearchKeyword"
+            type="text"
+            placeholder="搜索视频标题..."
+            class="search-input"
+            @keyup.enter="searchVideos"
+          />
+        </div>
+        <div class="filter-box">
+          <AppIcon name="filter" :size="16" class="filter-icon" />
+          <select v-model="filterCategory" class="select-input" @change="applyCategoryFilter">
+            <option value="">全部分类</option>
+            <optgroup v-for="group in navGroups" :key="group.key" :label="group.label">
+              <option v-for="sub in group.subcategories" :key="group.key + sub" :value="sub">
+                {{ sub }}
+              </option>
+            </optgroup>
+          </select>
+        </div>
+        <button class="btn btn-secondary" @click="searchVideos">
+          <AppIcon name="refresh" :size="16" /> 刷新
+        </button>
+      </div>
+      <button class="btn btn-primary" @click="openAddVideoModal">
+        <AppIcon name="plus" :size="16" /> 添加视频
       </button>
     </div>
 
-    <!-- Category Statistics Tab -->
-    <div v-if="activeTab === 'stats'" class="tab-content">
-      <div class="section-header">
-        <h3>📊 分类视频统计</h3>
-        <button class="btn btn-secondary btn-sm" @click="loadCategoryStats">
-          🔄 刷新
-        </button>
+    <!-- Video List -->
+    <div class="tab-content">
+      <div class="list-header">
+        <h3>
+          <AppIcon name="film" :size="18" />
+          {{ filterCategory ? `分类：${filterCategory}` : '全部视频' }}
+        </h3>
+        <span class="list-count">{{ managedVideos.length }} 个视频</span>
       </div>
-      
-      <div v-if="loadingStats" class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>加载中...</p>
-      </div>
-      
-      <div v-else class="stats-grid">
-        <div 
-          v-for="cat in categoryStats" 
-          :key="cat.video_category"
-          class="stat-card"
-        >
-          <img 
-            v-if="cat.sample_image" 
-            :src="formatImageUrl(cat.sample_image)" 
-            :alt="cat.video_category"
-            class="stat-image"
-            @error="handleImageError"
-          />
-          <div v-else class="stat-image-placeholder">
-            🎬
-          </div>
-          <div class="stat-info">
-            <span class="stat-category">{{ cat.video_category || '未分类' }}</span>
-            <span class="stat-count">{{ cat.video_count }} 个视频</span>
-          </div>
-          <button 
-            class="btn btn-primary btn-sm"
-            @click="viewCategoryVideos(cat.video_category)"
-          >
-            查看
-          </button>
-        </div>
-        
-        <div v-if="categoryStats.length === 0" class="empty-state">
-          <p>暂无分类数据</p>
-        </div>
-      </div>
-    </div>
 
-    <!-- Duplicate Detection Tab -->
-    <div v-if="activeTab === 'duplicates'" class="tab-content">
-      <div class="section-header">
-        <h3>🔍 重复视频检测</h3>
-        <div class="header-actions">
-          <select v-model="duplicateType" class="select-input">
-            <option value="title">按标题查重</option>
-            <option value="image">按图片查重</option>
-          </select>
-          <button class="btn btn-primary btn-sm" @click="checkDuplicates">
-            开始检测
-          </button>
-        </div>
-      </div>
-      
-      <div v-if="loadingDuplicates" class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>检测中...</p>
-      </div>
-      
-      <div v-else-if="duplicateGroups.length > 0" class="duplicates-list">
-        <div 
-          v-for="(group, index) in duplicateGroups" 
-          :key="index"
-          class="duplicate-group"
-        >
-          <div class="group-header">
-            <span class="group-title">
-              {{ group.duplicate_type === 'title' ? '标题' : '图片' }}: 
-              {{ truncateText(group.duplicate_value, 50) }}
-            </span>
-            <span class="group-count">{{ group.count }} 个重复</span>
-          </div>
-          <div class="group-videos">
-            <div 
-              v-for="video in group.videos" 
-              :key="video.video_id"
-              class="video-item"
-            >
-              <img 
-                v-if="video.video_image" 
-                :src="formatImageUrl(video.video_image)" 
-                :alt="video.video_title"
-                class="video-thumb"
-                @error="handleImageError"
-              />
-              <div class="video-info">
-                <span class="video-title">{{ video.video_title }}</span>
-                <span class="video-meta">ID: {{ video.video_id }} | {{ video.video_category }}</span>
-              </div>
-              <button 
-                class="btn btn-danger btn-sm"
-                @click="confirmDeleteVideo(video)"
-              >
-                删除
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div v-else class="empty-state">
-        <p>{{ duplicateCheckDone ? '未发现重复视频' : '点击"开始检测"查找重复视频' }}</p>
-      </div>
-    </div>
-
-    <!-- Video Management Tab -->
-    <div v-if="activeTab === 'manage'" class="tab-content">
-      <div class="section-header">
-        <h3>🎬 视频管理</h3>
-        <button class="btn btn-primary" @click="showAddVideoModal = true">
-          ➕ 添加视频
-        </button>
-      </div>
-      
-      <div class="search-bar">
-        <input 
-          v-model="videoSearchKeyword" 
-          type="text" 
-          placeholder="搜索视频标题..."
-          class="search-input"
-          @keyup.enter="searchVideos"
-        />
-        <button class="btn btn-primary" @click="searchVideos">搜索</button>
-      </div>
-      
       <div v-if="loadingVideos" class="loading-state">
         <div class="loading-spinner"></div>
         <p>加载中...</p>
       </div>
-      
+
       <div v-else class="videos-list">
-        <div 
-          v-for="video in managedVideos" 
+        <div
+          v-for="video in managedVideos"
           :key="video.video_id"
           class="video-item"
         >
-          <img 
-            v-if="video.video_image" 
-            :src="formatImageUrl(video.video_image)" 
+          <img
+            v-if="video.video_image"
+            :src="formatImageUrl(video.video_image)"
             :alt="video.video_title"
             class="video-thumb"
             @error="handleImageError"
           />
+          <div v-else class="video-thumb-placeholder">
+            <AppIcon name="film" :size="20" />
+          </div>
           <div class="video-info">
             <span class="video-title">{{ video.video_title }}</span>
             <span class="video-meta">
-              ID: {{ video.video_id }} | {{ video.video_category }} | 播放: {{ video.play_count || 0 }}
+              <span class="meta-tag">ID: {{ video.video_id }}</span>
+              <span class="meta-tag category">{{ video.video_category || '未分类' }}</span>
+              <span class="meta-tag">播放 {{ video.play_count || 0 }}</span>
             </span>
           </div>
-          <button 
-            class="btn btn-danger btn-sm"
-            @click="confirmDeleteVideo(video)"
-          >
-            删除
-          </button>
+          <div class="video-actions">
+            <button class="btn btn-secondary btn-sm" @click="openEditVideoModal(video)">
+              <AppIcon name="edit" :size="14" /> 编辑
+            </button>
+            <button class="btn btn-danger btn-sm" @click="confirmDeleteVideo(video)">
+              <AppIcon name="trash" :size="14" /> 删除
+            </button>
+          </div>
         </div>
-        
-        <div v-if="managedVideos.length === 0" class="empty-state">
-          <p>暂无视频数据</p>
-        </div>
-      </div>
-    </div>
 
-    <!-- Category Videos Modal -->
-    <div v-if="showCategoryModal" class="modal-overlay" @click.self="closeCategoryModal">
-      <div class="modal modal-large">
-        <div class="modal-header">
-          <h3>{{ viewingCategory || '未分类' }} - 视频列表</h3>
-          <button class="close-btn" @click="closeCategoryModal">×</button>
-        </div>
-        <div class="modal-body">
-          <div v-if="loadingCategoryVideos" class="loading-state">
-            <div class="loading-spinner"></div>
-            <p>加载中...</p>
-          </div>
-          <div v-else class="videos-list">
-            <div 
-              v-for="video in categoryVideos" 
-              :key="video.video_id"
-              class="video-item"
-            >
-              <img 
-                v-if="video.video_image" 
-                :src="formatImageUrl(video.video_image)" 
-                :alt="video.video_title"
-                class="video-thumb"
-                @error="handleImageError"
-              />
-              <div class="video-info">
-                <span class="video-title">{{ video.video_title }}</span>
-                <span class="video-meta">
-                  ID: {{ video.video_id }} | 分类: {{ video.video_category || '未分类' }} | 播放: {{ video.play_count || 0 }}
-                </span>
-                <span class="video-meta">
-                  时长: {{ video.video_duration || '未知' }} | 上传: {{ video.upload_time || '未知' }}
-                </span>
-              </div>
-              <div class="video-actions">
-                <button 
-                  class="btn btn-secondary btn-sm"
-                  @click="openEditVideoModal(video)"
-                >
-                  编辑
-                </button>
-                <button 
-                  class="btn btn-danger btn-sm"
-                  @click="confirmDeleteVideo(video)"
-                >
-                  删除
-                </button>
-              </div>
-            </div>
-            <div v-if="categoryVideos.length === 0" class="empty-state">
-              <p>该分类暂无视频</p>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" @click="closeCategoryModal">关闭</button>
+        <div v-if="managedVideos.length === 0" class="empty-state">
+          <AppIcon name="film" :size="40" />
+          <p>暂无视频数据</p>
         </div>
       </div>
     </div>
@@ -249,8 +93,10 @@
     <div v-if="showEditVideoModal" class="modal-overlay" @click.self="showEditVideoModal = false">
       <div class="modal">
         <div class="modal-header">
-          <h3>编辑视频</h3>
-          <button class="close-btn" @click="showEditVideoModal = false">×</button>
+          <h3><AppIcon name="edit" :size="18" /> 编辑视频</h3>
+          <button class="close-btn" @click="showEditVideoModal = false">
+            <AppIcon name="x" :size="20" />
+          </button>
         </div>
         <div class="modal-body">
           <div class="form-group">
@@ -271,7 +117,7 @@
           </div>
           <div class="form-group">
             <label>分类</label>
-            <input v-model="editingVideo.video_category" type="text" class="form-input" list="category-options" placeholder="选择已有分类或输入新分类" />
+            <CategoryPicker v-model="editingVideo.video_category" />
           </div>
           <div class="form-group">
             <label>时长</label>
@@ -289,8 +135,10 @@
     <div v-if="showAddVideoModal" class="modal-overlay" @click.self="showAddVideoModal = false">
       <div class="modal">
         <div class="modal-header">
-          <h3>添加视频</h3>
-          <button class="close-btn" @click="showAddVideoModal = false">×</button>
+          <h3><AppIcon name="plus" :size="18" /> 添加视频</h3>
+          <button class="close-btn" @click="showAddVideoModal = false">
+            <AppIcon name="x" :size="20" />
+          </button>
         </div>
         <div class="modal-body">
           <div class="form-group">
@@ -307,7 +155,7 @@
           </div>
           <div class="form-group">
             <label>分类</label>
-            <input v-model="newVideo.video_category" type="text" class="form-input" list="category-options" placeholder="选择已有分类或输入新分类" />
+            <CategoryPicker v-model="newVideo.video_category" />
           </div>
           <div class="form-group">
             <label>时长</label>
@@ -325,8 +173,10 @@
     <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
       <div class="modal modal-small">
         <div class="modal-header">
-          <h3>确认删除</h3>
-          <button class="close-btn" @click="showDeleteModal = false">×</button>
+          <h3><AppIcon name="alert" :size="18" /> 确认删除</h3>
+          <button class="close-btn" @click="showDeleteModal = false">
+            <AppIcon name="x" :size="20" />
+          </button>
         </div>
         <div class="modal-body">
           <p>确定要删除视频"{{ deletingVideo?.video_title }}"吗？</p>
@@ -338,11 +188,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Shared category options for datalist pickers -->
-    <datalist id="category-options">
-      <option v-for="cat in categoryOptions" :key="cat" :value="cat" />
-    </datalist>
 
     <!-- Toast Notification -->
     <transition name="toast">
@@ -357,38 +202,23 @@
 import { videoApi } from '@/api'
 import { extractArrayData } from '@/utils/apiUtils'
 import { formatImageUrl } from '@/utils/imageUtils'
-
+import { getNavCategories, fetchNavCategories } from '@/utils/navCategoryManager'
+import AppIcon from '@/components/AppIcon.vue'
+import CategoryPicker from '@/components/admin/CategoryPicker.vue'
 export default {
   name: 'VideoManagement',
+  components: { AppIcon, CategoryPicker },
   data() {
     return {
-      activeTab: 'stats',
-      tabs: [
-        { key: 'stats', label: '分类统计', icon: '📊' },
-        { key: 'duplicates', label: '重复检测', icon: '🔍' },
-        { key: 'manage', label: '视频管理', icon: '🎬' }
-      ],
-      
-      // Category Stats
-      categoryStats: [],
-      loadingStats: false,
-      
-      // Category Videos Modal
-      showCategoryModal: false,
-      viewingCategory: '',
-      categoryVideos: [],
-      loadingCategoryVideos: false,
-      
-      // Duplicate Detection
-      duplicateType: 'title',
-      duplicateGroups: [],
-      loadingDuplicates: false,
-      duplicateCheckDone: false,
-      
+      // Navigation category groups (power the filter + pickers)
+      navGroups: [],
+
       // Video Management
       managedVideos: [],
       loadingVideos: false,
       videoSearchKeyword: '',
+      filterCategory: '',
+
       showAddVideoModal: false,
       newVideo: {
         video_title: '',
@@ -397,11 +227,11 @@ export default {
         video_category: '',
         video_duration: ''
       },
-      
+
       // Delete confirmation
       showDeleteModal: false,
       deletingVideo: null,
-      
+
       // Edit video modal
       showEditVideoModal: false,
       editingVideo: {
@@ -412,109 +242,87 @@ export default {
         video_category: '',
         video_duration: ''
       },
-      
+
       // Toast
       toastMessage: '',
       toastType: ''
     }
   },
-  computed: {
-    // Existing category names (from stats) used to power the category picker
-    categoryOptions() {
-      return this.categoryStats
-        .map(cat => cat.video_category)
-        .filter(name => name && name !== '未分类')
-    }
-  },
   mounted() {
-    this.loadCategoryStats()
+    this.loadNavGroups()
+    this.refreshNavGroups()
+    this.searchVideos()
   },
   methods: {
-    // Category Statistics
-    async loadCategoryStats() {
-      this.loadingStats = true
+    loadNavGroups() {
+      const cats = getNavCategories() || []
+      this.navGroups = cats.map(c => ({
+        key: c.key,
+        label: c.label,
+        subcategories: Array.isArray(c.subcategories) ? c.subcategories : []
+      }))
+    },
+
+    async refreshNavGroups() {
+      // Pull the latest saved navigation categories so the filter and pickers
+      // reflect what the admin configured, not just cached defaults.
       try {
-        const result = await videoApi.getCategoryStats()
-        this.categoryStats = extractArrayData(result)
+        await fetchNavCategories()
+        this.loadNavGroups()
       } catch (e) {
-        console.error('Load category stats error:', e)
-        this.showToast('加载分类统计失败', 'error')
-      } finally {
-        this.loadingStats = false
+        console.error('Load nav categories error:', e)
       }
     },
-    
-    async viewCategoryVideos(category) {
-      this.viewingCategory = category
-      this.showCategoryModal = true
-      this.loadingCategoryVideos = true
-      
-      try {
-        const result = await videoApi.getCategoryVideosAdmin(category, 50)
-        this.categoryVideos = extractArrayData(result)
-      } catch (e) {
-        console.error('Load category videos error:', e)
-        this.showToast('加载视频列表失败', 'error')
-      } finally {
-        this.loadingCategoryVideos = false
-      }
+
+    applyCategoryFilter() {
+      this.searchVideos()
     },
-    
-    closeCategoryModal() {
-      this.showCategoryModal = false
-      this.viewingCategory = ''
-      this.categoryVideos = []
-    },
-    
-    // Duplicate Detection
-    async checkDuplicates() {
-      this.loadingDuplicates = true
-      this.duplicateCheckDone = false
-      
-      try {
-        const result = await videoApi.getDuplicateVideos(this.duplicateType)
-        this.duplicateGroups = extractArrayData(result)
-        this.duplicateCheckDone = true
-        
-        if (this.duplicateGroups.length === 0) {
-          this.showToast('未发现重复视频', 'success')
-        } else {
-          this.showToast(`发现 ${this.duplicateGroups.length} 组重复视频`, 'info')
-        }
-      } catch (e) {
-        console.error('Check duplicates error:', e)
-        this.showToast('检测重复视频失败', 'error')
-      } finally {
-        this.loadingDuplicates = false
-      }
-    },
-    
+
     // Video Management
     async searchVideos() {
       this.loadingVideos = true
-      
+
       try {
         let result
         if (this.videoSearchKeyword) {
           result = await videoApi.searchVideos(this.videoSearchKeyword, 50)
+          let videos = extractArrayData(result)
+          if (this.filterCategory) {
+            videos = videos.filter(v => v.video_category === this.filterCategory)
+          }
+          this.managedVideos = videos
+        } else if (this.filterCategory) {
+          result = await videoApi.getCategoryVideosAdmin(this.filterCategory, 50)
+          this.managedVideos = extractArrayData(result)
         } else {
           result = await videoApi.getVideos({ limit: 50 })
+          this.managedVideos = extractArrayData(result)
         }
-        this.managedVideos = extractArrayData(result)
       } catch (e) {
         console.error('Search videos error:', e)
-        this.showToast('搜索视频失败', 'error')
+        this.showToast('加载视频失败', 'error')
       } finally {
         this.loadingVideos = false
       }
     },
-    
+
+    openAddVideoModal() {
+      this.newVideo = {
+        video_title: '',
+        video_url: '',
+        video_image: '',
+        video_category: this.filterCategory || '',
+        video_duration: ''
+      }
+      this.showAddVideoModal = true
+    },
+
     async addVideo() {
       if (!this.newVideo.video_title || !this.newVideo.video_url) {
         this.showToast('请填写必填字段', 'error')
         return
       }
-      
+
       try {
         await videoApi.addVideo(this.newVideo)
         this.showToast('视频添加成功', 'success')
@@ -526,49 +334,33 @@ export default {
           video_category: '',
           video_duration: ''
         }
-        // Refresh stats and video list
-        this.loadCategoryStats()
-        if (this.activeTab === 'manage') {
-          this.searchVideos()
-        }
+        this.searchVideos()
       } catch (e) {
         console.error('Add video error:', e)
         this.showToast('添加视频失败', 'error')
       }
     },
-    
+
     confirmDeleteVideo(video) {
       this.deletingVideo = video
       this.showDeleteModal = true
     },
-    
+
     async deleteVideo() {
       if (!this.deletingVideo) return
-      
+
       try {
         await videoApi.deleteVideo(this.deletingVideo.video_id)
         this.showToast('视频删除成功', 'success')
         this.showDeleteModal = false
         this.deletingVideo = null
-        
-        // Refresh data
-        this.loadCategoryStats()
-        if (this.activeTab === 'duplicates') {
-          this.checkDuplicates()
-        }
-        if (this.activeTab === 'manage') {
-          this.searchVideos()
-        }
-        // Refresh category videos if modal is open
-        if (this.showCategoryModal && this.viewingCategory) {
-          this.viewCategoryVideos(this.viewingCategory)
-        }
+        this.searchVideos()
       } catch (e) {
         console.error('Delete video error:', e)
         this.showToast('删除视频失败', 'error')
       }
     },
-    
+
     // Open edit video modal
     openEditVideoModal(video) {
       this.editingVideo = {
@@ -581,51 +373,42 @@ export default {
       }
       this.showEditVideoModal = true
     },
-    
+
     // Update video
     async updateVideo() {
       if (!this.editingVideo.video_id || !this.editingVideo.video_title || !this.editingVideo.video_url) {
         this.showToast('请填写必填字段', 'error')
         return
       }
-      
+
       try {
         await videoApi.updateVideo(this.editingVideo.video_id, this.editingVideo)
         this.showToast(`视频 "${this.truncateText(this.editingVideo.video_title, 20)}" 更新成功`, 'success')
         this.showEditVideoModal = false
-        
-        // Refresh data
-        this.loadCategoryStats()
-        if (this.activeTab === 'manage') {
-          this.searchVideos()
-        }
-        // Refresh category videos if modal is open
-        if (this.showCategoryModal && this.viewingCategory) {
-          this.viewCategoryVideos(this.viewingCategory)
-        }
+        this.searchVideos()
       } catch (e) {
         console.error('Update video error:', e)
         this.showToast('更新视频失败', 'error')
       }
     },
-    
+
     // Utility methods
     truncateText(text, maxLength) {
       if (!text) return ''
       return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
     },
-    
+
     // Format image URL to handle base64 and special URL formats
     formatImageUrl(url) {
       return formatImageUrl(url)
     },
-    
+
     handleImageError(e) {
       // Use a transparent 1x1 pixel data URI instead of empty string to avoid browser loading current page
       e.target.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
       e.target.style.background = 'var(--admin-surface-3)'
     },
-    
+
     showToast(message, type = 'info') {
       this.toastMessage = message
       this.toastType = type
@@ -643,82 +426,95 @@ export default {
   max-width: 1200px;
 }
 
-/* Tab Navigation */
-.tab-nav {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
-}
-
-.tab-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  background: var(--admin-surface);
-  border: 1px solid var(--admin-border);
-  border-radius: var(--admin-radius-sm);
-  color: var(--admin-text-muted);
-  font-size: 0.95em;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.tab-btn:hover {
-  background: var(--admin-surface-2);
-  color: var(--admin-text);
-}
-
-.tab-btn.active {
-  background: var(--admin-primary-soft);
-  border-color: var(--admin-primary-border);
-  color: var(--admin-primary-dark);
-  font-weight: 600;
-}
-
-.tab-icon {
-  font-size: 1.2em;
-}
-
-/* Tab Content */
-.tab-content {
-  background: var(--admin-surface);
-  border-radius: var(--admin-radius);
-  padding: 25px;
-  border: 1px solid var(--admin-border);
-  box-shadow: var(--admin-shadow-sm);
-}
-
-/* Section Header */
-.section-header {
+/* Toolbar */
+.vm-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
 }
 
-.section-header h3 {
-  margin: 0;
-  font-size: 1.2em;
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--admin-text-faint);
+  pointer-events: none;
+}
+
+.search-input {
+  padding: 10px 15px 10px 38px;
+  min-width: 240px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
+  color: var(--admin-text);
+  font-size: 0.9em;
+}
+
+.filter-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filter-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--admin-text-faint);
+  pointer-events: none;
+}
+
+.select-input {
+  padding: 10px 15px 10px 36px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
+  color: var(--admin-text);
+  font-size: 0.9em;
+}
+
+.select-input option {
+  background-color: var(--admin-surface);
   color: var(--admin-text);
 }
 
-.header-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
+.search-input:focus,
+.select-input:focus,
+.form-input:focus {
+  outline: none;
+  border-color: var(--admin-primary);
+  box-shadow: 0 0 0 3px var(--admin-primary-soft);
+}
+
+.form-input::placeholder,
+.search-input::placeholder {
+  color: var(--admin-text-faint);
 }
 
 /* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  gap: 6px;
+  padding: 10px 18px;
   border: none;
   border-radius: var(--admin-radius-sm);
-  font-size: 0.95em;
+  font-size: 0.9em;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -731,7 +527,7 @@ export default {
 
 .btn-sm {
   padding: 6px 12px;
-  font-size: 0.85em;
+  font-size: 0.82em;
 }
 
 .btn-primary {
@@ -765,45 +561,39 @@ export default {
   box-shadow: var(--admin-shadow-sm);
 }
 
-/* Form inputs */
-.select-input,
-.search-input,
-.form-input {
-  padding: 10px 15px;
+/* List container */
+.tab-content {
   background: var(--admin-surface);
-  border: 1px solid var(--admin-border-strong);
-  border-radius: var(--admin-radius-sm);
-  color: var(--admin-text);
-  font-size: 0.9em;
+  border-radius: var(--admin-radius);
+  padding: 22px 25px;
+  border: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow-sm);
 }
 
-.select-input option {
-  background-color: var(--admin-surface);
-  color: var(--admin-text);
-}
-
-.select-input:focus,
-.search-input:focus,
-.form-input:focus {
-  outline: none;
-  border-color: var(--admin-primary);
-  box-shadow: 0 0 0 3px var(--admin-primary-soft);
-}
-
-.form-input::placeholder,
-.search-input::placeholder {
-  color: var(--admin-text-faint);
-}
-
-.search-bar {
+.list-header {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--admin-border);
 }
 
-.search-input {
-  flex: 1;
-  max-width: 400px;
+.list-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 1.1em;
+  color: var(--admin-text);
+}
+
+.list-count {
+  font-size: 0.85em;
+  color: var(--admin-text-muted);
+  padding: 3px 12px;
+  background: var(--admin-surface-3);
+  border-radius: 12px;
 }
 
 /* Loading State */
@@ -834,108 +624,13 @@ export default {
 
 /* Empty State */
 .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   text-align: center;
-  padding: 40px 20px;
-  color: var(--admin-text-muted);
-}
-
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 15px;
-}
-
-.stat-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  background: var(--admin-surface-2);
-  border: 1px solid var(--admin-border);
-  border-radius: var(--admin-radius);
-  transition: all 0.2s;
-}
-
-.stat-card:hover {
-  border-color: var(--admin-primary-border);
-  box-shadow: var(--admin-shadow-sm);
-}
-
-.stat-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.stat-category {
-  font-weight: 600;
-  color: var(--admin-text);
-}
-
-.stat-count {
-  font-size: 0.85em;
-  color: var(--admin-accent-ink);
-}
-
-.stat-image {
-  width: 60px;
-  height: 40px;
-  object-fit: cover;
-  border-radius: 6px;
-  background: var(--admin-surface-3);
-  flex-shrink: 0;
-}
-
-.stat-image-placeholder {
-  width: 60px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--admin-surface-3);
-  border-radius: 6px;
-  font-size: 1.2em;
-  flex-shrink: 0;
-}
-
-/* Duplicates List */
-.duplicates-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.duplicate-group {
-  background: var(--admin-surface-2);
-  border: 1px solid var(--admin-border);
-  border-radius: var(--admin-radius);
-  overflow: hidden;
-}
-
-.group-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 15px;
-  background: var(--admin-danger-soft);
-  border-bottom: 1px solid var(--admin-border);
-}
-
-.group-title {
-  font-weight: 500;
-  color: var(--admin-text);
-  font-size: 0.9em;
-}
-
-.group-count {
-  font-size: 0.85em;
-  color: var(--admin-danger-dark);
-  font-weight: 600;
-}
-
-.group-videos {
-  padding: 10px;
+  padding: 50px 20px;
+  color: var(--admin-text-faint);
 }
 
 /* Video Items */
@@ -953,14 +648,32 @@ export default {
   background: var(--admin-surface);
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-sm);
+  transition: all 0.2s;
+}
+
+.video-item:hover {
+  border-color: var(--admin-primary-border);
+  box-shadow: var(--admin-shadow-sm);
 }
 
 .video-thumb {
-  width: 80px;
-  height: 45px;
+  width: 90px;
+  height: 52px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 6px;
   background: var(--admin-surface-3);
+  flex-shrink: 0;
+}
+
+.video-thumb-placeholder {
+  width: 90px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: var(--admin-surface-3);
+  color: var(--admin-text-faint);
   flex-shrink: 0;
 }
 
@@ -968,22 +681,36 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
 }
 
 .video-title {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--admin-text);
-  font-size: 0.9em;
+  font-size: 0.92em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .video-meta {
-  font-size: 0.8em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.meta-tag {
+  font-size: 0.75em;
   color: var(--admin-text-muted);
+  padding: 2px 8px;
+  background: var(--admin-surface-2);
+  border-radius: 10px;
+}
+
+.meta-tag.category {
+  color: var(--admin-accent-ink);
+  background: var(--admin-accent-soft);
 }
 
 .video-actions {
@@ -1013,14 +740,10 @@ export default {
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   box-shadow: var(--admin-shadow-lg);
-}
-
-.modal-large {
-  max-width: 800px;
 }
 
 .modal-small {
@@ -1034,34 +757,40 @@ export default {
   padding: 15px 20px;
   background: var(--admin-surface-2);
   border-bottom: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius) var(--admin-radius) 0 0;
 }
 
 .modal-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
   font-size: 1.1em;
   color: var(--admin-text);
 }
 
 .close-btn {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: none;
   border: none;
   color: var(--admin-text-faint);
-  font-size: 1.5em;
   cursor: pointer;
+  border-radius: var(--admin-radius-sm);
 }
 
 .close-btn:hover {
   color: var(--admin-text);
+  background: var(--admin-surface-3);
 }
 
 .modal-body {
   padding: 20px;
   overflow-y: auto;
+  overflow-x: visible;
   flex: 1;
 }
 
@@ -1072,6 +801,7 @@ export default {
   padding: 15px 20px;
   background: var(--admin-surface-2);
   border-top: 1px solid var(--admin-border);
+  border-radius: 0 0 var(--admin-radius) var(--admin-radius);
 }
 
 /* Form */
@@ -1089,6 +819,12 @@ export default {
 
 .form-input {
   width: 100%;
+  padding: 10px 15px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
+  color: var(--admin-text);
+  font-size: 0.9em;
 }
 
 .warning-text {
@@ -1136,40 +872,42 @@ export default {
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-  .tab-nav {
-    gap: 8px;
+  .vm-toolbar {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .tab-btn {
-    padding: 10px 15px;
-    font-size: 0.85em;
+  .toolbar-left {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .select-input {
+    width: 100%;
   }
 
   .tab-content {
     padding: 15px;
   }
 
-  .section-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-  }
-
-  .header-actions {
-    width: 100%;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
   .video-item {
     flex-wrap: wrap;
   }
 
-  .video-thumb {
-    width: 60px;
-    height: 34px;
+  .video-thumb,
+  .video-thumb-placeholder {
+    width: 70px;
+    height: 40px;
+  }
+
+  .video-actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 }
 </style>

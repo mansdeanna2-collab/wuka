@@ -3,11 +3,11 @@
     <!-- Action Bar -->
     <div class="action-bar">
       <button class="btn btn-primary" @click="showAddModal = true">
-        <span class="btn-icon">➕</span>
+        <span class="btn-icon"><AppIcon name="plus" :size="16" /></span>
         添加导航分类
       </button>
       <button class="btn btn-secondary" @click="resetCategories">
-        <span class="btn-icon">🔄</span>
+        <span class="btn-icon"><AppIcon name="refresh" :size="16" /></span>
         恢复默认
       </button>
     </div>
@@ -29,10 +29,10 @@
           </div>
           <div class="card-actions">
             <button class="action-btn edit-btn" @click="editCategory(navCat)" title="编辑">
-              ✏️
+              <AppIcon name="edit" :size="16" />
             </button>
             <button class="action-btn delete-btn" @click="confirmDelete(navCat)" title="删除">
-              🗑️
+              <AppIcon name="trash" :size="16" />
             </button>
           </div>
         </div>
@@ -67,7 +67,7 @@
       
       <!-- Empty State -->
       <div v-if="navCategories.length === 0" class="empty-state">
-        <div class="empty-icon">📁</div>
+        <div class="empty-icon"><AppIcon name="folder" :size="40" /></div>
         <p>暂无导航分类</p>
         <button class="btn btn-primary" @click="showAddModal = true">
           添加第一个分类
@@ -80,7 +80,7 @@
       <div class="modal">
         <div class="modal-header">
           <h3>{{ showEditModal ? '编辑导航分类' : '添加导航分类' }}</h3>
-          <button class="close-btn" @click="closeModals">×</button>
+          <button class="close-btn" @click="closeModals"><AppIcon name="x" :size="18" /></button>
         </div>
         <div class="modal-body">
           <div class="form-group">
@@ -116,7 +116,7 @@
       <div class="modal modal-large">
         <div class="modal-header">
           <h3>编辑绑定分类 - {{ editingNav?.label }}</h3>
-          <button class="close-btn" @click="closeSubcategoriesModal">×</button>
+          <button class="close-btn" @click="closeSubcategoriesModal"><AppIcon name="x" :size="18" /></button>
         </div>
         <div class="modal-body">
           <p class="modal-desc">
@@ -174,7 +174,7 @@
       <div class="modal modal-small">
         <div class="modal-header">
           <h3>确认删除</h3>
-          <button class="close-btn" @click="showDeleteModal = false">×</button>
+          <button class="close-btn" @click="showDeleteModal = false"><AppIcon name="x" :size="18" /></button>
         </div>
         <div class="modal-body">
           <p>确定要删除导航分类"{{ deletingNav?.label }}"吗？</p>
@@ -192,7 +192,7 @@
       <div class="modal modal-small">
         <div class="modal-header">
           <h3>确认恢复默认</h3>
-          <button class="close-btn" @click="showResetModal = false">×</button>
+          <button class="close-btn" @click="showResetModal = false"><AppIcon name="x" :size="18" /></button>
         </div>
         <div class="modal-body">
           <p>确定要恢复默认导航分类配置吗？</p>
@@ -217,6 +217,7 @@
 <script>
 import { videoApi } from '@/api'
 import { extractArrayData } from '@/utils/apiUtils'
+import AppIcon from '@/components/AppIcon.vue'
 import {
   getNavCategories,
   fetchNavCategories,
@@ -229,6 +230,7 @@ import {
 
 export default {
   name: 'NavCategoriesManager',
+  components: { AppIcon },
   data() {
     return {
       navCategories: [],
@@ -640,6 +642,7 @@ export default {
 
 .edit-btn {
   background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
 }
 
 .edit-btn:hover {
@@ -648,6 +651,7 @@ export default {
 
 .delete-btn {
   background: var(--admin-danger-soft);
+  color: var(--admin-danger-dark);
 }
 
 .delete-btn:hover {
@@ -721,7 +725,9 @@ export default {
 }
 
 .empty-icon {
-  font-size: 4em;
+  display: flex;
+  justify-content: center;
+  color: var(--admin-text-faint);
   margin-bottom: 15px;
 }
 

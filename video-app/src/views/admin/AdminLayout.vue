@@ -3,7 +3,10 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-header">
-        <h1 class="admin-logo">🎬 管理后台</h1>
+        <h1 class="admin-logo">
+          <span class="logo-mark"><AppIcon name="film" :size="20" /></span>
+          <span class="logo-text">管理后台</span>
+        </h1>
         <span v-if="isStandaloneMode" class="standalone-badge">独立模式</span>
       </div>
       
@@ -15,18 +18,18 @@
           class="nav-link"
           :class="{ active: isActive(item.path) }"
         >
-          <span class="nav-icon">{{ item.icon }}</span>
+          <span class="nav-icon"><AppIcon :name="item.icon" :size="20" /></span>
           <span class="nav-text">{{ item.label }}</span>
         </router-link>
       </nav>
       
       <div class="sidebar-footer">
         <a v-if="isStandaloneMode" :href="frontendUrl" class="back-to-site">
-          <span class="nav-icon">🏠</span>
+          <span class="nav-icon"><AppIcon name="home" :size="20" /></span>
           <span class="nav-text">返回前台</span>
         </a>
         <router-link v-else to="/" class="back-to-site">
-          <span class="nav-icon">🏠</span>
+          <span class="nav-icon"><AppIcon name="home" :size="20" /></span>
           <span class="nav-text">返回前台</span>
         </router-link>
       </div>
@@ -47,18 +50,20 @@
 
 <script>
 import { isStandaloneMode, getFrontendUrl, getAdminPath } from '@/utils/adminUtils'
+import AppIcon from '@/components/AppIcon.vue'
 
 export default {
   name: 'AdminLayout',
+  components: { AppIcon },
   computed: {
     // Use shared utility for standalone mode detection
     isStandaloneMode,
     menuItems() {
       return [
-        { path: getAdminPath('dashboard'), icon: '📊', label: '仪表盘' },
-        { path: getAdminPath('nav-categories'), icon: '📁', label: '导航分类管理' },
-        { path: getAdminPath('video-management'), icon: '🎬', label: '视频管理' },
-        { path: getAdminPath('collection'), icon: '📥', label: '视频采集' }
+        { path: getAdminPath('dashboard'), icon: 'dashboard', label: '仪表盘' },
+        { path: getAdminPath('nav-categories'), icon: 'folder', label: '导航分类管理' },
+        { path: getAdminPath('video-management'), icon: 'film', label: '视频管理' },
+        { path: getAdminPath('collection'), icon: 'download', label: '视频采集' }
       ]
     },
     currentPageTitle() {
@@ -105,13 +110,31 @@ export default {
 }
 
 .admin-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 1.3em;
   font-weight: 700;
+  margin: 0;
+}
+
+.logo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--admin-primary), var(--admin-accent));
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.logo-text {
   background: linear-gradient(90deg, var(--admin-accent-ink), var(--admin-primary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin: 0;
 }
 
 .standalone-badge {
@@ -158,7 +181,9 @@ export default {
 }
 
 .nav-icon {
-  font-size: 1.2em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav-text {

@@ -1,36 +1,32 @@
 <template>
   <div class="dashboard">
+    <!-- Hero banner -->
+    <div class="dash-hero">
+      <div class="hero-text">
+        <h2 class="hero-title">欢迎回来 👋</h2>
+        <p class="hero-sub">悟空视频管理后台 · 内容与分类一站式管理</p>
+      </div>
+      <div class="hero-actions">
+        <router-link :to="getAdminPath('video-management')" class="hero-btn">
+          <AppIcon name="film" :size="18" />
+          <span>视频管理</span>
+        </router-link>
+        <router-link :to="getAdminPath('collection')" class="hero-btn ghost">
+          <AppIcon name="download" :size="18" />
+          <span>视频采集</span>
+        </router-link>
+      </div>
+    </div>
+
     <!-- Statistics Cards -->
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon">📹</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.total_videos || 0 }}</div>
-          <div class="stat-label">视频总数</div>
+      <div class="stat-card" v-for="card in statCards" :key="card.label">
+        <div class="stat-icon" :style="{ background: card.gradient }">
+          <AppIcon :name="card.icon" :size="24" />
         </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">📁</div>
         <div class="stat-content">
-          <div class="stat-value">{{ stats.total_categories || 0 }}</div>
-          <div class="stat-label">视频分类</div>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">🔗</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ navCategories.length }}</div>
-          <div class="stat-label">导航分类</div>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">🎬</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ totalBoundCategories }}</div>
-          <div class="stat-label">已绑定分类</div>
+          <div class="stat-value">{{ card.value }}</div>
+          <div class="stat-label">{{ card.label }}</div>
         </div>
       </div>
     </div>
@@ -40,15 +36,19 @@
       <h3 class="section-title">快捷操作</h3>
       <div class="links-grid">
         <router-link :to="getAdminPath('nav-categories')" class="quick-link">
-          <span class="link-icon">📁</span>
+          <span class="link-icon"><AppIcon name="folder" :size="20" /></span>
           <span class="link-text">管理导航分类</span>
         </router-link>
+        <router-link :to="getAdminPath('video-management')" class="quick-link">
+          <span class="link-icon"><AppIcon name="film" :size="20" /></span>
+          <span class="link-text">管理视频内容</span>
+        </router-link>
         <a v-if="isStandaloneMode" :href="frontendUrl" class="quick-link">
-          <span class="link-icon">🌐</span>
+          <span class="link-icon"><AppIcon name="globe" :size="20" /></span>
           <span class="link-text">查看前台效果</span>
         </a>
         <router-link v-else to="/" class="quick-link">
-          <span class="link-icon">🌐</span>
+          <span class="link-icon"><AppIcon name="globe" :size="20" /></span>
           <span class="link-text">查看前台效果</span>
         </router-link>
       </div>
@@ -64,7 +64,10 @@
           class="nav-card"
         >
           <div class="nav-card-header">
-            <span class="nav-name">{{ navCat.label }}</span>
+            <span class="nav-name">
+              <span class="nav-dot"></span>
+              {{ navCat.label }}
+            </span>
             <span class="nav-count">{{ (navCat.subcategories || []).length }} 个分类</span>
           </div>
           <div class="nav-card-body">
@@ -82,6 +85,12 @@
               >
                 +{{ (navCat.subcategories || []).length - 4 }} 更多
               </span>
+              <span
+                v-if="(navCat.subcategories || []).length === 0"
+                class="subcategory-empty"
+              >
+                暂无绑定分类
+              </span>
             </div>
           </div>
         </div>
@@ -92,11 +101,13 @@
 
 <script>
 import { videoApi } from '@/api'
-import { getNavCategories } from '@/utils/navCategoryManager'
+import { getNavCategories, fetchNavCategories } from '@/utils/navCategoryManager'
 import { isStandaloneMode, getFrontendUrl, getAdminPath } from '@/utils/adminUtils'
+import AppIcon from '@/components/AppIcon.vue'
 
 export default {
   name: 'AdminDashboard',
+  components: { AppIcon },
   data() {
     return {
       stats: {},
@@ -107,6 +118,34 @@ export default {
   computed: {
     totalBoundCategories() {
       return this.navCategories.reduce((sum, nav) => sum + (nav.subcategories?.length || 0), 0)
+    },
+    statCards() {
+      return [
+        {
+          icon: 'film',
+          label: '视频总数',
+          value: this.stats.total_videos || 0,
+          gradient: 'linear-gradient(135deg, #7c3aed, #a855f7)'
+        },
+        {
+          icon: 'folder',
+          label: '视频分类',
+          value: this.stats.total_categories || 0,
+          gradient: 'linear-gradient(135deg, #0ea5e9, #38bdf8)'
+        },
+        {
+          icon: 'link',
+          label: '导航分类',
+          value: this.navCategories.length,
+          gradient: 'linear-gradient(135deg, #f59e0b, #fbbf24)'
+        },
+        {
+          icon: 'layers',
+          label: '已绑定分类',
+          value: this.totalBoundCategories,
+          gradient: 'linear-gradient(135deg, #16a34a, #4ade80)'
+        }
+      ]
     },
     // Use shared utility for standalone mode detection
     isStandaloneMode,
@@ -132,8 +171,13 @@ export default {
         console.error('Load statistics error:', e)
       }
       
-      // Load navigation categories from local storage
-      this.navCategories = getNavCategories()
+      // Load navigation categories (fetch fresh from API, fall back to cache)
+      try {
+        this.navCategories = await fetchNavCategories()
+      } catch (e) {
+        console.error('Load nav categories error:', e)
+        this.navCategories = getNavCategories()
+      }
       this.loading = false
     }
   }
@@ -143,6 +187,63 @@ export default {
 <style scoped>
 .dashboard {
   max-width: 1200px;
+}
+
+/* Hero banner */
+.dash-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 26px 30px;
+  margin-bottom: 26px;
+  border-radius: var(--admin-radius-lg);
+  color: #fff;
+  background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 45%, #0ea5e9 100%);
+  box-shadow: var(--admin-shadow);
+}
+
+.hero-title {
+  margin: 0 0 6px 0;
+  font-size: 1.5em;
+  font-weight: 700;
+}
+
+.hero-sub {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 0.95em;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--admin-radius-sm);
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9em;
+  transition: all 0.2s;
+}
+
+.hero-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-2px);
+}
+
+.hero-btn.ghost {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* Statistics Grid */
@@ -171,14 +272,14 @@ export default {
 }
 
 .stat-icon {
-  font-size: 2.5em;
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--admin-primary-soft);
-  border-radius: 12px;
+  color: #fff;
+  border-radius: 14px;
+  box-shadow: var(--admin-shadow-sm);
 }
 
 .stat-content {
@@ -240,7 +341,8 @@ export default {
 }
 
 .link-icon {
-  font-size: 1.3em;
+  display: inline-flex;
+  align-items: center;
 }
 
 .link-text {
@@ -270,6 +372,7 @@ export default {
 .nav-card:hover {
   border-color: var(--admin-accent-border);
   box-shadow: var(--admin-shadow);
+  transform: translateY(-2px);
 }
 
 .nav-card-header {
@@ -282,9 +385,19 @@ export default {
 }
 
 .nav-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 600;
   color: var(--admin-text);
   font-size: 1.05em;
+}
+
+.nav-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--admin-primary), var(--admin-accent));
 }
 
 .nav-count {
@@ -319,8 +432,17 @@ export default {
   color: var(--admin-text-muted);
 }
 
+.subcategory-empty {
+  font-size: 0.8em;
+  color: var(--admin-text-faint);
+}
+
 /* Mobile responsive */
 @media (max-width: 576px) {
+  .dash-hero {
+    padding: 20px;
+  }
+
   .stats-grid {
     grid-template-columns: 1fr 1fr;
     gap: 12px;
@@ -334,9 +456,8 @@ export default {
   }
   
   .stat-icon {
-    font-size: 2em;
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
   }
   
   .stat-value {
