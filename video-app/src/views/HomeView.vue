@@ -49,9 +49,9 @@
 
     <!-- Main Content -->
     <div v-else class="main-content" ref="mainContent">
-      <!-- Carousel Banner -->
+      <!-- Carousel Banner (always rendered; shows a placeholder when the
+           admin has not configured any carousel items) -->
       <Carousel 
-        v-if="carouselVideos.length > 0"
         :videos="carouselVideos"
         @click="playVideo"
       />
@@ -464,19 +464,15 @@ export default {
         return
       }
       
-      // Load carousel videos. The home carousel is primarily managed from the
-      // admin console (admin-selected videos in a chosen order). If the admin
-      // has not configured any carousel videos (or the configured ones were
-      // deleted), fall back to the top videos so the carousel still displays
-      // content above the category sections instead of disappearing entirely.
+      // Load carousel items. The home carousel is fully managed from the
+      // admin console (admin-selected videos and/or standalone images in a
+      // chosen order). It is intentionally NOT auto-populated from the videos
+      // added in video management. If the admin has not configured anything,
+      // the carousel shows an empty placeholder (handled in Carousel.vue)
+      // instead of falling back to top videos.
       try {
         const carouselResult = await videoApi.getCarousel()
-        let carousel = extractArrayData(carouselResult)
-        if (carousel.length === 0) {
-          const topResult = await videoApi.getTopVideos(videosPerCategory)
-          carousel = extractArrayData(topResult)
-        }
-        this.carouselVideos = carousel
+        this.carouselVideos = extractArrayData(carouselResult)
       } catch (e) {
         console.error('Load carousel videos error:', e)
         this.carouselVideos = []
@@ -584,6 +580,16 @@ export default {
     },
     
     playVideo(video) {
+      // Standalone carousel image items have no associated video; if a link
+      // is configured, open it, otherwise ignore the click.
+      if (video && video.item_type === 'image') {
+        const link = video.link_url
+        if (link) {
+          window.open(link, '_blank', 'noopener')
+        }
+        return
+      }
+      if (!video || video.video_id == null) return
       this.$router.push({ name: 'player', params: { id: video.video_id } })
     }
   }

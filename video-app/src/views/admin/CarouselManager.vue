@@ -4,8 +4,8 @@
     <div class="cm-intro">
       <AppIcon name="image" :size="18" />
       <p>
-        在这里选择要显示在首页轮播图的视频。轮播图只会展示你选中的视频，
-        新增的视频不会自动出现在轮播图，只会显示在它所属的分类里。
+        在这里配置首页轮播图。你可以单独添加图片，也可以选择已有视频显示在轮播图。
+        轮播图只会展示你在这里配置的内容，新增视频不会自动出现在轮播图，只会显示在它所属的分类里。
       </p>
     </div>
 
@@ -28,7 +28,7 @@
         <div v-else class="videos-list">
           <div
             v-for="(video, index) in carouselList"
-            :key="video.video_id"
+            :key="video._uid"
             class="video-item"
           >
             <span class="order-badge">{{ index + 1 }}</span>
@@ -42,13 +42,16 @@
               @error="handleImageError"
             />
             <div v-else class="video-thumb-placeholder">
-              <AppIcon name="film" :size="20" />
+              <AppIcon :name="video.item_type === 'image' ? 'image' : 'film'" :size="20" />
             </div>
             <div class="video-info">
-              <span class="video-title">{{ video.video_title }}</span>
+              <span class="video-title">{{ video.video_title || (video.item_type === 'image' ? '图片' : '未命名') }}</span>
               <span class="video-meta">
-                <span class="meta-tag">ID: {{ video.video_id }}</span>
-                <span class="meta-tag category">{{ video.video_category || '未分类' }}</span>
+                <span v-if="video.item_type === 'image'" class="meta-tag category">图片</span>
+                <template v-else>
+                  <span class="meta-tag">ID: {{ video.video_id }}</span>
+                  <span class="meta-tag category">{{ video.video_category || '未分类' }}</span>
+                </template>
               </span>
             </div>
             <div class="video-actions">
@@ -76,7 +79,7 @@
 
           <div v-if="carouselList.length === 0" class="empty-state">
             <AppIcon name="image" :size="40" />
-            <p>还没有选择轮播图视频，从右侧添加。</p>
+            <p>还没有配置轮播图，添加图片或从右侧选择视频。</p>
           </div>
         </div>
 
@@ -90,9 +93,64 @@
         </div>
       </section>
 
-      <!-- Video picker -->
+      <!-- Video / image picker -->
       <section class="tab-content">
         <div class="list-header">
+          <h3>
+            <AppIcon name="image" :size="18" />
+            添加图片
+          </h3>
+        </div>
+
+        <div class="cm-image-form">
+          <label class="cm-field">
+            <span class="cm-label">图片地址 <em>*</em></span>
+            <input
+              v-model="imageForm.image_url"
+              type="text"
+              placeholder="https://example.com/banner.jpg"
+              class="cm-input"
+            />
+          </label>
+          <div class="cm-field-row">
+            <label class="cm-field">
+              <span class="cm-label">标题（可选）</span>
+              <input
+                v-model="imageForm.title"
+                type="text"
+                placeholder="轮播图标题"
+                class="cm-input"
+              />
+            </label>
+            <label class="cm-field">
+              <span class="cm-label">跳转链接（可选）</span>
+              <input
+                v-model="imageForm.link_url"
+                type="text"
+                placeholder="https://... 点击图片时打开"
+                class="cm-input"
+              />
+            </label>
+          </div>
+          <div
+            v-if="imageForm.image_url"
+            class="cm-image-preview"
+          >
+            <img
+              :src="formatImageUrl(imageForm.image_url)"
+              alt="预览"
+              referrerpolicy="no-referrer"
+              @error="handleImageError"
+            />
+          </div>
+          <div class="cm-image-actions">
+            <button class="btn btn-primary" @click="addImageToCarousel">
+              <AppIcon name="plus" :size="16" /> 添加图片到轮播图
+            </button>
+          </div>
+        </div>
+
+        <div class="list-header cm-picker-header">
           <h3>
             <AppIcon name="film" :size="18" />
             添加视频
@@ -216,6 +274,16 @@ export default {
       searchKeyword: '',
       filterCategory: '',
 
+      // Standalone image form
+      imageForm: {
+        image_url: '',
+        title: '',
+        link_url: ''
+      },
+
+      // Incrementing id used to give every carousel entry a stable v-for key
+      uidCounter: 0,
+
       // Toast
       toastMessage: '',
       toastType: ''
@@ -250,12 +318,28 @@ export default {
       this.loadingCarousel = true
       try {
         const result = await videoApi.getCarousel()
-        this.carouselList = extractArrayData(result)
+        const items = extractArrayData(result)
+        this.carouselList = items.map(item => this.normalizeItem(item))
       } catch (e) {
         console.error('Load carousel error:', e)
         this.showToast('加载轮播图失败', 'error')
       } finally {
         this.loadingCarousel = false
+      }
+    },
+
+    // Give every carousel entry a stable local uid and a consistent shape.
+    normalizeItem(item) {
+      const isImage = item.item_type === 'image'
+      return {
+        _uid: `cm-${this.uidCounter++}`,
+        item_type: isImage ? 'image' : 'video',
+        video_id: isImage ? null : item.video_id,
+        video_title: item.video_title || '',
+        video_image: item.video_image || '',
+        video_category: item.video_category || '',
+        image_url: isImage ? (item.video_image || item.image_url || '') : '',
+        link_url: item.link_url || ''
       }
     },
 
@@ -286,17 +370,33 @@ export default {
     },
 
     isInCarousel(videoId) {
-      return this.carouselList.some(v => v.video_id === videoId)
+      return this.carouselList.some(v => v.item_type === 'video' && v.video_id === videoId)
     },
 
     addToCarousel(video) {
       if (this.isInCarousel(video.video_id)) return
-      this.carouselList.push({ ...video })
+      this.carouselList.push(this.normalizeItem({ ...video, item_type: 'video' }))
       this.showToast('已添加到轮播图，记得点击保存', 'info')
     },
 
+    addImageToCarousel() {
+      const imageUrl = (this.imageForm.image_url || '').trim()
+      if (!imageUrl) {
+        this.showToast('请填写图片地址', 'error')
+        return
+      }
+      this.carouselList.push(this.normalizeItem({
+        item_type: 'image',
+        video_image: imageUrl,
+        video_title: (this.imageForm.title || '').trim(),
+        link_url: (this.imageForm.link_url || '').trim()
+      }))
+      this.imageForm = { image_url: '', title: '', link_url: '' }
+      this.showToast('已添加图片到轮播图，记得点击保存', 'info')
+    },
+
     removeFromCarousel(video) {
-      this.carouselList = this.carouselList.filter(v => v.video_id !== video.video_id)
+      this.carouselList = this.carouselList.filter(v => v._uid !== video._uid)
     },
 
     moveUp(index) {
@@ -314,8 +414,18 @@ export default {
     async saveCarousel() {
       this.saving = true
       try {
-        const ids = this.carouselList.map(v => v.video_id)
-        await videoApi.saveCarousel(ids)
+        const items = this.carouselList.map(v => {
+          if (v.item_type === 'image') {
+            return {
+              item_type: 'image',
+              image_url: v.image_url || v.video_image,
+              title: v.video_title || '',
+              link_url: v.link_url || ''
+            }
+          }
+          return { item_type: 'video', video_id: v.video_id }
+        })
+        await videoApi.saveCarouselItems(items)
         // Clear API cache so the home page reflects the new carousel immediately
         videoApi.clearCache()
         this.showToast('轮播图配置已保存', 'success')
@@ -394,6 +504,81 @@ export default {
   margin-top: 18px;
   padding-top: 14px;
   border-top: 1px solid var(--admin-border);
+}
+
+/* Standalone image form */
+.cm-image-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.cm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cm-field-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cm-label {
+  font-size: 0.82em;
+  color: var(--admin-text-muted);
+}
+
+.cm-label em {
+  color: var(--admin-danger);
+  font-style: normal;
+}
+
+.cm-input {
+  padding: 10px 14px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
+  color: var(--admin-text);
+  font-size: 0.9em;
+  width: 100%;
+}
+
+.cm-input:focus {
+  outline: none;
+  border-color: var(--admin-primary);
+  box-shadow: 0 0 0 3px var(--admin-primary-soft);
+}
+
+.cm-image-preview {
+  position: relative;
+  width: 100%;
+  padding-top: 40%;
+  border-radius: var(--admin-radius-sm);
+  overflow: hidden;
+  background: var(--admin-surface-3);
+}
+
+.cm-image-preview img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cm-image-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cm-picker-header {
+  margin-top: 8px;
 }
 
 .search-box {
