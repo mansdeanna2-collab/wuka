@@ -291,19 +291,9 @@ export const videoApi = {
 
   // ==================== Admin Video Management ====================
 
-  // Get category statistics (video count per category)
-  getCategoryStats() {
-    return api.get('/admin/category-stats')
-  },
-
   // Get videos in a specific category (for admin viewing)
   getCategoryVideosAdmin(category, limit = 50, offset = 0) {
     return api.get('/admin/category-videos', { params: { category, limit, offset } })
-  },
-
-  // Find duplicate videos (by title or image)
-  getDuplicateVideos(type = 'title') {
-    return api.get('/admin/duplicates', { params: { type } })
   },
 
   // Add a new video

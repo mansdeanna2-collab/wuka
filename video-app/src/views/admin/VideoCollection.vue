@@ -1,13 +1,13 @@
 <template>
   <div class="video-collection-page">
     <div class="page-intro">
-      <h3>📥 视频采集</h3>
+      <h3><AppIcon name="download" :size="20" /> 视频采集</h3>
       <p class="intro-desc">从采集源检查并抓取最新视频到本地数据库。采集脚本将在后续版本重写。</p>
     </div>
 
     <!-- Collection Controls -->
     <div class="panel collection-controls">
-      <h4>🚀 后台采集</h4>
+      <h4><AppIcon name="rocket" :size="18" /> 后台采集</h4>
       <div class="control-row">
         <div class="control-group">
           <label>采集分类</label>
@@ -66,7 +66,7 @@
     <!-- Collection Status -->
     <div class="panel">
       <div class="section-header">
-        <h3>📊 采集状态</h3>
+        <h3><AppIcon name="chart" :size="18" /> 采集状态</h3>
         <div class="header-actions">
           <select v-model="collectionHours" class="select-input">
             <option value="24">24小时内</option>
@@ -151,9 +151,11 @@
 import { videoApi } from '@/api'
 import { extractArrayData } from '@/utils/apiUtils'
 import { formatImageUrl } from '@/utils/imageUtils'
+import AppIcon from '@/components/AppIcon.vue'
 
 export default {
   name: 'VideoCollection',
+  components: { AppIcon },
   data() {
     return {
       // Collection Status
@@ -282,6 +284,9 @@ export default {
 }
 
 .page-intro h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0 0 6px 0;
   font-size: 1.3em;
   color: var(--admin-text);
@@ -312,6 +317,9 @@ export default {
 }
 
 .section-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
   font-size: 1.2em;
   color: var(--admin-text);
@@ -424,6 +432,9 @@ export default {
 
 /* Collection Controls */
 .collection-controls h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0 0 15px 0;
   color: var(--admin-text);
   font-size: 1.1em;
