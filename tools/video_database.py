@@ -194,14 +194,22 @@ class VideoDatabase:
             ''')
 
             # 创建轮播图配置表 (Create carousel_items table for admin-managed home carousel)
+            # 轮播图支持两种条目：已有视频(item_type='video')与独立图片(item_type='image')
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS carousel_items (
                     id INT PRIMARY KEY AUTO_INCREMENT,
-                    video_id INT NOT NULL,
+                    item_type VARCHAR(20) DEFAULT 'video',
+                    video_id INT NULL,
+                    image_url TEXT,
+                    title VARCHAR(500),
+                    link_url TEXT,
                     sort_order INT DEFAULT 0,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
             ''')
+
+            # 兼容旧表结构：补齐独立图片所需的列，并允许 video_id 为空
+            self._migrate_carousel_items_mysql(cursor)
 
             self.connection.commit()
             self._log(f"✅ MySQL数据库初始化完成: {self.mysql_config['database']}")
@@ -271,18 +279,88 @@ class VideoDatabase:
         ''')
 
         # 创建轮播图配置表 (Create carousel_items table for admin-managed home carousel)
-        # 轮播图内容由管理员在后台手动选择，不再自动展示新增视频
+        # 轮播图内容由管理员在后台手动选择，不再自动展示新增视频。
+        # 支持两种条目：已有视频(item_type='video')与独立图片(item_type='image')。
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS carousel_items (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                video_id INTEGER NOT NULL,
+                item_type TEXT DEFAULT 'video',
+                video_id INTEGER,
+                image_url TEXT,
+                title TEXT,
+                link_url TEXT,
                 sort_order INTEGER DEFAULT 0,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
         ''')
 
+        # 兼容旧表结构：补齐独立图片所需的列
+        self._migrate_carousel_items_sqlite(cursor)
+
         self.connection.commit()
         self._log(f"✅ 数据库初始化完成: {self.db_path}")
+
+    def _migrate_carousel_items_mysql(self, cursor) -> None:
+        """为旧版 MySQL carousel_items 表补齐独立图片所需的列并放宽 video_id 约束"""
+        column_defs = {
+            'item_type': "ALTER TABLE carousel_items ADD COLUMN item_type VARCHAR(20) DEFAULT 'video'",
+            'image_url': "ALTER TABLE carousel_items ADD COLUMN image_url TEXT",
+            'title': "ALTER TABLE carousel_items ADD COLUMN title VARCHAR(500)",
+            'link_url': "ALTER TABLE carousel_items ADD COLUMN link_url TEXT",
+        }
+        for sql in column_defs.values():
+            try:
+                cursor.execute(sql)
+            except Exception:
+                # 列已存在
+                pass
+        # 允许 video_id 为空（独立图片没有关联视频）
+        try:
+            cursor.execute('ALTER TABLE carousel_items MODIFY COLUMN video_id INT NULL')
+        except Exception:
+            pass
+
+    def _migrate_carousel_items_sqlite(self, cursor) -> None:
+        """为旧版 SQLite carousel_items 表补齐独立图片所需的列"""
+        cursor.execute('PRAGMA table_info(carousel_items)')
+        info = cursor.fetchall()
+        existing = {row[1] for row in info}
+        # 旧表将 video_id 定义为 NOT NULL，SQLite 无法直接放宽该约束，
+        # 独立图片条目需要 video_id 为空，因此重建表并迁移数据。
+        video_id_not_null = any(row[1] == 'video_id' and row[3] == 1 for row in info)
+        if video_id_not_null:
+            cursor.execute('ALTER TABLE carousel_items RENAME TO carousel_items_old')
+            cursor.execute('''
+                CREATE TABLE carousel_items (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    item_type TEXT DEFAULT 'video',
+                    video_id INTEGER,
+                    image_url TEXT,
+                    title TEXT,
+                    link_url TEXT,
+                    sort_order INTEGER DEFAULT 0,
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            cursor.execute('''
+                INSERT INTO carousel_items (item_type, video_id, sort_order, created_at)
+                SELECT 'video', video_id, sort_order, created_at FROM carousel_items_old
+            ''')
+            cursor.execute('DROP TABLE carousel_items_old')
+            return
+
+        column_defs = {
+            'item_type': "ALTER TABLE carousel_items ADD COLUMN item_type TEXT DEFAULT 'video'",
+            'image_url': "ALTER TABLE carousel_items ADD COLUMN image_url TEXT",
+            'title': "ALTER TABLE carousel_items ADD COLUMN title TEXT",
+            'link_url': "ALTER TABLE carousel_items ADD COLUMN link_url TEXT",
+        }
+        for column, sql in column_defs.items():
+            if column not in existing:
+                try:
+                    cursor.execute(sql)
+                except Exception:
+                    pass
 
     def _log(self, message: str) -> None:
         """输出日志信息"""
@@ -753,30 +831,83 @@ class VideoDatabase:
 
     def get_carousel_videos(self) -> List[Dict[str, Any]]:
         """
-        获取首页轮播图视频列表 (Get home carousel videos)
+        获取首页轮播图条目列表 (Get home carousel items)
 
-        返回管理员在后台手动选择的视频，按配置顺序排列。
-        通过 JOIN videos 表获取完整视频信息；已删除的视频会自动被排除。
-        如果管理员未配置轮播图，返回空列表（前端将隐藏轮播图）。
+        返回管理员在后台手动配置的轮播图条目，按配置顺序排列。支持两种条目：
+          - 视频条目 (item_type='video')：JOIN videos 表获取完整视频信息，
+            已删除的视频会自动被排除。
+          - 独立图片条目 (item_type='image')：直接使用配置的图片地址，
+            与视频管理无关。
+        如果管理员未配置轮播图，返回空列表（前端会显示占位样式）。
 
         Returns:
-            视频列表
+            条目列表，每个条目包含 item_type / video_id / video_image /
+            video_title / video_category / link_url 等字段。
         """
         cursor = self.connection.cursor()
         cursor.execute('''
-            SELECT v.* FROM carousel_items c
-            JOIN videos v ON c.video_id = v.video_id
+            SELECT c.id, c.item_type, c.video_id, c.image_url, c.title, c.link_url,
+                   c.sort_order,
+                   v.video_url, v.video_image, v.video_title, v.video_category
+            FROM carousel_items c
+            LEFT JOIN videos v ON c.video_id = v.video_id
             ORDER BY c.sort_order ASC, c.id ASC
         ''')
         rows = cursor.fetchall()
-        return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
+
+        items: List[Dict[str, Any]] = []
+        for row in rows:
+            row = dict(row)
+            item_type = row.get('item_type') or 'video'
+            if item_type == 'image':
+                # 独立图片条目：必须配置了图片地址才展示
+                if not row.get('image_url'):
+                    continue
+                items.append({
+                    'item_type': 'image',
+                    'video_id': None,
+                    'video_image': row.get('image_url'),
+                    'video_title': row.get('title') or '',
+                    'video_category': '',
+                    'link_url': row.get('link_url') or ''
+                })
+            else:
+                # 视频条目：关联视频被删除时(LEFT JOIN 结果为空)自动跳过
+                if not row.get('video_id') or row.get('video_url') is None:
+                    continue
+                items.append({
+                    'item_type': 'video',
+                    'video_id': row.get('video_id'),
+                    'video_url': row.get('video_url'),
+                    'video_image': row.get('video_image'),
+                    'video_title': row.get('video_title') or '',
+                    'video_category': row.get('video_category') or '',
+                    'link_url': ''
+                })
+        return items
 
     def save_carousel_videos(self, video_ids: List[int]) -> bool:
         """
-        保存首页轮播图配置 (Save carousel videos - replaces all)
+        保存首页轮播图配置（仅视频，向后兼容）
 
         Args:
             video_ids: 视频ID列表，按展示顺序排列
+
+        Returns:
+            成功返回True，失败返回False
+        """
+        items = [{'item_type': 'video', 'video_id': vid} for vid in video_ids]
+        return self.save_carousel_items(items)
+
+    def save_carousel_items(self, items: List[Dict[str, Any]]) -> bool:
+        """
+        保存首页轮播图配置 (Save carousel items - replaces all)
+
+        Args:
+            items: 轮播图条目列表，按展示顺序排列。每个条目为字典：
+                - 视频条目: {'item_type': 'video', 'video_id': 1}
+                - 图片条目: {'item_type': 'image', 'image_url': '...',
+                            'title': '...', 'link_url': '...'}
 
         Returns:
             成功返回True，失败返回False
@@ -788,14 +919,43 @@ class VideoDatabase:
             # 删除所有现有轮播图配置 (Delete all existing carousel items)
             cursor.execute('DELETE FROM carousel_items')
 
-            # 按顺序插入新的轮播图视频 (Insert new carousel items in order)
-            for i, video_id in enumerate(video_ids):
-                cursor.execute(
-                    f'INSERT INTO carousel_items (video_id, sort_order) VALUES ({placeholder}, {placeholder})',
-                    (int(video_id), i))
+            # 按顺序插入新的轮播图条目 (Insert new carousel items in order)
+            insert_sql = (
+                'INSERT INTO carousel_items '
+                '(item_type, video_id, image_url, title, link_url, sort_order) '
+                f'VALUES ({placeholder}, {placeholder}, {placeholder}, '
+                f'{placeholder}, {placeholder}, {placeholder})'
+            )
+            for i, item in enumerate(items):
+                item_type = (item.get('item_type') or 'video').strip()
+                if item_type == 'image':
+                    image_url = (item.get('image_url') or '').strip()
+                    if not image_url:
+                        # 图片条目必须有图片地址，否则跳过
+                        continue
+                    cursor.execute(insert_sql, (
+                        'image',
+                        None,
+                        image_url,
+                        (item.get('title') or '').strip(),
+                        (item.get('link_url') or '').strip(),
+                        i
+                    ))
+                else:
+                    video_id = item.get('video_id')
+                    if video_id is None:
+                        continue
+                    cursor.execute(insert_sql, (
+                        'video',
+                        int(video_id),
+                        None,
+                        None,
+                        None,
+                        i
+                    ))
 
             self.connection.commit()
-            self._log(f"✅ 保存了 {len(video_ids)} 个轮播图视频")
+            self._log(f"✅ 保存了 {len(items)} 个轮播图条目")
             return True
         except Exception as e:
             logger.error(f"保存轮播图配置失败: {e}")
