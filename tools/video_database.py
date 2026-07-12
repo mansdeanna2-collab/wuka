@@ -459,8 +459,10 @@ class VideoDatabase:
         """
         获取播放量最高的视频
 
-        只返回有播放量的视频 (play_count > 0)，
-        避免后台新添加的视频（播放量为0）出现在前端轮播图中
+        优先返回有播放量的视频 (play_count > 0)，按播放量降序排列。
+        如果没有任何视频有播放量（例如刚添加的新视频播放量都为0），
+        则回退到返回最新上传的视频，确保前端轮播图始终有内容展示，
+        不会因为播放量都为0而完全不显示。
 
         Args:
             limit: 返回数量
@@ -475,7 +477,19 @@ class VideoDatabase:
             (limit,)
         )
         rows = cursor.fetchall()
-        return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
+        videos = [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
+
+        # Fallback: if no videos have play counts yet, show the most recent
+        # videos so the carousel still displays content instead of being empty.
+        if not videos:
+            cursor.execute(
+                f'SELECT * FROM videos ORDER BY upload_time DESC LIMIT {placeholder}',
+                (limit,)
+            )
+            rows = cursor.fetchall()
+            videos = [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
+
+        return videos
 
     def update_video(self, video_id: int,
                      updates: Dict[str, Any]) -> bool:

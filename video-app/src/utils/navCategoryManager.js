@@ -153,13 +153,19 @@ export async function addNavCategory(category) {
     return false
   }
   
-  categories.push({
-    key: category.key,
-    label: category.label,
-    subcategories: category.subcategories || []
-  })
+  // Build a NEW array (immutable update) so the reference changes.
+  // This ensures Vue reactivity triggers a re-render when consumers
+  // reassign from getNavCategories() after the save.
+  const updated = [
+    ...categories,
+    {
+      key: category.key,
+      label: category.label,
+      subcategories: category.subcategories || []
+    }
+  ]
   
-  return await saveNavCategories(categories)
+  return await saveNavCategories(updated)
 }
 
 /**
@@ -177,12 +183,13 @@ export async function updateNavCategory(key, updates) {
     return false
   }
   
-  categories[index] = {
-    ...categories[index],
-    ...updates
-  }
+  // Build a NEW array with a NEW object for the updated entry (immutable
+  // update) so the reference changes and Vue reactivity triggers a re-render.
+  const updated = categories.map(c =>
+    c.key === key ? { ...c, ...updates } : c
+  )
   
-  return await saveNavCategories(categories)
+  return await saveNavCategories(updated)
 }
 
 /**
@@ -199,8 +206,10 @@ export async function deleteNavCategory(key) {
     return false
   }
   
-  categories.splice(index, 1)
-  return await saveNavCategories(categories)
+  // Build a NEW array (immutable update) so the reference changes and
+  // Vue reactivity triggers a re-render when the list is reassigned.
+  const updated = categories.filter(c => c.key !== key)
+  return await saveNavCategories(updated)
 }
 
 /**
