@@ -35,9 +35,6 @@
         <span v-if="video.video_category" class="category">
           {{ video.video_category }}
         </span>
-        <span v-if="video.play_count" class="play-count">
-          {{ formatPlayCount(video.play_count) }} 次播放
-        </span>
       </div>
       <div v-if="video.video_coins > 0" class="coins">
         <span class="coin-icon" aria-hidden="true">🪙</span>
@@ -49,7 +46,6 @@
 
 <script>
 import { formatImageUrl, loadImageWithBase64Detection } from '@/utils/imageUtils'
-import { formatPlayCount } from '@/utils/formatUtils'
 
 export default {
   name: 'VideoCard',
@@ -88,8 +84,6 @@ export default {
         this.$refs.placeholder.style.display = 'flex'
       }
     },
-    // Use shared formatPlayCount from formatUtils
-    formatPlayCount,
     async loadImage() {
       const url = this.video?.video_image
       if (!url || !this.$refs.imgElement) return
@@ -238,11 +232,6 @@ export default {
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 0.75em;
-}
-
-.play-count {
-  color: #888;
-  font-size: 0.8em;
 }
 
 .coins {
