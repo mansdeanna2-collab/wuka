@@ -232,12 +232,21 @@ export default {
 .carousel-slide {
   flex: 0 0 100%;
   position: relative;
-  aspect-ratio: 2.5/1;
+  width: 100%;
+  /* Percentage padding keeps the 2.5:1 ratio (100 / 2.5 = 40%).
+     Used instead of the modern `aspect-ratio` property so the slide still
+     has height on older Android WebView / iOS Safari, matching the rest of
+     the app (see VideoCard/CategorySection). Otherwise the slide collapses
+     to zero height and the carousel disappears. */
+  padding-top: 40%;
   cursor: pointer;
   background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3e 100%);
 }
 
 .slide-image {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
