@@ -610,6 +610,23 @@ def get_compose_command() -> str:
     return "docker-compose -p video-app"
 
 
+def clean_build_cache(compose_cmd: str) -> None:
+    """
+    清理可能导致依赖缺失的Docker构建缓存
+
+    构建阶段依赖(如 vite)被安装在 node_modules 层中。如果之前用旧的
+    Dockerfile(未包含 devDependencies)构建过，BuildKit 会缓存一个缺少
+    vite 的层。由于 frontend 与 admin 共享相同的构建步骤，该损坏的缓存层
+    会被复用，导致即使加了 --no-cache 也可能出现 "vite: not found"。
+    这里主动删除项目镜像并清理 BuildKit 构建缓存，确保下次为全新构建。
+    """
+    print_step("清理旧的镜像与构建缓存以避免依赖缺失...")
+    # 删除本项目已构建的镜像(忽略不存在的情况)
+    run_command(f"{compose_cmd} down --rmi local", check=False)
+    # 清理 BuildKit 构建缓存(包含损坏的 node_modules 层)
+    run_command("docker builder prune -f", check=False)
+
+
 def wait_for_service_healthy(compose_cmd: str, service: str, timeout: int = 60) -> bool:
     """
     等待服务变为健康状态
@@ -662,11 +679,17 @@ def deploy_application(base_dir: str, build: bool = True,
         code, _, _ = run_command(build_cmd)
         if code != 0:
             # 常见失败原因是旧的Docker构建缓存导致依赖(如vite)缺失
-            # (例如 "sh: vite: not found")。自动使用 --no-cache 重试一次。
+            # (例如 "sh: vite: not found")。BuildKit 会复用一个缺少
+            # devDependencies 的 node_modules 缓存层，单纯的 --no-cache
+            # 有时无法清除(frontend 与 admin 共享该缓存层)。因此先主动
+            # 清理镜像与构建缓存，再使用 --no-cache --pull 重新构建。
             if not no_cache:
                 print_warning("构建镜像失败，可能是Docker缓存导致依赖缺失")
+                clean_build_cache(compose_cmd)
                 print_step("正在使用 --no-cache 自动重新构建...")
-                code, _, _ = run_command(f"{compose_cmd} build --no-cache")
+                code, _, _ = run_command(
+                    f"{compose_cmd} build --no-cache --pull"
+                )
             if code != 0:
                 print_error("构建镜像失败")
                 return False
