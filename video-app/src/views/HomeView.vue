@@ -5,6 +5,7 @@
       <div class="header-content">
         <h1 class="logo">🎬 悟空视频</h1>
         <div class="search-box">
+          <AppIcon class="search-icon" name="search" :size="16" />
           <input
             v-model="searchKeyword"
             type="text"
@@ -90,6 +91,7 @@
 <script>
 import Carousel from '@/components/Carousel.vue'
 import CategorySection from '@/components/CategorySection.vue'
+import AppIcon from '@/components/AppIcon.vue'
 import { videoApi } from '@/api'
 import { 
   saveScrollPosition, 
@@ -109,7 +111,8 @@ export default {
   name: 'HomeView',
   components: {
     Carousel,
-    CategorySection
+    CategorySection,
+    AppIcon
   },
   // Constants
   MAX_REFRESH_OFFSET: 20,
@@ -623,25 +626,36 @@ export default {
 .search-box {
   flex: 1;
   display: flex;
+  align-items: center;
   max-width: 280px;
   margin: 0 auto;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding-left: 10px;
+  transition: all 0.3s;
+}
+
+.search-box:focus-within {
+  border-color: #7c3aed;
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
+}
+
+.search-box .search-icon {
+  color: #888;
+  flex-shrink: 0;
 }
 
 .search-box input {
   flex: 1;
-  padding: 6px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px 0 0 16px;
-  background: rgba(255, 255, 255, 0.1);
+  min-width: 0;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
   color: #fff;
   font-size: 13px;
   outline: none;
-  transition: all 0.3s;
-}
-
-.search-box input:focus {
-  border-color: #7c3aed;
-  box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
 }
 
 .search-box input::placeholder {
@@ -654,7 +668,7 @@ export default {
   padding: 6px 14px;
   background: #7c3aed;
   border: none;
-  border-radius: 0 16px 16px 0;
+  border-radius: 16px;
   color: #fff;
   font-size: 13px;
   font-weight: 500;

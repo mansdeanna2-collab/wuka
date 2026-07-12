@@ -2,8 +2,8 @@
   <div class="category-view">
     <!-- Category Header -->
     <header class="category-header">
-      <button class="back-btn" @click="goBack">
-        <span class="back-icon">←</span>
+      <button class="back-btn" @click="goBack" aria-label="返回">
+        <AppIcon name="arrow-left" :size="20" />
       </button>
       <h1 class="category-title">{{ categoryName }}</h1>
       <div class="header-spacer"></div>
@@ -60,6 +60,7 @@
 
 <script>
 import VideoCard from '@/components/VideoCard.vue'
+import AppIcon from '@/components/AppIcon.vue'
 import { videoApi } from '@/api'
 import { extractArrayData } from '@/utils/apiUtils'
 import { getMockVideosByCategory } from '@/utils/mockData'
@@ -67,7 +68,8 @@ import { getMockVideosByCategory } from '@/utils/mockData'
 export default {
   name: 'CategoryView',
   components: {
-    VideoCard
+    VideoCard,
+    AppIcon
   },
   data() {
     return {
@@ -209,10 +211,6 @@ export default {
 .back-btn:hover {
   background: rgba(0, 212, 255, 0.2);
   color: #00d4ff;
-}
-
-.back-icon {
-  font-size: 1.2em;
 }
 
 .category-title {

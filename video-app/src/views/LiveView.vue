@@ -1,10 +1,5 @@
 <template>
   <div class="page-container">
-    <div class="page-header">
-      <h1>{{ title }}</h1>
-      <p class="subtitle">{{ subtitle }}</p>
-    </div>
-    
     <!-- Live Stream Categories -->
     <div class="category-tabs">
       <button 
@@ -77,8 +72,6 @@ export default {
   name: 'LiveView',
   data() {
     return {
-      title: '直播中心',
-      subtitle: '精彩直播不间断',
       selectedCategory: 'all',
       toastMessage: '',
       categories: [
@@ -137,27 +130,8 @@ export default {
 .page-container {
   min-height: 100vh;
   padding: 20px;
+  padding-top: calc(20px + env(safe-area-inset-top));
   padding-bottom: 80px;
-}
-
-.page-header {
-  text-align: center;
-  padding: 20px 0;
-  margin-bottom: 15px;
-}
-
-.page-header h1 {
-  font-size: 1.8em;
-  margin-bottom: 10px;
-  background: linear-gradient(90deg, #ff6b6b, #ffa502);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.subtitle {
-  color: #888;
-  font-size: 0.9em;
 }
 
 /* Category Tabs */
@@ -402,10 +376,6 @@ export default {
 }
 
 @media (max-width: 480px) {
-  .page-header h1 {
-    font-size: 1.4em;
-  }
-  
   .tab-btn {
     padding: 6px 12px;
     font-size: 0.8em;
