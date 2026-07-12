@@ -20,6 +20,7 @@
           <img 
             v-if="video.video_image"
             :ref="el => setImgRef(el, index)"
+            :src="formatImageUrl(video.video_image)"
             :alt="video.video_title"
             class="slide-image"
             @error="handleImageError"
