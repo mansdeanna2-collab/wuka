@@ -661,8 +661,15 @@ def deploy_application(base_dir: str, build: bool = True,
             print_step("使用 --no-cache 强制重新构建...")
         code, _, _ = run_command(build_cmd)
         if code != 0:
-            print_error("构建镜像失败")
-            return False
+            # 常见失败原因是旧的Docker构建缓存导致依赖(如vite)缺失
+            # (例如 "sh: vite: not found")。自动使用 --no-cache 重试一次。
+            if not no_cache:
+                print_warning("构建镜像失败，可能是Docker缓存导致依赖缺失")
+                print_step("正在使用 --no-cache 自动重新构建...")
+                code, _, _ = run_command(f"{compose_cmd} build --no-cache")
+            if code != 0:
+                print_error("构建镜像失败")
+                return False
         print_success("镜像构建完成")
 
     print_step("正在启动容器...")
