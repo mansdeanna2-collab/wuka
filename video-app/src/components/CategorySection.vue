@@ -26,9 +26,6 @@
         </div>
         <div class="video-info">
           <h3 class="video-title">{{ videos[0].video_title }}</h3>
-          <span class="play-count" v-if="videos[0].play_count">
-            {{ formatPlayCount(videos[0].play_count) }}次播放
-          </span>
         </div>
       </div>
       
@@ -56,9 +53,6 @@
           </div>
           <div class="video-info">
             <h3 class="video-title">{{ video.video_title }}</h3>
-            <span class="play-count" v-if="video.play_count">
-              {{ formatPlayCount(video.play_count) }}次播放
-            </span>
           </div>
         </div>
       </div>
@@ -85,7 +79,6 @@
 
 <script>
 import { formatImageUrl, loadImageWithBase64Detection } from '@/utils/imageUtils'
-import { formatPlayCount } from '@/utils/formatUtils'
 import AppIcon from '@/components/AppIcon.vue'
 
 export default {
@@ -129,7 +122,6 @@ export default {
   },
   methods: {
     formatImageUrl,
-    formatPlayCount,
     setSmallImgRef(el, index) {
       if (el) {
         this.smallImgRefs[index] = el
@@ -216,11 +208,11 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 4px 12px;
+  padding: 3px 10px;
   border: none;
-  border-radius: 14px;
-  font-size: 0.72em;
-  line-height: 1.4;
+  border-radius: 12px;
+  font-size: 0.66em;
+  line-height: 1.3;
   cursor: pointer;
   transition: all 0.3s;
 }
@@ -344,24 +336,19 @@ export default {
 }
 
 .video-info {
-  padding: 12px;
+  padding: 10px 12px;
 }
 
 .video-title {
   font-size: 0.95em;
   font-weight: 500;
   color: #fff;
-  margin-bottom: 5px;
+  margin-bottom: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.4;
-}
-
-.play-count {
-  font-size: 0.8em;
-  color: #888;
 }
 
 .videos-small {
@@ -397,16 +384,12 @@ export default {
 }
 
 .video-small .video-info {
-  padding: 10px;
+  padding: 8px 10px;
 }
 
 .video-small .video-title {
   font-size: 0.85em;
   -webkit-line-clamp: 1;
-}
-
-.video-small .play-count {
-  font-size: 0.75em;
 }
 
 .empty-state {
@@ -440,8 +423,8 @@ export default {
   }
   
   .action-btn {
-    padding: 4px 10px;
-    font-size: 0.68em;
+    padding: 3px 9px;
+    font-size: 0.62em;
   }
   
   .video-large {

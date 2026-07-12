@@ -48,7 +48,7 @@
     </div>
 
     <!-- Main Content -->
-    <div v-else class="main-content" ref="mainContent">
+    <div v-else class="main-content" :class="{ 'main-content--no-carousel': activeMainCategory !== 'recommend' }" ref="mainContent">
       <!-- Carousel Banner (only shown on the 推荐/recommend main category;
            shows a placeholder when the admin has not configured any carousel
            items). Other main categories such as 动漫 do not display it. -->
@@ -579,9 +579,22 @@ export default {
         let result = await videoApi.getVideosByCategory(category, pageSize, nextOffset)
         let videos = extractArrayData(result)
 
-        if (videos.length > 0) {
-          // Got a fresh batch: remember the offset used for the next click.
+        if (videos.length >= pageSize) {
+          // Got a full batch: remember the offset used for the next click.
           this.refreshOffsets[category] = nextOffset
+        } else if (videos.length > 0) {
+          // Last partial batch. Instead of showing a lone video (or fewer
+          // than pageSize), shift the window backwards so a full set of
+          // pageSize videos is displayed. Wrap the offset back to 0 so the
+          // next click restarts the cycle.
+          const total = nextOffset + videos.length
+          const backfillOffset = Math.max(0, total - pageSize)
+          const backfill = await videoApi.getVideosByCategory(category, pageSize, backfillOffset)
+          const backfillVideos = extractArrayData(backfill)
+          if (backfillVideos.length > 0) {
+            videos = backfillVideos
+          }
+          this.refreshOffsets[category] = 0
         } else {
           // Reached the end of the category (offset past the last video):
           // wrap back to the beginning so the button keeps cycling instead
@@ -798,6 +811,13 @@ export default {
   padding-bottom: 10px;
 }
 
+/* When the carousel is hidden (non-recommend tabs) the first section title
+   sits directly under the fixed tabs bar; add extra spacing so it isn't
+   clipped/covered. */
+.main-content--no-carousel {
+  padding-top: calc(175px + env(safe-area-inset-top));
+}
+
 /* States */
 .loading-state,
 .error-state {
@@ -991,6 +1011,10 @@ export default {
     padding-top: calc(115px + env(safe-area-inset-top));
   }
   
+  .main-content--no-carousel {
+    padding-top: calc(135px + env(safe-area-inset-top));
+  }
+  
   .tab-btn {
     padding: 6px 12px;
     font-size: 1em;
@@ -1036,6 +1060,10 @@ export default {
   
   .main-content {
     padding-top: calc(105px + env(safe-area-inset-top));
+  }
+  
+  .main-content--no-carousel {
+    padding-top: calc(125px + env(safe-area-inset-top));
   }
   
   .tab-btn {
