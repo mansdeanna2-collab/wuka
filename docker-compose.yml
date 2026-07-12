@@ -30,6 +30,8 @@ services:
     build:
       context: ./video-app
       dockerfile: Dockerfile
+      args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
     container_name: video-frontend
     restart: unless-stopped
     ports:
@@ -45,6 +47,8 @@ services:
     build:
       context: ./video-app
       dockerfile: Dockerfile.admin
+      args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
     container_name: video-admin
     restart: unless-stopped
     ports:
