@@ -7,13 +7,14 @@
     
     <div class="profile-card" @click="handleProfileClick">
       <div class="avatar">
-        <span>{{ isLoggedIn ? userInfo.avatar : '👤' }}</span>
+        <span v-if="isLoggedIn">{{ userInfo.avatar }}</span>
+        <AppIcon v-else name="user" :size="30" />
       </div>
       <div class="user-info">
         <h2>{{ isLoggedIn ? userInfo.nickname : '游客用户' }}</h2>
         <p>{{ isLoggedIn ? `金币: ${userInfo.coins}` : '点击登录获取更多功能' }}</p>
       </div>
-      <span class="profile-arrow">→</span>
+      <span class="profile-arrow"><AppIcon name="chevron-right" :size="22" /></span>
     </div>
 
     <!-- Statistics Cards -->
@@ -34,42 +35,42 @@
     
     <ul class="menu-list">
       <li class="menu-item" @click="openAdmin">
-        <span class="menu-icon">🛠️</span>
+        <span class="menu-icon"><AppIcon name="tool" :size="20" /></span>
         <span class="menu-text">管理后台</span>
-        <span class="menu-arrow">→</span>
+        <span class="menu-arrow"><AppIcon name="chevron-right" :size="18" /></span>
       </li>
       <li class="menu-item" @click="showWatchHistory">
-        <span class="menu-icon">📜</span>
+        <span class="menu-icon"><AppIcon name="history" :size="20" /></span>
         <span class="menu-text">观看历史</span>
         <span class="menu-badge" v-if="stats.watchCount > 0">{{ stats.watchCount }}</span>
-        <span class="menu-arrow">→</span>
+        <span class="menu-arrow"><AppIcon name="chevron-right" :size="18" /></span>
       </li>
       <li class="menu-item" @click="showFavorites">
-        <span class="menu-icon">⭐</span>
+        <span class="menu-icon"><AppIcon name="star" :size="20" /></span>
         <span class="menu-text">我的收藏</span>
         <span class="menu-badge" v-if="stats.favoriteCount > 0">{{ stats.favoriteCount }}</span>
-        <span class="menu-arrow">→</span>
+        <span class="menu-arrow"><AppIcon name="chevron-right" :size="18" /></span>
       </li>
       <li class="menu-item" @click="showCoins">
-        <span class="menu-icon">💰</span>
+        <span class="menu-icon"><AppIcon name="coins" :size="20" /></span>
         <span class="menu-text">我的金币</span>
         <span class="menu-badge coins" v-if="stats.coins > 0">{{ stats.coins }}</span>
-        <span class="menu-arrow">→</span>
+        <span class="menu-arrow"><AppIcon name="chevron-right" :size="18" /></span>
       </li>
       <li class="menu-item" @click="openSettings">
-        <span class="menu-icon">⚙️</span>
+        <span class="menu-icon"><AppIcon name="settings" :size="20" /></span>
         <span class="menu-text">设置</span>
-        <span class="menu-arrow">→</span>
+        <span class="menu-arrow"><AppIcon name="chevron-right" :size="18" /></span>
       </li>
       <li class="menu-item" @click="openHelp">
-        <span class="menu-icon">❓</span>
+        <span class="menu-icon"><AppIcon name="help" :size="20" /></span>
         <span class="menu-text">帮助与反馈</span>
-        <span class="menu-arrow">→</span>
+        <span class="menu-arrow"><AppIcon name="chevron-right" :size="18" /></span>
       </li>
       <li class="menu-item" @click="clearCache">
-        <span class="menu-icon">🗑️</span>
+        <span class="menu-icon"><AppIcon name="trash" :size="20" /></span>
         <span class="menu-text">清除缓存</span>
-        <span class="menu-arrow">→</span>
+        <span class="menu-arrow"><AppIcon name="chevron-right" :size="18" /></span>
       </li>
     </ul>
 
@@ -90,9 +91,11 @@
 
 <script>
 import { videoApi } from '@/api'
+import AppIcon from '@/components/AppIcon.vue'
 
 export default {
   name: 'ProfileView',
+  components: { AppIcon },
   data() {
     return {
       title: '个人中心',
@@ -221,8 +224,9 @@ export default {
 }
 
 .profile-arrow {
+  display: inline-flex;
+  align-items: center;
   color: #888;
-  font-size: 1.2em;
   transition: transform 0.3s;
 }
 
@@ -330,8 +334,15 @@ export default {
 }
 
 .menu-icon {
-  font-size: 1.2em;
-  margin-right: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-right: 12px;
+  border-radius: 10px;
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.1);
 }
 
 .menu-text {
@@ -355,8 +366,9 @@ export default {
 }
 
 .menu-arrow {
+  display: inline-flex;
+  align-items: center;
   color: #888;
-  font-size: 1em;
 }
 
 /* App Info */
