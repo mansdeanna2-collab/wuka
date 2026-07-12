@@ -464,14 +464,19 @@ export default {
         return
       }
       
-      // Load carousel videos (admin-selected videos only)
-      // The home carousel is now managed from the admin console. It only shows
-      // videos the admin explicitly picked, so newly added videos appear only in
-      // their category sections and never automatically in the carousel.
-      // If nothing is configured, keep the carousel empty so it stays hidden.
+      // Load carousel videos. The home carousel is primarily managed from the
+      // admin console (admin-selected videos in a chosen order). If the admin
+      // has not configured any carousel videos (or the configured ones were
+      // deleted), fall back to the top videos so the carousel still displays
+      // content above the category sections instead of disappearing entirely.
       try {
         const carouselResult = await videoApi.getCarousel()
-        this.carouselVideos = extractArrayData(carouselResult)
+        let carousel = extractArrayData(carouselResult)
+        if (carousel.length === 0) {
+          const topResult = await videoApi.getTopVideos(videosPerCategory)
+          carousel = extractArrayData(topResult)
+        }
+        this.carouselVideos = carousel
       } catch (e) {
         console.error('Load carousel videos error:', e)
         this.carouselVideos = []
