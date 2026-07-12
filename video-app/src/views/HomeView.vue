@@ -649,6 +649,8 @@ export default {
 }
 
 .search-btn {
+  flex-shrink: 0;
+  min-width: 56px;
   padding: 6px 14px;
   background: #7c3aed;
   border: none;
@@ -656,6 +658,7 @@ export default {
   color: #fff;
   font-size: 13px;
   font-weight: 500;
+  white-space: nowrap;
   cursor: pointer;
   transition: all 0.3s;
 }
