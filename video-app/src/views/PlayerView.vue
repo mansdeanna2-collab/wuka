@@ -2,8 +2,8 @@
   <div class="player-view">
     <!-- Back button -->
     <div class="nav-bar">
-      <button class="back-btn" @click="goBack">
-        ← 返回
+      <button class="back-btn" @click="goBack" aria-label="返回">
+        <AppIcon name="arrow-left" :size="22" />
       </button>
       <h2 class="title">{{ video.video_title || '视频播放' }}</h2>
     </div>
@@ -73,6 +73,7 @@
 <script>
 import VideoPlayer from '@/components/VideoPlayer.vue'
 import VideoCard from '@/components/VideoCard.vue'
+import AppIcon from '@/components/AppIcon.vue'
 import { videoApi } from '@/api'
 import { formatPlayCount, isValidVideoUrl } from '@/utils/formatUtils'
 import { extractArrayData, extractObjectData } from '@/utils/apiUtils'
@@ -81,7 +82,8 @@ export default {
   name: 'PlayerView',
   components: {
     VideoPlayer,
-    VideoCard
+    VideoCard,
+    AppIcon
   },
   data() {
     return {
@@ -221,20 +223,23 @@ export default {
 }
 
 .back-btn {
-  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
   background: rgba(255, 255, 255, 0.1);
   border: none;
-  border-radius: 6px;
+  border-radius: 50%;
   color: #fff;
   cursor: pointer;
-  font-size: 14px;
   transition: all 0.3s;
-  /* Ensure minimum touch target */
-  min-height: 44px;
 }
 
 .back-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 212, 255, 0.2);
+  color: #00d4ff;
 }
 
 .nav-bar .title {
@@ -366,10 +371,8 @@ export default {
   }
   
   .back-btn {
-    padding: 6px 12px;
-    font-size: 13px;
-    /* Ensure minimum touch target per Apple HIG */
-    min-height: 44px;
+    width: 40px;
+    height: 40px;
   }
   
   .nav-bar .title {

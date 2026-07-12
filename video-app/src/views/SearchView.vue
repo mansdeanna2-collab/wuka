@@ -3,10 +3,11 @@
     <!-- Header with Back and Search -->
     <header class="header">
       <div class="header-content">
-        <button class="back-btn" @click="goBack">
-          ← 返回
+        <button class="back-btn" @click="goBack" aria-label="返回">
+          <AppIcon name="arrow-left" :size="22" />
         </button>
         <div class="search-box">
+          <AppIcon class="search-icon" name="search" :size="18" />
           <input
             v-model="searchKeyword"
             type="text"
@@ -78,6 +79,7 @@
 
 <script>
 import VideoCard from '@/components/VideoCard.vue'
+import AppIcon from '@/components/AppIcon.vue'
 import { videoApi } from '@/api'
 import { extractArrayData } from '@/utils/apiUtils'
 import { searchMockVideos } from '@/utils/mockData'
@@ -85,7 +87,8 @@ import { searchMockVideos } from '@/utils/mockData'
 export default {
   name: 'SearchView',
   components: {
-    VideoCard
+    VideoCard,
+    AppIcon
   },
   data() {
     return {
@@ -216,42 +219,59 @@ export default {
 }
 
 .back-btn {
-  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  padding: 0;
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
   color: #fff;
-  font-size: 13px;
   cursor: pointer;
   transition: all 0.3s;
-  white-space: nowrap;
 }
 
 .back-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 212, 255, 0.2);
+  border-color: rgba(0, 212, 255, 0.4);
+  color: #00d4ff;
 }
 
 .search-box {
   flex: 1;
   display: flex;
+  align-items: center;
   max-width: 400px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding-left: 12px;
+  transition: all 0.3s;
+}
+
+.search-box:focus-within {
+  border-color: #7c3aed;
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
+}
+
+.search-box .search-icon {
+  color: #888;
+  flex-shrink: 0;
 }
 
 .search-box input {
   flex: 1;
-  padding: 8px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px 0 0 20px;
-  background: rgba(255, 255, 255, 0.1);
+  min-width: 0;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
   color: #fff;
   font-size: 14px;
   outline: none;
-  transition: all 0.3s;
-}
-
-.search-box input:focus {
-  border-color: #7c3aed;
-  box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
 }
 
 .search-box input::placeholder {
@@ -259,10 +279,11 @@ export default {
 }
 
 .search-btn {
+  flex-shrink: 0;
   padding: 8px 18px;
   background: #7c3aed;
   border: none;
-  border-radius: 0 20px 20px 0;
+  border-radius: 20px;
   color: #fff;
   font-size: 14px;
   font-weight: 500;
@@ -417,12 +438,12 @@ export default {
   }
   
   .back-btn {
-    padding: 6px 10px;
-    font-size: 12px;
+    width: 36px;
+    height: 36px;
   }
   
   .search-box input {
-    padding: 6px 12px;
+    padding: 6px 8px;
     font-size: 13px;
   }
   

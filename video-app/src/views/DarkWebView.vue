@@ -1,10 +1,5 @@
 <template>
   <div class="page-container">
-    <div class="page-header">
-      <h1>{{ title }}</h1>
-      <p class="subtitle">{{ subtitle }}</p>
-    </div>
-
     <!-- Warning Banner -->
     <div class="warning-banner">
       <span class="warning-icon">⚠️</span>
@@ -78,8 +73,6 @@ export default {
   name: 'DarkWebView',
   data() {
     return {
-      title: '暗网专区',
-      subtitle: '探索未知领域',
       selectedCategory: 'all',
       toastMessage: '',
       categories: [
@@ -136,27 +129,8 @@ export default {
 .page-container {
   min-height: 100vh;
   padding: 20px;
+  padding-top: calc(20px + env(safe-area-inset-top));
   padding-bottom: 80px;
-}
-
-.page-header {
-  text-align: center;
-  padding: 20px 0;
-  margin-bottom: 15px;
-}
-
-.page-header h1 {
-  font-size: 1.8em;
-  margin-bottom: 10px;
-  background: linear-gradient(90deg, #8b5cf6, #ec4899);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.subtitle {
-  color: #888;
-  font-size: 0.9em;
 }
 
 /* Warning Banner */
@@ -348,10 +322,6 @@ export default {
 }
 
 @media (max-width: 480px) {
-  .page-header h1 {
-    font-size: 1.4em;
-  }
-  
   .warning-banner {
     font-size: 0.75em;
     padding: 10px 15px;
