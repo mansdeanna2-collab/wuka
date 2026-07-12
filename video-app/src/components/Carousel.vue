@@ -65,7 +65,9 @@ export default {
       currentIndex: 0,
       timer: null,
       imgRefs: {},
-      loadedUrls: new Set(),
+      // Tracks the image URL already loaded into each slide (keyed by index)
+      // so duplicate URLs across slides still load into every element.
+      loadedUrls: {},
       // Touch swipe support
       touchStartX: 0,
       touchStartY: 0,
@@ -90,7 +92,7 @@ export default {
       immediate: true,
       handler() {
         this.currentIndex = 0
-        this.loadedUrls.clear()
+        this.loadedUrls = {}
         this.startAutoplay()
         this.$nextTick(() => {
           this.loadAllImages()
@@ -116,8 +118,8 @@ export default {
       // Load all images in parallel for better performance
       const loadPromises = this.videos.map((video, i) => {
         const imgUrl = video?.video_image
-        if (imgUrl && this.imgRefs[i] && !this.loadedUrls.has(imgUrl)) {
-          this.loadedUrls.add(imgUrl)
+        if (imgUrl && this.imgRefs[i] && this.loadedUrls[i] !== imgUrl) {
+          this.loadedUrls[i] = imgUrl
           return loadImageWithBase64Detection(this.imgRefs[i], imgUrl)
         }
         return Promise.resolve()

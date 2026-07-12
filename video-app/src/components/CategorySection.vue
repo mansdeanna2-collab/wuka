@@ -108,14 +108,17 @@ export default {
   data() {
     return {
       smallImgRefs: {},
-      loadedUrls: new Set()
+      // Tracks the image URL already loaded into each slot (keyed by slot id:
+      // 'large' for the featured image, index for small thumbnails) so
+      // duplicate URLs still load into every element.
+      loadedUrls: {}
     }
   },
   watch: {
     videos: {
       immediate: true,
       handler() {
-        this.loadedUrls.clear()
+        this.loadedUrls = {}
         this.$nextTick(() => {
           this.loadAllImages()
         })
@@ -139,8 +142,8 @@ export default {
       // Load large video image
       if (this.videos.length > 0 && this.videos[0].video_image && this.$refs.largeImg) {
         const url = this.videos[0].video_image
-        if (!this.loadedUrls.has(url)) {
-          this.loadedUrls.add(url)
+        if (this.loadedUrls.large !== url) {
+          this.loadedUrls.large = url
           loadPromises.push(loadImageWithBase64Detection(this.$refs.largeImg, url))
         }
       }
@@ -150,8 +153,8 @@ export default {
       for (let i = 0; i < smallVideos.length; i++) {
         const video = smallVideos[i]
         const imgUrl = video?.video_image
-        if (imgUrl && this.smallImgRefs[i] && !this.loadedUrls.has(imgUrl)) {
-          this.loadedUrls.add(imgUrl)
+        if (imgUrl && this.smallImgRefs[i] && this.loadedUrls[i] !== imgUrl) {
+          this.loadedUrls[i] = imgUrl
           loadPromises.push(loadImageWithBase64Detection(this.smallImgRefs[i], imgUrl))
         }
       }
