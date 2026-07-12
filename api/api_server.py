@@ -464,21 +464,64 @@ def get_carousel() -> Tuple[Response, int]:
 @handle_errors
 def save_carousel() -> Tuple[Response, int]:
     """
-    保存首页轮播图配置 (Save home carousel videos)
+    保存首页轮播图配置 (Save home carousel items)
 
-    请求体 (Request body):
-        { "video_ids": [1, 2, 3] }  或直接传视频ID数组 [1, 2, 3]
+    支持三种请求体格式 (Request body):
+        1. 新版混合条目: { "items": [
+               { "item_type": "video", "video_id": 1 },
+               { "item_type": "image", "image_url": "https://...",
+                 "title": "标题", "link_url": "https://..." }
+           ] }
+        2. 旧版仅视频: { "video_ids": [1, 2, 3] }
+        3. 直接传视频ID数组: [1, 2, 3]
     """
     data = request.get_json()
 
-    # 兼容两种格式：{ "video_ids": [...] } 或直接数组 [...]
+    items = None
+    video_ids = None
+
     if isinstance(data, dict):
+        items = data.get('items')
         video_ids = data.get('video_ids')
-    else:
+    elif isinstance(data, list):
         video_ids = data
 
+    # 新版混合条目格式 (New mixed items format)
+    if isinstance(items, list):
+        normalized_items: List[Dict[str, Any]] = []
+        for item in items:
+            if not isinstance(item, dict):
+                return api_response(message="轮播图条目格式无效", code=400)
+            item_type = (item.get('item_type') or 'video')
+            if item_type == 'image':
+                image_url = (item.get('image_url') or '').strip()
+                if not image_url:
+                    return api_response(message="图片轮播图条目缺少图片地址", code=400)
+                normalized_items.append({
+                    'item_type': 'image',
+                    'image_url': image_url,
+                    'title': item.get('title') or '',
+                    'link_url': item.get('link_url') or ''
+                })
+            else:
+                try:
+                    normalized_items.append({
+                        'item_type': 'video',
+                        'video_id': int(item.get('video_id'))
+                    })
+                except (TypeError, ValueError):
+                    return api_response(message="视频ID必须为整数", code=400)
+
+        with get_db() as db:
+            success = db.save_carousel_items(normalized_items)
+
+        if success:
+            return api_response(message="轮播图配置已保存")
+        return api_response(message="保存失败", code=500)
+
+    # 旧版仅视频格式 (Legacy video-only format)
     if not isinstance(video_ids, list):
-        return api_response(message="请提供有效的视频ID列表", code=400)
+        return api_response(message="请提供有效的轮播图条目列表", code=400)
 
     # 验证每个ID都是整数 (Validate every id is an integer)
     try:
@@ -487,7 +530,7 @@ def save_carousel() -> Tuple[Response, int]:
         return api_response(message="视频ID必须为整数", code=400)
 
     with get_db() as db:
-        success: bool = db.save_carousel_videos(normalized_ids)
+        success = db.save_carousel_videos(normalized_ids)
 
     if success:
         return api_response(message="轮播图配置已保存")

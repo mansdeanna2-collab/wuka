@@ -302,6 +302,13 @@ export const videoApi = {
     return api.post('/admin/carousel', { video_ids: videoIds })
   },
 
+  // Save home carousel items (mixed list of video/image items, in display order)
+  // Each item: { item_type: 'video', video_id } or
+  //            { item_type: 'image', image_url, title, link_url }
+  saveCarouselItems(items) {
+    return api.post('/admin/carousel', { items })
+  },
+
   // ==================== Admin Video Management ====================
 
   // Get videos in a specific category (for admin viewing)

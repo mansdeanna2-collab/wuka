@@ -39,6 +39,16 @@
       ></span>
     </div>
   </div>
+
+  <!-- Placeholder shown when no carousel items are configured, so the
+       home page keeps the carousel styling instead of collapsing. -->
+  <div class="carousel carousel--placeholder" v-else>
+    <div class="carousel-slide carousel-slide--placeholder">
+      <div class="placeholder-inner">
+        <span class="placeholder-text">轮播图</span>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -250,6 +260,32 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Placeholder (shown when no carousel items configured) */
+.carousel--placeholder {
+  cursor: default;
+}
+
+.carousel-slide--placeholder {
+  cursor: default;
+}
+
+.placeholder-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder-text {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.95em;
+  letter-spacing: 2px;
 }
 
 .carousel-indicators {
