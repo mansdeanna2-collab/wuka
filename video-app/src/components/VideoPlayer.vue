@@ -137,6 +137,9 @@ export default {
       touchStartY: 0,
       touchStartTime: 0,
       isSeeking: false,
+      // True when the current touch started on the native control bar; used to
+      // avoid our custom swipe-seek fighting the native scrubber.
+      touchOnControls: false,
       gestureText: '',
       gestureTimeout: null,
       // Track if initial autoplay has been triggered
@@ -658,10 +661,30 @@ export default {
         this.touchStartY = e.touches[0].clientY
         this.touchStartTime = this.$refs.videoElement?.currentTime || 0
         this.isSeeking = false
+        // When the touch begins on the native <video> control bar (bottom strip),
+        // let the browser's own scrubber handle seeking. Otherwise our custom
+        // swipe-seek would run on the same drag and, on touchend, override
+        // currentTime back near the start position — making a forward seek
+        // (e.g. 2min -> 10min) replay from the original spot before jumping.
+        this.touchOnControls = this.isTouchInControlsArea(e.touches[0].clientY)
       }
     },
-    
+
+    // True when a touch Y coordinate falls inside the native video control bar
+    // region at the bottom of the player, where the seek scrubber lives.
+    isTouchInControlsArea(clientY) {
+      const video = this.$refs.videoElement
+      if (!video) return false
+      const rect = video.getBoundingClientRect()
+      if (!rect.height) return false
+      // Reserve the bottom strip for native controls. Use a generous height so
+      // the scrubber is always covered across devices/browsers.
+      const controlsHeight = Math.max(48, rect.height * 0.18)
+      return clientY >= rect.bottom - controlsHeight
+    },
+
     onTouchMove(e) {
+      if (this.touchOnControls) return
       if (e.touches.length !== 1) return
       
       const deltaX = e.touches[0].clientX - this.touchStartX
@@ -681,6 +704,11 @@ export default {
     },
     
     onTouchEnd(e) {
+      if (this.touchOnControls) {
+        this.touchOnControls = false
+        this.isSeeking = false
+        return
+      }
       if (this.isSeeking) {
         const video = this.$refs.videoElement
         if (video && video.duration) {
