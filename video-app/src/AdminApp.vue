@@ -14,6 +14,6 @@ export default {
 /* Admin app wrapper styles */
 .admin-app {
   min-height: 100vh;
-  background: #0f0f1a;
+  background: var(--admin-bg);
 }
 </style>

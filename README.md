@@ -27,8 +27,7 @@
 │   ├── Dockerfile      # API容器配置
 │   └── requirements.txt
 ├── tools/              # 工具脚本
-│   ├── video_database.py   # 数据库模块 (MySQL/SQLite)
-│   └── video_collector.py  # 视频采集脚本
+│   └── video_database.py   # 数据库模块 (MySQL/SQLite)
 ├── deploy.py           # Docker自动部署脚本
 └── docker-compose.yml  # Docker Compose配置
 ```
@@ -248,11 +247,12 @@ export MYSQL_PASSWORD=your_password
 
 ## 导入视频数据
 
-从采集器导入:
+视频采集通过后台管理界面的「视频采集」菜单进行。采集到的数据也可以从 JSON 文件导入:
 ```bash
-python tools/video_collector.py --all --format json
 python tools/video_database.py --import-spjs videos_*.json
 ```
+
+> 说明: 独立的命令行采集脚本 (`tools/video_collector.py`) 已移除，将在后续版本重写。后台「视频采集」菜单已提供采集功能。
 
 ## 技术栈
 

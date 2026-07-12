@@ -185,139 +185,6 @@
       </div>
     </div>
 
-    <!-- Collection Status Tab -->
-    <div v-if="activeTab === 'collection'" class="tab-content">
-      <div class="section-header">
-        <h3>📥 采集管理</h3>
-        <div class="header-actions">
-          <select v-model="collectionHours" class="select-input">
-            <option value="24">24小时内</option>
-            <option value="48">48小时内</option>
-            <option value="72">72小时内</option>
-            <option value="168">7天内</option>
-          </select>
-          <button class="btn btn-secondary btn-sm" @click="checkNewVideos">
-            检查新视频
-          </button>
-        </div>
-      </div>
-      
-      <!-- Collection Controls -->
-      <div class="collection-controls">
-        <h4>🚀 后台采集</h4>
-        <div class="control-row">
-          <div class="control-group">
-            <label>采集分类</label>
-            <select v-model="collectTypeId" class="select-input">
-              <option value="">全部分类</option>
-              <option v-for="cat in sourceCategories" :key="cat.type_id" :value="cat.type_id">
-                {{ cat.type_name }}
-              </option>
-            </select>
-          </div>
-          <div class="control-group">
-            <label>时间范围</label>
-            <select v-model="collectHours" class="select-input">
-              <option value="24">24小时内</option>
-              <option value="48">48小时内</option>
-              <option value="72">72小时内</option>
-              <option value="168">7天内</option>
-            </select>
-          </div>
-          <div class="control-group">
-            <label>采集页数</label>
-            <select v-model="collectMaxPages" class="select-input">
-              <option value="1">1页</option>
-              <option value="3">3页</option>
-              <option value="5">5页</option>
-              <option value="10">10页</option>
-              <option value="20">20页</option>
-            </select>
-          </div>
-          <div class="control-group checkbox-group">
-            <label>
-              <input type="checkbox" v-model="collectSkipDuplicates" />
-              跳过已有视频
-            </label>
-          </div>
-          <button 
-            class="btn btn-primary" 
-            @click="startCollection"
-            :disabled="collectingVideos"
-          >
-            {{ collectingVideos ? '采集中...' : '开始采集' }}
-          </button>
-        </div>
-        
-        <div v-if="collectionResult" class="collection-result">
-          <h5>采集结果</h5>
-          <div class="result-summary">
-            <span class="highlight">成功采集: {{ collectionResult.collected_count }} 个</span>
-            <span>跳过无效: {{ collectionResult.skipped_count }} 个</span>
-            <span>已存在: {{ collectionResult.duplicate_count }} 个</span>
-            <span>处理页数: {{ collectionResult.pages_processed }} 页</span>
-          </div>
-        </div>
-      </div>
-      
-      <div v-if="loadingCollection" class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>检查中...</p>
-      </div>
-      
-      <div v-else-if="collectionStatus" class="collection-info">
-        <div class="status-cards">
-          <div class="status-card">
-            <span class="status-label">数据库总视频</span>
-            <span class="status-value">{{ collectionStatus.total_videos || 0 }}</span>
-          </div>
-          <div class="status-card">
-            <span class="status-label">总分类数</span>
-            <span class="status-value">{{ collectionStatus.total_categories || 0 }}</span>
-          </div>
-          <div class="status-card">
-            <span class="status-label">最新采集时间</span>
-            <span class="status-value small">{{ collectionStatus.latest_collection_time || '无' }}</span>
-          </div>
-        </div>
-        
-        <div v-if="newVideosResult" class="new-videos-section">
-          <h4>新视频检查结果</h4>
-          <div class="result-summary">
-            <span>源站可用: {{ newVideosResult.total_available }} 个</span>
-            <span>本次检查: {{ newVideosResult.checked_count }} 个</span>
-            <span class="highlight">新视频: {{ newVideosResult.new_count }} 个</span>
-            <span>已采集: {{ newVideosResult.already_collected_count }} 个</span>
-          </div>
-          
-          <div v-if="newVideosResult.new_videos && newVideosResult.new_videos.length > 0" class="new-videos-list">
-            <h5>待采集视频预览 (前20个)</h5>
-            <div 
-              v-for="video in newVideosResult.new_videos" 
-              :key="video.vod_id"
-              class="video-item compact"
-            >
-              <img 
-                v-if="video.vod_pic" 
-                :src="formatImageUrl(video.vod_pic)" 
-                :alt="video.vod_name"
-                class="video-thumb small"
-                @error="handleImageError"
-              />
-              <div class="video-info">
-                <span class="video-title">{{ video.vod_name }}</span>
-                <span class="video-meta">{{ video.type_name }} | {{ video.vod_time }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div v-else class="empty-state">
-        <p>点击"检查新视频"获取采集状态</p>
-      </div>
-    </div>
-
     <!-- Category Videos Modal -->
     <div v-if="showCategoryModal" class="modal-overlay" @click.self="closeCategoryModal">
       <div class="modal modal-large">
@@ -404,7 +271,7 @@
           </div>
           <div class="form-group">
             <label>分类</label>
-            <input v-model="editingVideo.video_category" type="text" class="form-input" placeholder="输入视频分类" />
+            <input v-model="editingVideo.video_category" type="text" class="form-input" list="category-options" placeholder="选择已有分类或输入新分类" />
           </div>
           <div class="form-group">
             <label>时长</label>
@@ -440,7 +307,7 @@
           </div>
           <div class="form-group">
             <label>分类</label>
-            <input v-model="newVideo.video_category" type="text" class="form-input" placeholder="输入视频分类" />
+            <input v-model="newVideo.video_category" type="text" class="form-input" list="category-options" placeholder="选择已有分类或输入新分类" />
           </div>
           <div class="form-group">
             <label>时长</label>
@@ -472,6 +339,11 @@
       </div>
     </div>
 
+    <!-- Shared category options for datalist pickers -->
+    <datalist id="category-options">
+      <option v-for="cat in categoryOptions" :key="cat" :value="cat" />
+    </datalist>
+
     <!-- Toast Notification -->
     <transition name="toast">
       <div v-if="toastMessage" class="toast-message" :class="toastType">
@@ -494,8 +366,7 @@ export default {
       tabs: [
         { key: 'stats', label: '分类统计', icon: '📊' },
         { key: 'duplicates', label: '重复检测', icon: '🔍' },
-        { key: 'manage', label: '视频管理', icon: '🎬' },
-        { key: 'collection', label: '采集状态', icon: '📥' }
+        { key: 'manage', label: '视频管理', icon: '🎬' }
       ],
       
       // Category Stats
@@ -542,29 +413,21 @@ export default {
         video_duration: ''
       },
       
-      // Collection Status
-      collectionHours: 24,
-      collectionStatus: null,
-      newVideosResult: null,
-      loadingCollection: false,
-      
-      // Background Collection
-      sourceCategories: [],
-      collectTypeId: '',
-      collectHours: 24,
-      collectMaxPages: 1,
-      collectSkipDuplicates: true,
-      collectingVideos: false,
-      collectionResult: null,
-      
       // Toast
       toastMessage: '',
       toastType: ''
     }
   },
+  computed: {
+    // Existing category names (from stats) used to power the category picker
+    categoryOptions() {
+      return this.categoryStats
+        .map(cat => cat.video_category)
+        .filter(name => name && name !== '未分类')
+    }
+  },
   mounted() {
     this.loadCategoryStats()
-    this.loadSourceCategories()
   },
   methods: {
     // Category Statistics
@@ -746,76 +609,6 @@ export default {
       }
     },
     
-    // Collection Status
-    async checkNewVideos() {
-      this.loadingCollection = true
-      
-      try {
-        // First get local collection status
-        const statusResult = await videoApi.getCollectionStatus(this.collectionHours)
-        this.collectionStatus = statusResult?.data || statusResult
-        
-        // Then check for new videos from source
-        const newResult = await videoApi.checkNewVideos(this.collectionHours)
-        this.newVideosResult = newResult?.data || newResult
-        
-        if (this.newVideosResult.new_count > 0) {
-          this.showToast(`发现 ${this.newVideosResult.new_count} 个新视频可采集`, 'success')
-        } else {
-          this.showToast('暂无新视频', 'info')
-        }
-      } catch (e) {
-        console.error('Check new videos error:', e)
-        this.showToast('检查新视频失败', 'error')
-      } finally {
-        this.loadingCollection = false
-      }
-    },
-    
-    // Load source categories from collector API
-    async loadSourceCategories() {
-      try {
-        const result = await videoApi.getSourceCategories()
-        this.sourceCategories = extractArrayData(result)
-      } catch (e) {
-        console.error('Load source categories error:', e)
-        // Silently fail - categories are optional for collection
-      }
-    },
-    
-    // Start background collection
-    async startCollection() {
-      if (this.collectingVideos) return
-      
-      this.collectingVideos = true
-      this.collectionResult = null
-      
-      try {
-        const result = await videoApi.collectVideos({
-          type_id: this.collectTypeId || null,
-          hours: parseInt(this.collectHours),
-          max_pages: parseInt(this.collectMaxPages),
-          skip_duplicates: this.collectSkipDuplicates
-        })
-        
-        this.collectionResult = result?.data || result
-        
-        if (this.collectionResult.collected_count > 0) {
-          this.showToast(`成功采集 ${this.collectionResult.collected_count} 个视频`, 'success')
-          // Refresh stats after collection
-          this.loadCategoryStats()
-          this.checkNewVideos()
-        } else {
-          this.showToast('没有新视频可采集', 'info')
-        }
-      } catch (e) {
-        console.error('Collection error:', e)
-        this.showToast('采集失败: ' + (e.userMessage || e.message), 'error')
-      } finally {
-        this.collectingVideos = false
-      }
-    },
-    
     // Utility methods
     truncateText(text, maxLength) {
       if (!text) return ''
@@ -830,7 +623,7 @@ export default {
     handleImageError(e) {
       // Use a transparent 1x1 pixel data URI instead of empty string to avoid browser loading current page
       e.target.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
-      e.target.style.background = 'linear-gradient(135deg, #2a2a4a 0%, #1a1a3e 100%)'
+      e.target.style.background = 'var(--admin-surface-3)'
     },
     
     showToast(message, type = 'info') {
@@ -863,24 +656,25 @@ export default {
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: #a0a0b0;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  color: var(--admin-text-muted);
   font-size: 0.95em;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
 .tab-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: var(--admin-surface-2);
+  color: var(--admin-text);
 }
 
 .tab-btn.active {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(0, 212, 255, 0.2) 100%);
-  border-color: rgba(124, 58, 237, 0.5);
-  color: #00d4ff;
+  background: var(--admin-primary-soft);
+  border-color: var(--admin-primary-border);
+  color: var(--admin-primary-dark);
+  font-weight: 600;
 }
 
 .tab-icon {
@@ -889,10 +683,11 @@ export default {
 
 /* Tab Content */
 .tab-content {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16162a 100%);
-  border-radius: 12px;
+  background: var(--admin-surface);
+  border-radius: var(--admin-radius);
   padding: 25px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow-sm);
 }
 
 /* Section Header */
@@ -906,7 +701,7 @@ export default {
 .section-header h3 {
   margin: 0;
   font-size: 1.2em;
-  color: #fff;
+  color: var(--admin-text);
 }
 
 .header-actions {
@@ -922,11 +717,16 @@ export default {
   gap: 8px;
   padding: 10px 20px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   font-size: 0.95em;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-sm {
@@ -935,32 +735,34 @@ export default {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
   color: #fff;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #8b47f5 0%, #7c3aed 100%);
+  filter: brightness(1.05);
+  box-shadow: var(--admin-shadow-sm);
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: #a0a0b0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--admin-surface);
+  color: var(--admin-text-muted);
+  border: 1px solid var(--admin-border-strong);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: var(--admin-surface-2);
+  color: var(--admin-text);
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: linear-gradient(135deg, var(--admin-danger) 0%, var(--admin-danger-dark) 100%);
   color: #fff;
 }
 
 .btn-danger:hover {
-  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+  filter: brightness(1.05);
+  box-shadow: var(--admin-shadow-sm);
 }
 
 /* Form inputs */
@@ -968,24 +770,29 @@ export default {
 .search-input,
 .form-input {
   padding: 10px 15px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  color: #fff;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
+  color: var(--admin-text);
   font-size: 0.9em;
 }
 
-/* Fix dropdown options styling - ensure text is visible in browser's native dropdown */
 .select-input option {
-  background-color: #1a1a2e;
-  color: #fff;
+  background-color: var(--admin-surface);
+  color: var(--admin-text);
 }
 
 .select-input:focus,
 .search-input:focus,
 .form-input:focus {
   outline: none;
-  border-color: #7c3aed;
+  border-color: var(--admin-primary);
+  box-shadow: 0 0 0 3px var(--admin-primary-soft);
+}
+
+.form-input::placeholder,
+.search-input::placeholder {
+  color: var(--admin-text-faint);
 }
 
 .search-bar {
@@ -1009,15 +816,15 @@ export default {
 
 .loading-state p {
   margin-top: 15px;
-  color: #888;
+  color: var(--admin-text-muted);
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  border: 3px solid var(--admin-border);
   border-radius: 50%;
-  border-top-color: #00d4ff;
+  border-top-color: var(--admin-primary);
   animation: spin 1s ease-in-out infinite;
 }
 
@@ -1029,7 +836,7 @@ export default {
 .empty-state {
   text-align: center;
   padding: 40px 20px;
-  color: #888;
+  color: var(--admin-text-muted);
 }
 
 /* Stats Grid */
@@ -1044,14 +851,15 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  transition: all 0.3s;
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  transition: all 0.2s;
 }
 
 .stat-card:hover {
-  border-color: rgba(124, 58, 237, 0.3);
+  border-color: var(--admin-primary-border);
+  box-shadow: var(--admin-shadow-sm);
 }
 
 .stat-info {
@@ -1062,12 +870,12 @@ export default {
 
 .stat-category {
   font-weight: 600;
-  color: #fff;
+  color: var(--admin-text);
 }
 
 .stat-count {
   font-size: 0.85em;
-  color: #00d4ff;
+  color: var(--admin-accent-ink);
 }
 
 .stat-image {
@@ -1075,7 +883,7 @@ export default {
   height: 40px;
   object-fit: cover;
   border-radius: 6px;
-  background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3e 100%);
+  background: var(--admin-surface-3);
   flex-shrink: 0;
 }
 
@@ -1085,7 +893,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3e 100%);
+  background: var(--admin-surface-3);
   border-radius: 6px;
   font-size: 1.2em;
   flex-shrink: 0;
@@ -1099,9 +907,9 @@ export default {
 }
 
 .duplicate-group {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  background: var(--admin-surface-2);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
   overflow: hidden;
 }
 
@@ -1110,19 +918,19 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 12px 15px;
-  background: rgba(239, 68, 68, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--admin-danger-soft);
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .group-title {
   font-weight: 500;
-  color: #fff;
+  color: var(--admin-text);
   font-size: 0.9em;
 }
 
 .group-count {
   font-size: 0.85em;
-  color: #ef4444;
+  color: var(--admin-danger-dark);
   font-weight: 600;
 }
 
@@ -1142,13 +950,9 @@ export default {
   align-items: center;
   gap: 15px;
   padding: 12px 15px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-}
-
-.video-item.compact {
-  padding: 8px 12px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
 }
 
 .video-thumb {
@@ -1156,12 +960,8 @@ export default {
   height: 45px;
   object-fit: cover;
   border-radius: 4px;
-  background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3e 100%);
-}
-
-.video-thumb.small {
-  width: 60px;
-  height: 34px;
+  background: var(--admin-surface-3);
+  flex-shrink: 0;
 }
 
 .video-info {
@@ -1174,7 +974,7 @@ export default {
 
 .video-title {
   font-weight: 500;
-  color: #fff;
+  color: var(--admin-text);
   font-size: 0.9em;
   white-space: nowrap;
   overflow: hidden;
@@ -1183,177 +983,13 @@ export default {
 
 .video-meta {
   font-size: 0.8em;
-  color: #888;
+  color: var(--admin-text-muted);
 }
 
 .video-actions {
   display: flex;
   gap: 8px;
   flex-shrink: 0;
-}
-
-/* Videos Grid */
-.videos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
-}
-
-.video-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.video-card .video-thumb {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3e 100%);
-}
-
-.video-card .video-info {
-  padding: 10px;
-}
-
-/* Collection Status */
-.collection-info {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-/* Collection Controls */
-.collection-controls {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 25px;
-}
-
-.collection-controls h4 {
-  margin: 0 0 15px 0;
-  color: #fff;
-  font-size: 1.1em;
-}
-
-.control-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  align-items: flex-end;
-}
-
-.control-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.control-group label {
-  font-size: 0.85em;
-  color: #a0a0b0;
-}
-
-.control-group.checkbox-group {
-  flex-direction: row;
-  align-items: center;
-}
-
-.control-group.checkbox-group label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #fff;
-  cursor: pointer;
-}
-
-.control-group.checkbox-group input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: #7c3aed;
-}
-
-.collection-result {
-  margin-top: 20px;
-  padding: 15px;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  border-radius: 8px;
-}
-
-.collection-result h5 {
-  margin: 0 0 10px 0;
-  color: #22c55e;
-  font-size: 0.95em;
-}
-
-.status-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 15px;
-}
-
-.status-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  text-align: center;
-}
-
-.status-label {
-  font-size: 0.85em;
-  color: #a0a0b0;
-}
-
-.status-value {
-  font-size: 1.8em;
-  font-weight: 700;
-  color: #00d4ff;
-}
-
-.status-value.small {
-  font-size: 0.9em;
-}
-
-.new-videos-section h4 {
-  margin: 0 0 15px 0;
-  color: #fff;
-  font-size: 1.1em;
-}
-
-.new-videos-section h5 {
-  margin: 15px 0 10px 0;
-  color: #a0a0b0;
-  font-size: 0.95em;
-}
-
-.result-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
-  font-size: 0.9em;
-  color: #a0a0b0;
-}
-
-.result-summary .highlight {
-  color: #22c55e;
-  font-weight: 600;
-}
-
-.new-videos-list {
-  margin-top: 15px;
-  max-height: 400px;
-  overflow-y: auto;
 }
 
 /* Modal */
@@ -1363,7 +999,7 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(15, 23, 42, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1372,14 +1008,15 @@ export default {
 }
 
 .modal {
-  background: #1a1a2e;
-  border-radius: 12px;
+  background: var(--admin-surface);
+  border-radius: var(--admin-radius);
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-shadow: var(--admin-shadow-lg);
 }
 
 .modal-large {
@@ -1395,14 +1032,14 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--admin-surface-2);
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .modal-header h3 {
   margin: 0;
   font-size: 1.1em;
-  color: #fff;
+  color: var(--admin-text);
 }
 
 .close-btn {
@@ -1413,13 +1050,13 @@ export default {
   justify-content: center;
   background: none;
   border: none;
-  color: #888;
+  color: var(--admin-text-faint);
   font-size: 1.5em;
   cursor: pointer;
 }
 
 .close-btn:hover {
-  color: #fff;
+  color: var(--admin-text);
 }
 
 .modal-body {
@@ -1433,8 +1070,8 @@ export default {
   justify-content: flex-end;
   gap: 10px;
   padding: 15px 20px;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--admin-surface-2);
+  border-top: 1px solid var(--admin-border);
 }
 
 /* Form */
@@ -1446,7 +1083,7 @@ export default {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #fff;
+  color: var(--admin-text);
   font-size: 0.9em;
 }
 
@@ -1455,7 +1092,7 @@ export default {
 }
 
 .warning-text {
-  color: #ef4444;
+  color: var(--admin-danger-dark);
   font-size: 0.9em;
 }
 
@@ -1465,24 +1102,25 @@ export default {
   bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.9);
+  background: #1e293b;
   color: #fff;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   font-size: 0.9em;
+  box-shadow: var(--admin-shadow-lg);
   z-index: 2000;
 }
 
 .toast-message.success {
-  background: rgba(34, 197, 94, 0.95);
+  background: var(--admin-success);
 }
 
 .toast-message.error {
-  background: rgba(239, 68, 68, 0.95);
+  background: var(--admin-danger);
 }
 
 .toast-message.info {
-  background: rgba(59, 130, 246, 0.95);
+  background: var(--admin-accent-ink);
 }
 
 .toast-enter-active,
@@ -1501,34 +1139,34 @@ export default {
   .tab-nav {
     gap: 8px;
   }
-  
+
   .tab-btn {
     padding: 10px 15px;
     font-size: 0.85em;
   }
-  
+
   .tab-content {
     padding: 15px;
   }
-  
+
   .section-header {
     flex-direction: column;
     gap: 12px;
     align-items: flex-start;
   }
-  
+
   .header-actions {
     width: 100%;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .video-item {
     flex-wrap: wrap;
   }
-  
+
   .video-thumb {
     width: 60px;
     height: 34px;

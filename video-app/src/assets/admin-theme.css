@@ -1,0 +1,87 @@
+/**
+ * Admin Light Theme Design Tokens
+ * ================================
+ * Loaded only in the admin bundle (admin-main.js), after the shared styles.css.
+ * Defines a clean, white-background management console palette and shared
+ * primitives (buttons, forms, cards, modals, toasts) that every admin view
+ * consumes through CSS custom properties.
+ */
+
+:root {
+  /* Surfaces & background */
+  --admin-bg: #eef1f6;
+  --admin-surface: #ffffff;
+  --admin-surface-2: #f6f8fb;
+  --admin-surface-3: #eef2f7;
+
+  /* Borders */
+  --admin-border: #e3e8ef;
+  --admin-border-strong: #d3dae4;
+
+  /* Text */
+  --admin-text: #1f2937;
+  --admin-text-muted: #64748b;
+  --admin-text-faint: #94a3b8;
+
+  /* Brand / accents (kept from the original identity, tuned for white bg) */
+  --admin-primary: #7c3aed;
+  --admin-primary-dark: #6d28d9;
+  --admin-primary-soft: rgba(124, 58, 237, 0.1);
+  --admin-primary-border: rgba(124, 58, 237, 0.28);
+
+  --admin-accent: #0ea5e9;
+  --admin-accent-ink: #0284c7;
+  --admin-accent-soft: rgba(14, 165, 233, 0.1);
+  --admin-accent-border: rgba(14, 165, 233, 0.3);
+
+  /* Semantic */
+  --admin-danger: #ef4444;
+  --admin-danger-dark: #dc2626;
+  --admin-danger-soft: rgba(239, 68, 68, 0.1);
+  --admin-danger-border: rgba(239, 68, 68, 0.28);
+
+  --admin-success: #16a34a;
+  --admin-success-soft: rgba(22, 163, 74, 0.1);
+  --admin-success-border: rgba(22, 163, 74, 0.28);
+
+  /* Elevation */
+  --admin-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --admin-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  --admin-shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.18);
+
+  /* Shape */
+  --admin-radius-sm: 8px;
+  --admin-radius: 12px;
+  --admin-radius-lg: 16px;
+}
+
+/* The admin app owns the whole viewport with a light background, overriding the
+   dark gradient that styles.css applies for the public site. */
+html body {
+  background: var(--admin-bg);
+  color: var(--admin-text);
+}
+
+.admin-app {
+  color: var(--admin-text);
+}
+
+/* Custom scrollbars for the console */
+.admin-app *::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.admin-app *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-app *::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+  border: 2px solid var(--admin-bg);
+}
+
+.admin-app *::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
