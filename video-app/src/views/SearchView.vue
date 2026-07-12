@@ -288,12 +288,26 @@ export default {
   border-radius: 0;
   background: transparent;
   color: #fff;
+  /* Force the typed text to stay white on WebKit; otherwise autofill/native
+     styling can render it dark on the dark box, making it invisible. */
+  -webkit-text-fill-color: #fff;
+  caret-color: #fff;
   font-size: 14px;
   outline: none;
 }
 
 .search-box input::placeholder {
   color: #888;
+}
+
+/* Keep autofilled search text readable (black/white) instead of the browser's
+   default dark-on-light autofill styling. */
+.search-box input:-webkit-autofill,
+.search-box input:-webkit-autofill:hover,
+.search-box input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #fff;
+  caret-color: #fff;
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 .search-btn {

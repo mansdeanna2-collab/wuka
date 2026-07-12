@@ -144,6 +144,48 @@ export function safeEncodeURI(url) {
 const MAX_TEXT_SIZE = 5 * 1024 * 1024
 
 /**
+ * In-memory cache mapping an original image URL to the final `src` value that
+ * should be assigned to an <img> element (either a data URL for base64 content
+ * or the plain URL for a regular image).
+ *
+ * Why: loadImageWithBase64Detection() otherwise runs a network `fetch()` probe
+ * for every non-data URL on every component mount. In a scrolling grid the same
+ * thumbnails mount repeatedly, so each pass re-probes the network needlessly.
+ * Remembering the resolved value lets repeat loads assign the src instantly and
+ * rely on the browser's own HTTP cache for the actual image bytes, so images
+ * already seen are not fetched/decoded again.
+ */
+const resolvedSrcCache = new Map()
+// Cap the cache so long browsing sessions can't grow it without bound.
+const MAX_RESOLVED_CACHE_SIZE = 500
+
+/**
+ * Store a resolved src for a URL, evicting the oldest entry when full.
+ * @param {string} url - Original image URL (cache key)
+ * @param {string} src - Resolved src to assign to <img>
+ */
+function cacheResolvedSrc(url, src) {
+  if (!url || !src) return
+  // Refresh insertion order so recently used entries survive eviction.
+  if (resolvedSrcCache.has(url)) {
+    resolvedSrcCache.delete(url)
+  } else if (resolvedSrcCache.size >= MAX_RESOLVED_CACHE_SIZE) {
+    const oldestKey = resolvedSrcCache.keys().next().value
+    if (oldestKey !== undefined) {
+      resolvedSrcCache.delete(oldestKey)
+    }
+  }
+  resolvedSrcCache.set(url, src)
+}
+
+/**
+ * Clear the resolved image src cache (e.g. to force a full refresh).
+ */
+export function clearImageCache() {
+  resolvedSrcCache.clear()
+}
+
+/**
  * Check if a URL is valid (http or https)
  * @param {string} url - URL to check
  * @returns {boolean}
@@ -167,10 +209,21 @@ export async function loadImageWithBase64Detection(imgElement, url) {
     return
   }
 
+  // Reuse a previously resolved src so repeat loads skip the network probe
+  // and let the browser HTTP cache serve the image bytes.
+  if (url) {
+    const cached = resolvedSrcCache.get(url)
+    if (cached) {
+      imgElement.src = cached
+      return
+    }
+  }
+
   // First try formatImageUrl for local base64 content
   const formattedUrl = formatImageUrl(url)
   if (formattedUrl && formattedUrl.startsWith('data:')) {
     imgElement.src = formattedUrl
+    cacheResolvedSrc(url, formattedUrl)
     return
   }
 
@@ -196,6 +249,7 @@ export async function loadImageWithBase64Detection(imgElement, url) {
     // If the response is an image binary, use the URL directly
     if (contentType.startsWith('image/')) {
       imgElement.src = url
+      cacheResolvedSrc(url, url)
       return
     }
 
@@ -204,6 +258,7 @@ export async function loadImageWithBase64Detection(imgElement, url) {
     if (contentLength > MAX_TEXT_SIZE) {
       // Too large for base64 text, try as URL directly
       imgElement.src = url
+      cacheResolvedSrc(url, url)
       return
     }
 
@@ -213,6 +268,7 @@ export async function loadImageWithBase64Detection(imgElement, url) {
     // Additional size check after reading
     if (text.length > MAX_TEXT_SIZE) {
       imgElement.src = url
+      cacheResolvedSrc(url, url)
       return
     }
 
@@ -230,16 +286,20 @@ export async function loadImageWithBase64Detection(imgElement, url) {
       // Clean and convert raw base64 to data URL
       const cleanedBase64 = cleanBase64Content(trimmedText)
       if (cleanedBase64) {
-        imgElement.src = `data:${detectedMimeType};base64,${cleanedBase64}`
+        const dataUrl = `data:${detectedMimeType};base64,${cleanedBase64}`
+        imgElement.src = dataUrl
+        cacheResolvedSrc(url, dataUrl)
         return
       }
     }
 
     // Not recognized as base64, try using URL directly
     imgElement.src = url
+    cacheResolvedSrc(url, url)
   } catch {
     // On fetch error (CORS, network, etc.), fall back to direct URL loading
     // The browser might be able to load it even if fetch fails
     imgElement.src = url
+    cacheResolvedSrc(url, url)
   }
 }
