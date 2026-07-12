@@ -202,10 +202,9 @@
 import { videoApi } from '@/api'
 import { extractArrayData } from '@/utils/apiUtils'
 import { formatImageUrl } from '@/utils/imageUtils'
-import { getNavCategories } from '@/utils/navCategoryManager'
+import { getNavCategories, fetchNavCategories } from '@/utils/navCategoryManager'
 import AppIcon from '@/components/AppIcon.vue'
 import CategoryPicker from '@/components/admin/CategoryPicker.vue'
-
 export default {
   name: 'VideoManagement',
   components: { AppIcon, CategoryPicker },
@@ -251,6 +250,7 @@ export default {
   },
   mounted() {
     this.loadNavGroups()
+    this.refreshNavGroups()
     this.searchVideos()
   },
   methods: {
@@ -261,6 +261,17 @@ export default {
         label: c.label,
         subcategories: Array.isArray(c.subcategories) ? c.subcategories : []
       }))
+    },
+
+    async refreshNavGroups() {
+      // Pull the latest saved navigation categories so the filter and pickers
+      // reflect what the admin configured, not just cached defaults.
+      try {
+        await fetchNavCategories()
+        this.loadNavGroups()
+      } catch (e) {
+        console.error('Load nav categories error:', e)
+      }
     },
 
     applyCategoryFilter() {

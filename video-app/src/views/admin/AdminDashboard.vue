@@ -101,7 +101,7 @@
 
 <script>
 import { videoApi } from '@/api'
-import { getNavCategories } from '@/utils/navCategoryManager'
+import { getNavCategories, fetchNavCategories } from '@/utils/navCategoryManager'
 import { isStandaloneMode, getFrontendUrl, getAdminPath } from '@/utils/adminUtils'
 import AppIcon from '@/components/AppIcon.vue'
 
@@ -171,8 +171,13 @@ export default {
         console.error('Load statistics error:', e)
       }
       
-      // Load navigation categories from local storage
-      this.navCategories = getNavCategories()
+      // Load navigation categories (fetch fresh from API, fall back to cache)
+      try {
+        this.navCategories = await fetchNavCategories()
+      } catch (e) {
+        console.error('Load nav categories error:', e)
+        this.navCategories = getNavCategories()
+      }
       this.loading = false
     }
   }
