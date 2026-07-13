@@ -1069,7 +1069,7 @@ def collect_hanime() -> Tuple[Response, int]:
 
     except http_requests.RequestException as e:
         logger.error(f"Hanime采集失败: {e}")
-        return api_response(message=f"采集失败: {str(e)}", code=500)
+        return api_response(message="采集失败: 采集源请求异常", code=500)
     except Exception as e:
         logger.error(f"Hanime采集失败: {e}")
         return api_response(message="采集失败", code=500)
