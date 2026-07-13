@@ -316,11 +316,15 @@ class HanimeScraper:
         logger.info("采集详情页: v=%s", video_id)
         return parse_watch(self._get(WATCH_URL, params={"v": video_id}))
 
-    def scrape(
+    def iter_pages(
         self, pages: int = 1, with_details: bool = True
-    ) -> List[Dict[str, Any]]:
-        """采集多页列表, 并可进一步采集每个视频的详情。"""
-        collected: List[Dict[str, Any]] = []
+    ):
+        """逐页采集列表, 每采完一页就产出 (page, items)。
+
+        与 :meth:`scrape` 不同, 本方法是生成器: 每页采集完成后立即产出该页结果,
+        便于调用方"采集完一页就保存一页"、并实时上报进度, 而不必等待所有页面
+        全部采集完成。遇到空页(没有更多视频)或搜索页请求异常时自动停止。
+        """
         for page in range(1, pages + 1):
             try:
                 cards = self.fetch_search_page(page)
@@ -332,6 +336,7 @@ class HanimeScraper:
                 logger.info("第 %s 页没有更多视频, 停止。", page)
                 break
 
+            page_items: List[Dict[str, Any]] = []
             for card in cards:
                 item = dict(card)
                 if with_details:
@@ -357,10 +362,20 @@ class HanimeScraper:
                         )
                     if self.delay:
                         time.sleep(self.delay)
-                collected.append(item)
+                page_items.append(item)
+
+            yield page, page_items
 
             if self.delay:
                 time.sleep(self.delay)
+
+    def scrape(
+        self, pages: int = 1, with_details: bool = True
+    ) -> List[Dict[str, Any]]:
+        """采集多页列表, 并可进一步采集每个视频的详情。"""
+        collected: List[Dict[str, Any]] = []
+        for _page, page_items in self.iter_pages(pages, with_details):
+            collected.extend(page_items)
         return collected
 
 

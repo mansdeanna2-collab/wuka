@@ -85,6 +85,14 @@ class VideoDatabase:
     或手动调用 close() 方法。
     """
 
+    # 前端/后台视频列表排序: 优先按视频上架日期(upload_time, 即详情页显示的日期)倒序,
+    # 缺失上架日期的视频回退到采集时间(created_at)倒序, 最后用 video_id 保证稳定排序。
+    # upload_time 存储格式为 'YYYY-MM-DD' 字符串, 可按字典序倒序得到最新日期在前。
+    _VIDEO_ORDER_BY = (
+        "(upload_time IS NULL OR upload_time = '') , "
+        "upload_time DESC, created_at DESC, video_id DESC"
+    )
+
     @staticmethod
     def _get_default_db_path():
         """
@@ -586,14 +594,21 @@ class VideoDatabase:
 
         if limit:
             cursor.execute(
-                f'SELECT * FROM videos ORDER BY created_at DESC, video_id DESC LIMIT {placeholder} OFFSET {placeholder}',
+                f'SELECT * FROM videos ORDER BY {self._VIDEO_ORDER_BY} LIMIT {placeholder} OFFSET {placeholder}',
                 (limit, offset)
             )
         else:
-            cursor.execute('SELECT * FROM videos ORDER BY created_at DESC, video_id DESC')
+            cursor.execute(f'SELECT * FROM videos ORDER BY {self._VIDEO_ORDER_BY}')
 
         rows = cursor.fetchall()
         return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
+
+    def count_all_videos(self) -> int:
+        """获取视频总数 (Get total number of videos)"""
+        cursor = self.connection.cursor()
+        cursor.execute('SELECT COUNT(*) as cnt FROM videos')
+        row = cursor.fetchone()
+        return int(row['cnt'] if isinstance(row, dict) else row[0])
 
     def get_videos_by_category(self, category: str,
                                limit: Optional[int] = None,
@@ -614,17 +629,28 @@ class VideoDatabase:
 
         if limit:
             cursor.execute(
-                f'SELECT * FROM videos WHERE video_category = {placeholder} ORDER BY created_at DESC, video_id DESC LIMIT {placeholder} OFFSET {placeholder}',
+                f'SELECT * FROM videos WHERE video_category = {placeholder} ORDER BY {self._VIDEO_ORDER_BY} LIMIT {placeholder} OFFSET {placeholder}',
                 (category, limit, offset)
             )
         else:
             cursor.execute(
-                f'SELECT * FROM videos WHERE video_category = {placeholder} ORDER BY created_at DESC, video_id DESC',
+                f'SELECT * FROM videos WHERE video_category = {placeholder} ORDER BY {self._VIDEO_ORDER_BY}',
                 (category,)
             )
 
         rows = cursor.fetchall()
         return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
+
+    def count_videos_by_category(self, category: str) -> int:
+        """获取指定分类的视频总数 (Get total number of videos in a category)"""
+        cursor = self.connection.cursor()
+        placeholder = '%s' if self.use_mysql else '?'
+        cursor.execute(
+            f'SELECT COUNT(*) as cnt FROM videos WHERE video_category = {placeholder}',
+            (category,)
+        )
+        row = cursor.fetchone()
+        return int(row['cnt'] if isinstance(row, dict) else row[0])
 
     def search_videos(self, keyword: str,
                       limit: Optional[int] = None,
@@ -657,6 +683,18 @@ class VideoDatabase:
 
         rows = cursor.fetchall()
         return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
+
+    def count_search_videos(self, keyword: str) -> int:
+        """获取搜索结果的视频总数 (Get total number of videos matching a keyword)"""
+        cursor = self.connection.cursor()
+        search_pattern = f"%{keyword}%"
+        placeholder = '%s' if self.use_mysql else '?'
+        cursor.execute(
+            f'SELECT COUNT(*) as cnt FROM videos WHERE video_title LIKE {placeholder}',
+            (search_pattern,)
+        )
+        row = cursor.fetchone()
+        return int(row['cnt'] if isinstance(row, dict) else row[0])
 
     def get_top_videos(self, limit: int = 10) -> List[Dict[str, Any]]:
         """

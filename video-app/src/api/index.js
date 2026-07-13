@@ -387,6 +387,79 @@ export const videoApi = {
     })
   },
 
+  // Collect from Hanime1 with live progress via Server-Sent Events (SSE).
+  // Saves each page as soon as it is scraped and reports per-page progress.
+  // onEvent({ event, data }) is called for 'start' / 'progress' / 'done'.
+  // Resolves with the final result payload (from the 'done' event).
+  async collectHanimeStream(options = {}, onEvent) {
+    const url = `${getApiBaseUrl()}/admin/collect-hanime-stream`
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        genre: options.genre || '裏番',
+        category: options.category || '里番动漫',
+        max_pages: options.max_pages || 1,
+        collect_all: options.collect_all === true,
+        skip_duplicates: options.skip_duplicates !== false,
+        delay: options.delay != null ? options.delay : 1.0
+      })
+    })
+
+    if (!resp.ok || !resp.body) {
+      const err = new Error('采集请求失败')
+      err.userMessage = '采集请求失败，请稍后重试'
+      throw err
+    }
+
+    const reader = resp.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let finalResult = null
+
+    // Parse a single SSE block ("event: x\ndata: {...}") into { event, data }.
+    const parseBlock = block => {
+      let eventName = 'message'
+      const dataLines = []
+      for (const line of block.split('\n')) {
+        if (line.startsWith('event:')) eventName = line.slice(6).trim()
+        else if (line.startsWith('data:')) dataLines.push(line.slice(5).trim())
+      }
+      if (!dataLines.length) return null
+      let data = null
+      try {
+        data = JSON.parse(dataLines.join('\n'))
+      } catch {
+        data = null
+      }
+      return { event: eventName, data }
+    }
+
+    // Read chunks until the stream ends, splitting on SSE event boundaries.
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+
+      let sep
+      while ((sep = buffer.indexOf('\n\n')) !== -1) {
+        const rawBlock = buffer.slice(0, sep)
+        buffer = buffer.slice(sep + 2)
+        const evt = parseBlock(rawBlock)
+        if (!evt) continue
+        if (evt.event === 'error') {
+          const err = new Error(evt.data?.message || '采集失败')
+          err.userMessage = evt.data?.message || '采集失败'
+          throw err
+        }
+        if (evt.event === 'done') finalResult = evt.data
+        if (typeof onEvent === 'function') onEvent(evt)
+      }
+    }
+
+    return finalResult
+  },
+
   // Refresh (re-scrape) image + play url for all hanime videos in a category
   refreshHanimeMedia(options = {}) {
     return api.post('/admin/refresh-hanime-media', {
