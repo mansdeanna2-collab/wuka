@@ -26,6 +26,7 @@ API端点:
 from __future__ import annotations
 
 import os
+import re
 import sys
 import uuid
 import json
@@ -205,6 +206,50 @@ def handle_errors(f: F) -> F:
 
 # ==================== API路由 (API Routes) ====================
 
+
+# 用于切分系列名的分隔符: 空格/全角空格/中点/数字/英文字母等
+# (Delimiters used to derive a series base name from a video title:
+#  ASCII/full-width spaces, middle dots, digits and latin letters.)
+_SERIES_SPLIT_RE = re.compile(
+    r'[\s\u3000・·･:：.．,，、\-–—~〜/／|｜0-9０-９a-zA-Zａ-ｚＡ-Ｚ]'
+)
+# 自然排序: 把标题拆成数字块与文字块, 让 "Karte.1" < "Karte.2" < "Karte.5.5"
+_NATURAL_KEY_RE = re.compile(r'(\d+(?:\.\d+)?)')
+
+
+def _series_base(title: Optional[str]) -> str:
+    """
+    从视频标题推导"合集/系列"名 (Derive the collection/series base name).
+
+    取标题开头、遇到第一个分隔符 (空格/中点/数字/英文字母) 之前的部分。例如:
+        "黒獣 1"                       -> "黒獣"
+        "夜勤病棟 Karte.1"             -> "夜勤病棟"
+        "夜勤病棟・参 Experiment.1"    -> "夜勤病棟"
+    若开头即为分隔符 (无法提取有效前缀), 返回去除首尾空白的完整标题,
+    这样该视频只会与自身成为一个"合集" (即没有合集)。
+    """
+    if not title:
+        return ''
+    title = title.strip()
+    match = _SERIES_SPLIT_RE.search(title)
+    base = title[:match.start()] if match else title
+    base = base.strip()
+    return base if base else title
+
+
+def _natural_sort_key(title: str) -> List[Any]:
+    """把标题拆成 [文字, 数字, 文字, ...] 以便按集数自然排序。"""
+    parts = _NATURAL_KEY_RE.split(title or '')
+    key: List[Any] = []
+    for index, part in enumerate(parts):
+        if index % 2 == 1:  # 数字块
+            try:
+                key.append((1, float(part)))
+            except ValueError:
+                key.append((2, part))
+        else:  # 文字块
+            key.append((0, part))
+    return key
 @app.route('/api/health', methods=['GET'])
 def health_check() -> Tuple[Response, int]:
     """健康检查端点 (Health check endpoint)"""
@@ -414,6 +459,44 @@ def get_related_videos(video_id: int) -> Tuple[Response, int]:
             related = []
 
     return api_response(data=related)
+
+
+@app.route('/api/videos/collection/<int:video_id>', methods=['GET'])
+@handle_errors
+def get_video_collection(video_id: int) -> Tuple[Response, int]:
+    """
+    获取视频所属"合集/系列" (Get the collection/series a video belongs to).
+
+    根据视频标题推导系列名 (见 _series_base), 找出同系列的其它视频,
+    按集数自然排序后返回。返回结果始终包含当前视频本身; 若没有其它同系列
+    视频, 则只返回当前视频 (即前端在"合集"位置只显示正在播放的视频)。
+    """
+    limit: int = max(1, min(int(request.args.get('limit', 50)), 100))
+
+    with get_db() as db:
+        video: Optional[Dict[str, Any]] = db.get_video(video_id)
+        if not video:
+            return api_response(message="视频不存在", code=404)
+
+        base: str = _series_base(video.get('video_title', ''))
+        collection: List[Dict[str, Any]] = [video]
+
+        # 以系列名为关键字搜索候选视频, 再用相同的推导逻辑过滤,
+        # 避免把只是标题中间恰好包含该词的无关视频混进合集。
+        if base:
+            candidates: List[Dict[str, Any]] = db.search_videos(base, limit=limit)
+            seen = {video_id}
+            for candidate in candidates:
+                cid = candidate.get('video_id')
+                if cid in seen:
+                    continue
+                if _series_base(candidate.get('video_title', '')) == base:
+                    collection.append(candidate)
+                    seen.add(cid)
+
+        collection.sort(key=lambda v: _natural_sort_key(v.get('video_title', '')))
+
+    return api_response(data=collection)
 
 
 @app.route('/api/categories', methods=['GET'])

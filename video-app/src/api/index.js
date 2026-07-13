@@ -275,6 +275,12 @@ export const videoApi = {
     return cachedGet(`/videos/related/${videoId}`, { limit })
   },
 
+  // Get the collection/series (合集) a video belongs to.
+  // Always returns at least the current video.
+  getCollection(videoId, limit = 50) {
+    return cachedGet(`/videos/collection/${videoId}`, { limit })
+  },
+
   // Update play count (no cache - POST request)
   updatePlayCount(videoId) {
     return api.post(`/videos/${videoId}/play`)
