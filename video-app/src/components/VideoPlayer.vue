@@ -109,6 +109,12 @@ export default {
       type: String,
       default: ''
     },
+    // Backup/alternate play URL. hanime 采集源白天/夜间播放地址可能不同,
+    // 主地址加载失败时自动切换到备用地址重试 (video_url_backup)。
+    fallbackSrc: {
+      type: String,
+      default: ''
+    },
     poster: {
       type: String,
       default: ''
@@ -144,6 +150,9 @@ export default {
       gestureTimeout: null,
       // Track if initial autoplay has been triggered
       hasAutoplayTriggered: false,
+      // Whether we've already switched to the backup URL for the current video,
+      // so we don't loop endlessly between primary and backup.
+      triedFallback: false,
       // Video loading performance tracking
       loadStartTime: null,
       slowLoadingWarning: false,
@@ -303,6 +312,7 @@ export default {
           this.hls.startLoad()
           return
         }
+        if (this.trySwitchToFallback()) return
         this.loading = false
         this.buffering = false
         this.stopSlowLoadingDetection()
@@ -313,6 +323,7 @@ export default {
         this.hls.recoverMediaError()
       } else {
         this.destroyHls()
+        if (this.trySwitchToFallback()) return
         this.loading = false
         this.buffering = false
         this.stopSlowLoadingDetection()
@@ -351,6 +362,8 @@ export default {
     parseSource(src) {
       // Reset autoplay flag when source changes
       this.hasAutoplayTriggered = false
+      // New video: allow one automatic switch to the backup URL again.
+      this.triedFallback = false
       
       if (!src) {
         this.currentSrc = ''
@@ -536,6 +549,11 @@ export default {
         return
       }
       
+      // Primary URL failed for good — try the backup URL once before giving up.
+      if (this.trySwitchToFallback()) {
+        return
+      }
+
       this.error = true
       this.errorMessage = errorMsg
       this.$emit('error', e)
@@ -615,6 +633,55 @@ export default {
       } else if (this.$refs.videoElement) {
         this.$refs.videoElement.load()
       }
+    },
+
+    // Whether a usable backup URL is available and not yet tried for this video.
+    canUseFallback() {
+      const fb = (this.fallbackSrc || '').trim()
+      return (
+        !this.triedFallback &&
+        !!fb &&
+        (fb.startsWith('http://') || fb.startsWith('https://')) &&
+        fb !== this.currentSrc
+      )
+    },
+
+    // Auto-switch playback to the backup URL. Returns true if a switch happened.
+    // Used when the primary (采集) URL fails to load — e.g. hanime 白天/夜间
+    // 播放地址不同导致主地址失效时, 自动切到上一次采集保存的备用地址重试。
+    trySwitchToFallback() {
+      if (!this.canUseFallback()) return false
+
+      this.triedFallback = true
+      this.destroyHls()
+
+      const fb = this.fallbackSrc.trim()
+      // Reset playback state for the new source.
+      this.episodes = [{ name: '', url: fb }]
+      this.currentEpisode = 0
+      this.currentSrc = fb
+      this.loading = true
+      this.error = false
+      this.retryCount = 0
+      this.hasAutoplayTriggered = false
+
+      // Clear any pending primary-URL retry so it doesn't fight the fallback.
+      if (this.retryTimeout) {
+        clearTimeout(this.retryTimeout)
+        this.retryTimeout = null
+      }
+
+      this.startSlowLoadingDetection()
+      this.$nextTick(() => {
+        if (this.useHlsJs) {
+          // hls.js drives loading via the currentSrc watcher -> setupSource().
+          return
+        }
+        if (this.$refs.videoElement) {
+          this.$refs.videoElement.load()
+        }
+      })
+      return true
     },
     
     // Playback rate control

@@ -67,7 +67,7 @@
     <div class="panel collection-controls">
       <h4><AppIcon name="download" :size="18" /> Hanime1 裏番采集</h4>
       <p class="intro-desc">
-        从 hanime1.me 采集裏番(里番)动漫:自动解析最高画质播放地址、标签、观看次数与上传日期,默认归类到「里番动漫」并入库。同名视频只替换图片/视频链接,不新增重复数据。
+        从 hanime1.me 采集裏番(里番)动漫:自动解析最高画质播放地址、标签、观看次数与上传日期,默认归类到「里番动漫」并入库。同名视频只替换图片/视频链接,不新增重复数据。链接变化时会保留旧地址为备用地址,播放失败时前端自动切换重试。
       </p>
       <div class="control-row">
         <div class="control-group">
@@ -86,6 +86,7 @@
             <option value="3">3页</option>
             <option value="5">5页</option>
             <option value="10">10页</option>
+            <option value="all">采集全部</option>
           </select>
         </div>
         <div class="control-group">
@@ -106,10 +107,35 @@
         <button
           class="btn btn-primary"
           @click="startHanimeCollection"
-          :disabled="collectingHanime"
+          :disabled="collectingHanime || refreshingHanimeMedia"
         >
           {{ collectingHanime ? '采集中...' : '开始采集' }}
         </button>
+        <button
+          class="btn btn-secondary"
+          @click="refreshHanimeMedia"
+          :disabled="collectingHanime || refreshingHanimeMedia"
+          title="重新抓取该分类下全部视频的封面图片和播放地址，链接变化时自动保留旧地址为备用"
+        >
+          {{ refreshingHanimeMedia ? '更新中...' : '更新全部图片和链接' }}
+        </button>
+      </div>
+
+      <p v-if="collectingHanime && hanimeIsCollectAll" class="intro-desc collecting-hint">
+        正在采集全部页面，逐页抓取详情，可能需要较长时间，请耐心等待…
+      </p>
+      <p v-else-if="refreshingHanimeMedia" class="intro-desc collecting-hint">
+        正在逐个重新抓取封面与播放地址，视频较多时耗时较长，请耐心等待…
+      </p>
+
+      <div v-if="hanimeRefreshResult" class="collection-result">
+        <h5>更新结果</h5>
+        <div class="result-summary">
+          <span>检查: {{ hanimeRefreshResult.checked_count }} 个</span>
+          <span class="highlight">已更新: {{ hanimeRefreshResult.updated_count }} 个</span>
+          <span>未变化: {{ hanimeRefreshResult.unchanged_count }} 个</span>
+          <span>失败: {{ hanimeRefreshResult.failed_count }} 个</span>
+        </div>
       </div>
 
       <div v-if="hanimeResult" class="collection-result">
@@ -118,7 +144,8 @@
           <span class="highlight">成功采集: {{ hanimeResult.collected_count }} 个</span>
           <span>更新链接: {{ hanimeResult.updated_count || 0 }} 个</span>
           <span>跳过无效: {{ hanimeResult.skipped_count }} 个</span>
-          <span>处理页数: {{ hanimeResult.pages_processed }} 页</span>
+          <span v-if="hanimeResult.collect_all">共处理: {{ hanimeResult.total_items || 0 }} 个</span>
+          <span v-else>处理页数: {{ hanimeResult.pages_processed }} 页</span>
         </div>
 
         <div
@@ -269,10 +296,19 @@ export default {
       hanimeSkipDuplicates: true,
       collectingHanime: false,
       hanimeResult: null,
+      // Refresh all media (image + play url) for the hanime category
+      refreshingHanimeMedia: false,
+      hanimeRefreshResult: null,
 
       // Toast
       toastMessage: '',
       toastType: ''
+    }
+  },
+  computed: {
+    // Whether the hanime page selector is set to "采集全部"
+    hanimeIsCollectAll() {
+      return this.hanimeMaxPages === 'all'
     }
   },
   mounted() {
@@ -350,16 +386,19 @@ export default {
 
     // Start Hanime1 collection
     async startHanimeCollection() {
-      if (this.collectingHanime) return
+      if (this.collectingHanime || this.refreshingHanimeMedia) return
 
       this.collectingHanime = true
       this.hanimeResult = null
+
+      const collectAll = this.hanimeIsCollectAll
 
       try {
         const result = await videoApi.collectHanime({
           genre: this.hanimeGenre || '裏番',
           category: this.hanimeCategory || '里番动漫',
-          max_pages: parseInt(this.hanimeMaxPages),
+          max_pages: collectAll ? 1 : parseInt(this.hanimeMaxPages),
+          collect_all: collectAll,
           delay: parseFloat(this.hanimeDelay),
           skip_duplicates: this.hanimeSkipDuplicates
         })
@@ -369,6 +408,8 @@ export default {
         const collected = this.hanimeResult.collected_count || 0
         const updated = this.hanimeResult.updated_count || 0
         if (collected > 0 || updated > 0) {
+          // New/updated videos changed the DB, so drop stale cached lists.
+          videoApi.clearCache()
           const parts = []
           if (collected > 0) parts.push(`新增 ${collected} 个`)
           if (updated > 0) parts.push(`更新链接 ${updated} 个`)
@@ -381,6 +422,39 @@ export default {
         this.showToast('采集失败: ' + (e.userMessage || e.message), 'error')
       } finally {
         this.collectingHanime = false
+      }
+    },
+
+    // Refresh image + play url for all videos in the hanime category. Re-scrapes
+    // each video's detail page; when the play url changed, the old one is kept as
+    // a backup so the player can auto-switch on failure (白天/夜间地址不同).
+    async refreshHanimeMedia() {
+      if (this.collectingHanime || this.refreshingHanimeMedia) return
+
+      this.refreshingHanimeMedia = true
+      this.hanimeRefreshResult = null
+
+      try {
+        const result = await videoApi.refreshHanimeMedia({
+          category: this.hanimeCategory || '里番动漫',
+          delay: parseFloat(this.hanimeDelay)
+        })
+
+        this.hanimeRefreshResult = result?.data || result
+
+        const updated = this.hanimeRefreshResult.updated_count || 0
+        if (updated > 0) {
+          // Updated urls/images changed the DB, so drop stale cached lists.
+          videoApi.clearCache()
+          this.showToast(`更新完成: 刷新 ${updated} 个视频`, 'success')
+        } else {
+          this.showToast('更新完成: 没有需要更新的视频', 'info')
+        }
+      } catch (e) {
+        console.error('Hanime refresh error:', e)
+        this.showToast('更新失败: ' + (e.userMessage || e.message), 'error')
+      } finally {
+        this.refreshingHanimeMedia = false
       }
     },
 
@@ -428,6 +502,11 @@ export default {
   margin: 0;
   color: var(--admin-text-muted);
   font-size: 0.9em;
+}
+
+.collecting-hint {
+  margin-top: 12px;
+  color: var(--admin-warning, #d97706);
 }
 
 /* Panels */

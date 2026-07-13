@@ -341,6 +341,11 @@ export const videoApi = {
     return api.delete(`/admin/videos/${videoId}`)
   },
 
+  // Batch delete videos by a list of ids
+  batchDeleteVideos(videoIds) {
+    return api.post('/admin/videos/batch-delete', { video_ids: videoIds })
+  },
+
   // Get collection status
   getCollectionStatus(hours = 24) {
     return api.get('/admin/collection-status', { params: { hours } })
@@ -372,8 +377,25 @@ export const videoApi = {
       genre: options.genre || '裏番',
       category: options.category || '里番动漫',
       max_pages: options.max_pages || 1,
+      collect_all: options.collect_all === true,
       skip_duplicates: options.skip_duplicates !== false,
       delay: options.delay != null ? options.delay : 1.0
+    }, {
+      // Collecting many pages (especially 采集全部) re-scrapes many detail pages,
+      // so allow a long timeout instead of the default 10s.
+      timeout: 10 * 60 * 1000
+    })
+  },
+
+  // Refresh (re-scrape) image + play url for all hanime videos in a category
+  refreshHanimeMedia(options = {}) {
+    return api.post('/admin/refresh-hanime-media', {
+      category: options.category || '里番动漫',
+      delay: options.delay != null ? options.delay : 1.0,
+      limit: options.limit || 0
+    }, {
+      // Refreshing every video re-scrapes many detail pages, so allow a long timeout
+      timeout: 10 * 60 * 1000
     })
   },
 

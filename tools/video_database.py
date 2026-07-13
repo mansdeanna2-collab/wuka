@@ -152,6 +152,7 @@ class VideoDatabase:
                 CREATE TABLE IF NOT EXISTS videos (
                     video_id INT PRIMARY KEY,
                     video_url TEXT NOT NULL,
+                    video_url_backup TEXT,
                     video_image TEXT,
                     video_title VARCHAR(500) NOT NULL,
                     video_category VARCHAR(100),
@@ -253,6 +254,7 @@ class VideoDatabase:
             CREATE TABLE IF NOT EXISTS videos (
                 video_id INTEGER PRIMARY KEY,
                 video_url TEXT NOT NULL,
+                video_url_backup TEXT,
                 video_image TEXT,
                 video_title TEXT NOT NULL,
                 video_category TEXT,
@@ -327,9 +329,10 @@ class VideoDatabase:
         self._log(f"✅ 数据库初始化完成: {self.db_path}")
 
     def _migrate_videos_mysql(self, cursor) -> None:
-        """为旧版 MySQL videos 表补齐新增的列 (如 video_tags)"""
+        """为旧版 MySQL videos 表补齐新增的列 (如 video_tags, video_url_backup)"""
         column_defs = {
             'video_tags': "ALTER TABLE videos ADD COLUMN video_tags TEXT",
+            'video_url_backup': "ALTER TABLE videos ADD COLUMN video_url_backup TEXT",
         }
         for sql in column_defs.values():
             try:
@@ -339,12 +342,17 @@ class VideoDatabase:
                 pass
 
     def _migrate_videos_sqlite(self, cursor) -> None:
-        """为旧版 SQLite videos 表补齐新增的列 (如 video_tags)"""
+        """为旧版 SQLite videos 表补齐新增的列 (如 video_tags, video_url_backup)"""
         cursor.execute('PRAGMA table_info(videos)')
         existing = {row[1] for row in cursor.fetchall()}
         if 'video_tags' not in existing:
             try:
                 cursor.execute('ALTER TABLE videos ADD COLUMN video_tags TEXT')
+            except Exception:
+                pass
+        if 'video_url_backup' not in existing:
+            try:
+                cursor.execute('ALTER TABLE videos ADD COLUMN video_url_backup TEXT')
             except Exception:
                 pass
 
@@ -449,12 +457,13 @@ class VideoDatabase:
                 # MySQL使用 REPLACE INTO
                 cursor.execute('''
                     REPLACE INTO videos
-                    (video_id, video_url, video_image, video_title, video_category,
+                    (video_id, video_url, video_url_backup, video_image, video_title, video_category,
                      video_tags, play_count, upload_time, video_duration, video_coins)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ''', (
                     video_data.get('video_id'),
                     video_data.get('video_url'),
+                    video_data.get('video_url_backup', ''),
                     video_data.get('video_image', ''),
                     video_data.get('video_title'),
                     video_data.get('video_category', ''),
@@ -468,12 +477,13 @@ class VideoDatabase:
                 # SQLite使用 INSERT OR REPLACE
                 cursor.execute('''
                     INSERT OR REPLACE INTO videos
-                    (video_id, video_url, video_image, video_title, video_category,
+                    (video_id, video_url, video_url_backup, video_image, video_title, video_category,
                      video_tags, play_count, upload_time, video_duration, video_coins, updated_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     video_data.get('video_id'),
                     video_data.get('video_url'),
+                    video_data.get('video_url_backup', ''),
                     video_data.get('video_image', ''),
                     video_data.get('video_title'),
                     video_data.get('video_category', ''),
@@ -702,7 +712,7 @@ class VideoDatabase:
         # 构建更新SQL
         # 注意：字段名来自 allowed_fields 白名单，防止SQL注入
         allowed_fields = [
-            'video_url', 'video_image', 'video_title', 'video_category',
+            'video_url', 'video_url_backup', 'video_image', 'video_title', 'video_category',
             'video_tags', 'play_count', 'upload_time', 'video_duration',
             'video_coins'
         ]
@@ -789,6 +799,46 @@ class VideoDatabase:
             logger.error(f"删除视频失败: {e}")
             self._log(f"❌ 删除视频失败: {e}")
             return False
+
+    def delete_videos(self, video_ids: List[int]) -> int:
+        """
+        批量删除视频
+
+        Args:
+            video_ids: 视频ID列表
+
+        Returns:
+            成功删除的视频数量
+        """
+        # 归一化为去重后的整数列表, 过滤无效值
+        ids: List[int] = []
+        seen = set()
+        for vid in video_ids or []:
+            try:
+                iv = int(vid)
+            except (TypeError, ValueError):
+                continue
+            if iv not in seen:
+                seen.add(iv)
+                ids.append(iv)
+
+        if not ids:
+            return 0
+
+        try:
+            cursor = self.connection.cursor()
+            placeholder = '%s' if self.use_mysql else '?'
+            placeholders = ', '.join([placeholder] * len(ids))
+            cursor.execute(
+                f'DELETE FROM videos WHERE video_id IN ({placeholders})',
+                ids
+            )
+            self.connection.commit()
+            return cursor.rowcount
+        except Exception as e:
+            logger.error(f"批量删除视频失败: {e}")
+            self._log(f"❌ 批量删除视频失败: {e}")
+            return 0
 
     def get_categories(self) -> List[Dict[str, Any]]:
         """

@@ -7,6 +7,7 @@
 export interface Video {
   video_id: number
   video_url: string
+  video_url_backup?: string
   video_image: string
   video_title: string
   video_category: string
