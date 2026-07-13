@@ -366,6 +366,16 @@ export const videoApi = {
     return api.get('/admin/get-source-categories')
   },
 
+  // Collect videos from Hanime1 (裏番/里番) and save to database
+  collectHanime(options = {}) {
+    return api.post('/admin/collect-hanime', {
+      genre: options.genre || '裏番',
+      max_pages: options.max_pages || 1,
+      skip_duplicates: options.skip_duplicates !== false,
+      delay: options.delay != null ? options.delay : 1.0
+    })
+  },
+
   // Clear all cached data (useful for force refresh)
   clearCache() {
     cache.clear()

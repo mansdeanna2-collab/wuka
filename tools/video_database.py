@@ -155,6 +155,7 @@ class VideoDatabase:
                     video_image TEXT,
                     video_title VARCHAR(500) NOT NULL,
                     video_category VARCHAR(100),
+                    video_tags TEXT,
                     play_count INT DEFAULT 0,
                     upload_time VARCHAR(50),
                     video_duration VARCHAR(50),
@@ -163,6 +164,9 @@ class VideoDatabase:
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
             ''')
+
+            # 兼容旧表结构: 补齐 video_tags 列
+            self._migrate_videos_mysql(cursor)
 
             # 创建索引以提高查询效率
             try:
@@ -216,6 +220,13 @@ class VideoDatabase:
         except Exception as e:
             logger.error(f"MySQL连接失败: {e}")
             self._log(f"⚠️ MySQL连接失败，降级到SQLite: {e}")
+            # 关闭可能已建立的 MySQL 连接，避免降级到 SQLite 时泄漏连接
+            if self.connection is not None:
+                try:
+                    self.connection.close()
+                except Exception:
+                    pass
+                self.connection = None
             self.use_mysql = False
             self._init_sqlite()
 
@@ -240,6 +251,7 @@ class VideoDatabase:
                 video_image TEXT,
                 video_title TEXT NOT NULL,
                 video_category TEXT,
+                video_tags TEXT,
                 play_count INTEGER DEFAULT 0,
                 upload_time TEXT,
                 video_duration TEXT,
@@ -248,6 +260,9 @@ class VideoDatabase:
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+
+        # 兼容旧表结构: 补齐 video_tags 列
+        self._migrate_videos_sqlite(cursor)
 
         # 创建索引以提高查询效率
         cursor.execute('''
@@ -299,6 +314,28 @@ class VideoDatabase:
 
         self.connection.commit()
         self._log(f"✅ 数据库初始化完成: {self.db_path}")
+
+    def _migrate_videos_mysql(self, cursor) -> None:
+        """为旧版 MySQL videos 表补齐新增的列 (如 video_tags)"""
+        column_defs = {
+            'video_tags': "ALTER TABLE videos ADD COLUMN video_tags TEXT",
+        }
+        for sql in column_defs.values():
+            try:
+                cursor.execute(sql)
+            except Exception:
+                # 列已存在
+                pass
+
+    def _migrate_videos_sqlite(self, cursor) -> None:
+        """为旧版 SQLite videos 表补齐新增的列 (如 video_tags)"""
+        cursor.execute('PRAGMA table_info(videos)')
+        existing = {row[1] for row in cursor.fetchall()}
+        if 'video_tags' not in existing:
+            try:
+                cursor.execute('ALTER TABLE videos ADD COLUMN video_tags TEXT')
+            except Exception:
+                pass
 
     def _migrate_carousel_items_mysql(self, cursor) -> None:
         """为旧版 MySQL carousel_items 表补齐独立图片所需的列并放宽 video_id 约束"""
@@ -379,6 +416,7 @@ class VideoDatabase:
                 - video_image: 视频图片
                 - video_title: 视频标题 (必需)
                 - video_category: 视频分类
+                - video_tags: 视频标签 (逗号分隔)
                 - play_count: 播放数
                 - upload_time: 上传时间
                 - video_duration: 视频时长
@@ -401,14 +439,15 @@ class VideoDatabase:
                 cursor.execute('''
                     REPLACE INTO videos
                     (video_id, video_url, video_image, video_title, video_category,
-                     play_count, upload_time, video_duration, video_coins)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                     video_tags, play_count, upload_time, video_duration, video_coins)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ''', (
                     video_data.get('video_id'),
                     video_data.get('video_url'),
                     video_data.get('video_image', ''),
                     video_data.get('video_title'),
                     video_data.get('video_category', ''),
+                    video_data.get('video_tags', ''),
                     video_data.get('play_count', 0),
                     video_data.get('upload_time', ''),
                     video_data.get('video_duration', ''),
@@ -419,14 +458,15 @@ class VideoDatabase:
                 cursor.execute('''
                     INSERT OR REPLACE INTO videos
                     (video_id, video_url, video_image, video_title, video_category,
-                     play_count, upload_time, video_duration, video_coins, updated_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     video_tags, play_count, upload_time, video_duration, video_coins, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     video_data.get('video_id'),
                     video_data.get('video_url'),
                     video_data.get('video_image', ''),
                     video_data.get('video_title'),
                     video_data.get('video_category', ''),
+                    video_data.get('video_tags', ''),
                     video_data.get('play_count', 0),
                     video_data.get('upload_time', ''),
                     video_data.get('video_duration', ''),
@@ -622,7 +662,8 @@ class VideoDatabase:
         # 注意：字段名来自 allowed_fields 白名单，防止SQL注入
         allowed_fields = [
             'video_url', 'video_image', 'video_title', 'video_category',
-            'play_count', 'upload_time', 'video_duration', 'video_coins'
+            'video_tags', 'play_count', 'upload_time', 'video_duration',
+            'video_coins'
         ]
 
         placeholder = '%s' if self.use_mysql else '?'

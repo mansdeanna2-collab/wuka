@@ -13,6 +13,7 @@ services:
     volumes:
       - video-data:/app/data
       - ./tools/video_database.py:/app/video_database.py:ro
+      - ./tools/hanime_scraper.py:/app/hanime_scraper.py:ro
     environment:
       - USE_MYSQL=false
       - PYTHONUNBUFFERED=1
