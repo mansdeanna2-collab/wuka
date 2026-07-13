@@ -13,32 +13,34 @@
 
       <!-- Tag Filter Bar -->
       <div v-if="showTagBar" class="tag-filter-bar">
+        <!-- Only the currently selected tags are shown here (removable) -->
+        <div class="tag-bar-selected">
+          <template v-if="selectedTags.length">
+            <button
+              v-for="tag in selectedTags"
+              :key="tag"
+              class="tag-chip active"
+              :aria-label="`移除标签 ${tag}`"
+              @click="toggleTag(tag)"
+            >
+              <span>{{ tag }}</span>
+              <AppIcon name="x" :size="12" />
+            </button>
+            <button class="tag-clear-btn" @click="selectAll">清除</button>
+          </template>
+        </div>
+
+        <!-- Filter button pinned to the right -->
         <button
           class="filter-toggle-btn"
           :class="{ active: selectedTags.length > 0 }"
           @click="openFilter"
           aria-label="筛选标签"
         >
-          <AppIcon name="filter" :size="14" />
+          <AppIcon name="filter" :size="12" />
           <span>筛选</span>
           <span v-if="selectedTags.length" class="filter-badge">{{ selectedTags.length }}</span>
         </button>
-
-        <!-- Only the currently selected tags are shown here (removable) -->
-        <template v-if="selectedTags.length">
-          <span class="tag-bar-divider"></span>
-          <button
-            v-for="tag in selectedTags"
-            :key="tag"
-            class="tag-chip active"
-            :aria-label="`移除标签 ${tag}`"
-            @click="toggleTag(tag)"
-          >
-            <span>{{ tag }}</span>
-            <AppIcon name="x" :size="12" />
-          </button>
-          <button class="tag-clear-btn" @click="selectAll">清除</button>
-        </template>
       </div>
     </div>
 
@@ -125,16 +127,17 @@
         <button v-else class="btn btn-primary" @click="goBack">返回首页</button>
       </div>
 
-      <!-- Load More -->
-      <div v-if="hasMore || loadingMore" class="load-more">
-        <button 
-          class="btn btn-secondary" 
-          @click="loadMore"
-          :disabled="loadingMore"
-        >
-          <span v-if="loadingMore" class="loading-spinner small"></span>
-          {{ loadingMore ? '加载中...' : '加载更多' }}
-        </button>
+      <!-- Auto Load More (infinite scroll) -->
+      <div
+        v-if="hasMore && !usingMockData"
+        ref="loadMoreTrigger"
+        class="load-more"
+      >
+        <span v-if="loadingMore" class="loading-spinner small"></span>
+        <span v-else class="load-more-hint">向下滑动加载更多</span>
+      </div>
+      <div v-else-if="!usingMockData && videos.length > 0" class="load-more-end">
+        没有更多了
       </div>
     </div>
 
@@ -172,7 +175,8 @@ export default {
       page: 1,
       limit: 20,
       hasMore: true,
-      usingMockData: false
+      usingMockData: false,
+      intersectionObserver: null
     }
   },
   computed: {
@@ -200,6 +204,9 @@ export default {
   mounted() {
     this.loadTags()
     this.loadVideos()
+  },
+  beforeUnmount() {
+    this.cleanupObserver()
   },
   methods: {
     goBack() {
@@ -253,6 +260,7 @@ export default {
         }
       } finally {
         this.loading = false
+        this.$nextTick(() => this.setupObserver())
       }
     },
 
@@ -319,6 +327,32 @@ export default {
         console.error('Load more error:', e)
       } finally {
         this.loadingMore = false
+        this.$nextTick(() => this.setupObserver())
+      }
+    },
+
+    // Auto-load more videos when the sentinel scrolls into view (infinite scroll)
+    setupObserver() {
+      this.cleanupObserver()
+      const trigger = this.$refs.loadMoreTrigger
+      if (!trigger || !this.hasMore || this.usingMockData) return
+      this.intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && this.hasMore && !this.loadingMore && !this.loading) {
+              this.loadMore()
+            }
+          })
+        },
+        { rootMargin: '200px', threshold: 0.1 }
+      )
+      this.intersectionObserver.observe(trigger)
+    },
+
+    cleanupObserver() {
+      if (this.intersectionObserver) {
+        this.intersectionObserver.disconnect()
+        this.intersectionObserver = null
       }
     },
 
@@ -364,6 +398,15 @@ export default {
   align-items: center;
   gap: 8px;
   padding: 0 15px 10px;
+}
+
+/* Scrollable area holding the currently selected tag chips (left side) */
+.tag-bar-selected {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
@@ -371,7 +414,7 @@ export default {
   scrollbar-width: none;
 }
 
-.tag-filter-bar::-webkit-scrollbar {
+.tag-bar-selected::-webkit-scrollbar {
   display: none;
 }
 
@@ -422,18 +465,19 @@ export default {
   color: #fff;
 }
 
-/* Filter toggle button (opens modal) */
+/* Filter toggle button (opens modal) - compact, pinned to the right */
 .filter-toggle-btn {
   flex: 0 0 auto;
+  margin-left: auto;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 11px;
-  font-size: 0.8em;
+  gap: 3px;
+  padding: 3px 9px;
+  font-size: 0.72em;
   color: #cfcfcf;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
+  border-radius: 14px;
   cursor: pointer;
   transition: all 0.25s;
 }
@@ -461,13 +505,6 @@ export default {
   color: #0a0a14;
   background: var(--color-accent);
   border-radius: 8px;
-}
-
-.tag-bar-divider {
-  flex: 0 0 auto;
-  width: 1px;
-  height: 18px;
-  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Filter Modal */
@@ -811,6 +848,18 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+.load-more-hint {
+  font-size: 0.82em;
+  color: #9a9aac;
+}
+
+.load-more-end {
+  text-align: center;
+  padding: 18px;
+  font-size: 0.82em;
+  color: #6c6c7c;
 }
 
 .loading-spinner {

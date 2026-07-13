@@ -71,16 +71,14 @@
         <p class="empty-desc">输入关键词，搜索你感兴趣的内容</p>
       </div>
 
-      <!-- Load More -->
-      <div v-if="hasMore && videos.length > 0" class="load-more">
-        <button 
-          class="btn btn-secondary" 
-          @click="loadMore"
-          :disabled="loadingMore"
-        >
-          <span v-if="loadingMore" class="loading-spinner small"></span>
-          {{ loadingMore ? '加载中...' : '加载更多' }}
-        </button>
+      <!-- Auto Load More (infinite scroll) -->
+      <div
+        v-if="hasMore && videos.length > 0 && !usingMockData"
+        ref="loadMoreTrigger"
+        class="load-more"
+      >
+        <span v-if="loadingMore" class="loading-spinner small"></span>
+        <span v-else class="load-more-hint">向下滑动加载更多</span>
       </div>
     </div>
 
@@ -111,7 +109,8 @@ export default {
       page: 1,
       limit: 20,
       hasMore: true,
-      usingMockData: false
+      usingMockData: false,
+      intersectionObserver: null
     }
   },
   watch: {
@@ -132,6 +131,9 @@ export default {
     this.$nextTick(() => {
       this.$refs.searchInput?.focus()
     })
+  },
+  beforeUnmount() {
+    this.cleanupObserver()
   },
   methods: {
     goBack() {
@@ -169,6 +171,7 @@ export default {
         this.hasMore = false
       } finally {
         this.loading = false
+        this.$nextTick(() => this.setupObserver())
       }
     },
     
@@ -190,6 +193,32 @@ export default {
         this.hasMore = false
       } finally {
         this.loadingMore = false
+        this.$nextTick(() => this.setupObserver())
+      }
+    },
+
+    // Auto-load more results when the sentinel scrolls into view (infinite scroll)
+    setupObserver() {
+      this.cleanupObserver()
+      const trigger = this.$refs.loadMoreTrigger
+      if (!trigger || !this.hasMore || this.usingMockData) return
+      this.intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && this.hasMore && !this.loadingMore && !this.loading) {
+              this.loadMore()
+            }
+          })
+        },
+        { rootMargin: '200px', threshold: 0.1 }
+      )
+      this.intersectionObserver.observe(trigger)
+    },
+
+    cleanupObserver() {
+      if (this.intersectionObserver) {
+        this.intersectionObserver.disconnect()
+        this.intersectionObserver = null
       }
     },
     
@@ -557,7 +586,13 @@ export default {
 .load-more {
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: 30px 0;
+}
+
+.load-more-hint {
+  font-size: 0.82em;
+  color: var(--color-text-muted, #9a9aac);
 }
 
 /* Bottom Spacer */
