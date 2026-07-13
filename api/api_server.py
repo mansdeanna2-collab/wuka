@@ -1005,9 +1005,10 @@ def collect_hanime() -> Tuple[Response, int]:
     标签、观看次数与上传日期, 并保存到数据库。
 
     Request Body:
-        genre: 采集分类 (可选, 默认: 裏番)
+        genre: 采集分类 (可选, 默认: 裏番) —— hanime 搜索用的类型
+        category: 入库分类 (可选, 默认: 里番动漫) —— 保存到数据库/前端展示的分类
         max_pages: 采集列表页数 (可选, 默认1, 最大20)
-        skip_duplicates: 是否跳过已存在的视频 (可选, 默认true)
+        skip_duplicates: 重复名称的视频是否只替换链接不新增 (可选, 默认true)
         delay: 每次请求间隔秒数 (可选, 默认1.0)
     """
     if hanime_scraper is None:
@@ -1015,6 +1016,8 @@ def collect_hanime() -> Tuple[Response, int]:
 
     data = request.get_json() or {}
     genre = (data.get('genre') or hanime_scraper.DEFAULT_GENRE).strip()
+    # 入库分类默认归到前端「里番动漫」子分类, 与搜索 genre 解耦
+    category = (data.get('category') or '里番动漫').strip() or '里番动漫'
     max_pages: int = max(1, min(int(data.get('max_pages', 1)), 20))
     skip_duplicates: bool = data.get('skip_duplicates', True)
     delay: float = max(0.0, min(float(data.get('delay', 1.0)), 10.0))
@@ -1022,6 +1025,7 @@ def collect_hanime() -> Tuple[Response, int]:
     collected_videos: List[Dict[str, Any]] = []
     skipped_count = 0
     duplicate_count = 0
+    updated_count = 0
 
     try:
         scraper = hanime_scraper.HanimeScraper(genre=genre, delay=delay)
@@ -1035,11 +1039,39 @@ def collect_hanime() -> Tuple[Response, int]:
                     skipped_count += 1
                     continue
 
-                if skip_duplicates and db.get_video(video_id):
-                    duplicate_count += 1
+                record = hanime_scraper._to_video_record(item, genre)
+                # 采集的视频统一归到目标分类(里番动漫)
+                record['video_category'] = category
+
+                # 去重以「名称(标题)」为准: 若已存在同名视频, 只替换图片/视频链接,
+                # 不新增重复的视频数据; 否则按 video_id 兜底判重后新增。
+                title = (record.get('video_title') or '').strip()
+                existing = db.get_video_by_title(title) if title else None
+                if existing is None:
+                    existing = db.get_video(video_id)
+
+                if existing:
+                    if skip_duplicates:
+                        # 只替换链接(图片链接与视频链接), 保留其余数据与采集时间
+                        db.update_video(existing['video_id'], {
+                            'video_url': record['video_url'],
+                            'video_image': record['video_image'],
+                        })
+                        updated_count += 1
+                        duplicate_count += 1
+                        continue
+                    # 未开启去重时, 按主键覆盖(可能重置采集时间)
+                    if db.insert_video(record):
+                        collected_videos.append({
+                            'video_id': video_id,
+                            'video_title': item.get('video_title', ''),
+                            'best_quality': item.get('best_quality'),
+                            'tags': item.get('tags', []),
+                            'play_count': item.get('play_count', 0),
+                            'upload_date': item.get('upload_date', ''),
+                        })
                     continue
 
-                record = hanime_scraper._to_video_record(item, genre)
                 if db.insert_video(record):
                     collected_videos.append({
                         'video_id': video_id,
@@ -1052,18 +1084,25 @@ def collect_hanime() -> Tuple[Response, int]:
 
         result = {
             'collected_count': len(collected_videos),
+            'updated_count': updated_count,
             'skipped_count': skipped_count,
             'duplicate_count': duplicate_count,
             'pages_processed': max_pages,
             'genre': genre,
+            'category': category,
             'collected_at': datetime.now().isoformat(),
             'collected_videos': collected_videos[:50],
         }
 
-        if collected_videos:
+        if collected_videos or updated_count:
+            parts = []
+            if collected_videos:
+                parts.append(f"新增 {len(collected_videos)} 个")
+            if updated_count:
+                parts.append(f"更新链接 {updated_count} 个")
             return api_response(
                 data=result,
-                message=f"成功采集 {len(collected_videos)} 个视频"
+                message="采集完成: " + ", ".join(parts)
             )
         return api_response(data=result, message="没有新视频可采集")
 

@@ -184,6 +184,11 @@ class VideoDatabase:
             except pymysql.err.OperationalError:
                 pass
 
+            try:
+                cursor.execute('CREATE INDEX idx_video_created_at ON videos(created_at)')
+            except pymysql.err.OperationalError:
+                pass
+
             # 创建导航分类配置表 (Create nav_categories table for global admin settings)
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS nav_categories (
@@ -278,6 +283,12 @@ class VideoDatabase:
         cursor.execute('''
             CREATE INDEX IF NOT EXISTS idx_video_play_count
             ON videos(play_count)
+        ''')
+
+        # 采集时间索引: 前端按采集时间(created_at)倒序展示最新视频
+        cursor.execute('''
+            CREATE INDEX IF NOT EXISTS idx_video_created_at
+            ON videos(created_at)
         ''')
 
         # 创建导航分类配置表 (Create nav_categories table for global admin settings)
@@ -518,6 +529,36 @@ class VideoDatabase:
             return dict(row) if isinstance(row, dict) else dict(row)
         return None
 
+    def get_video_by_title(self, title: str) -> Optional[Dict[str, Any]]:
+        """
+        根据标题(名称)获取视频信息
+
+        用于采集去重: 相同名称的视频被视为同一条内容, 仅替换其图片/视频链接,
+        而不新增重复记录。若存在多条同名记录, 返回最早采集的一条(created_at 最小),
+        以保持展示的稳定性。
+
+        Args:
+            title: 视频标题
+
+        Returns:
+            视频数据字典，如果不存在返回None
+        """
+        if not title:
+            return None
+
+        cursor = self.connection.cursor()
+        placeholder = '%s' if self.use_mysql else '?'
+        cursor.execute(
+            f'SELECT * FROM videos WHERE video_title = {placeholder} '
+            f'ORDER BY created_at ASC, video_id ASC LIMIT 1',
+            (title,)
+        )
+        row = cursor.fetchone()
+
+        if row:
+            return dict(row) if isinstance(row, dict) else dict(row)
+        return None
+
     def get_all_videos(self, limit: Optional[int] = None,
                        offset: int = 0) -> List[Dict[str, Any]]:
         """
@@ -535,11 +576,11 @@ class VideoDatabase:
 
         if limit:
             cursor.execute(
-                f'SELECT * FROM videos ORDER BY upload_time DESC LIMIT {placeholder} OFFSET {placeholder}',
+                f'SELECT * FROM videos ORDER BY created_at DESC, video_id DESC LIMIT {placeholder} OFFSET {placeholder}',
                 (limit, offset)
             )
         else:
-            cursor.execute('SELECT * FROM videos ORDER BY upload_time DESC')
+            cursor.execute('SELECT * FROM videos ORDER BY created_at DESC, video_id DESC')
 
         rows = cursor.fetchall()
         return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
@@ -563,12 +604,12 @@ class VideoDatabase:
 
         if limit:
             cursor.execute(
-                f'SELECT * FROM videos WHERE video_category = {placeholder} ORDER BY upload_time DESC LIMIT {placeholder} OFFSET {placeholder}',
+                f'SELECT * FROM videos WHERE video_category = {placeholder} ORDER BY created_at DESC, video_id DESC LIMIT {placeholder} OFFSET {placeholder}',
                 (category, limit, offset)
             )
         else:
             cursor.execute(
-                f'SELECT * FROM videos WHERE video_category = {placeholder} ORDER BY upload_time DESC',
+                f'SELECT * FROM videos WHERE video_category = {placeholder} ORDER BY created_at DESC, video_id DESC',
                 (category,)
             )
 
@@ -635,7 +676,7 @@ class VideoDatabase:
         # videos so the carousel still displays content instead of being empty.
         if not videos:
             cursor.execute(
-                f'SELECT * FROM videos ORDER BY upload_time DESC LIMIT {placeholder}',
+                f'SELECT * FROM videos ORDER BY created_at DESC, video_id DESC LIMIT {placeholder}',
                 (limit,)
             )
             rows = cursor.fetchall()

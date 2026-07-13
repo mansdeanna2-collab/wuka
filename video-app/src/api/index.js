@@ -370,6 +370,7 @@ export const videoApi = {
   collectHanime(options = {}) {
     return api.post('/admin/collect-hanime', {
       genre: options.genre || '裏番',
+      category: options.category || '里番动漫',
       max_pages: options.max_pages || 1,
       skip_duplicates: options.skip_duplicates !== false,
       delay: options.delay != null ? options.delay : 1.0
