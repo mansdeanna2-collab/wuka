@@ -48,6 +48,24 @@ SEARCH_URL = f"{BASE_URL}/search"
 WATCH_URL = f"{BASE_URL}/watch"
 DEFAULT_GENRE = "裏番"  # 裏番 / 里番
 
+# hanime1.me 的搜索页对分类有两种筛选方式:
+#   * 官方「類型 genre」: 只有少数几个 (裏番、泡麵番、Motion Anime、3D、同人 等),
+#     形如 /search?genre=裏番
+#   * 「標籤 tags[]」: 其余绝大多数分类 (3DCG、2.5D、2D動畫、AI生成、MMD 等),
+#     形如 /search?tags[]=3DCG
+# 若把标签当作 genre 传, 站点会返回空结果 (导致除裏番/泡麵番外全部采集失败),
+# 因此下面列出已知的官方 genre; 不在其中的一律优先按 tags[] 采集。
+# 为稳健起见, 采集时会在两种参数间自动回退 (见 fetch_search_page)。
+KNOWN_GENRES = {
+    "裏番",
+    "泡麵番",
+    "Motion Anime",
+    "3D",
+    "同人",
+    "同人作品",
+    "Cosplay",
+}
+
 # 画质从高到低的优先级 (数值越大画质越高)
 QUALITY_PRIORITY = [1080, 720, 480, 360, 240]
 
@@ -298,18 +316,52 @@ class HanimeScraper:
         self.timeout = timeout
         self.session = session or requests.Session()
         self.session.headers.update(DEFAULT_HEADERS)
+        # 记住首个能返回结果的搜索参数名 ("genre" 或 "tags[]"), 供后续分页复用。
+        self._search_key: Optional[str] = None
 
-    def _get(self, url: str, params: Optional[Dict[str, Any]] = None) -> str:
+    def _get(self, url: str, params: Optional[Any] = None) -> str:
         resp = self.session.get(url, params=params, timeout=self.timeout)
         resp.raise_for_status()
         resp.encoding = resp.apparent_encoding or "utf-8"
         return resp.text
 
+    def _search_params(self, key: str, page: int):
+        """构造搜索请求参数。
+
+        使用 (key, value) 列表以支持 ``tags[]`` 这类数组式参数名。
+        """
+        return [(key, self.genre), ("page", page)]
+
+    def _candidate_keys(self):
+        """按优先级返回待尝试的搜索参数名。
+
+        已知的官方 genre 先试 ``genre``, 其余分类先试 ``tags[]``;
+        无论哪种, 都会把另一种作为回退, 以兼容站点分类归属的变化。
+        """
+        if self.genre in KNOWN_GENRES:
+            return ["genre", "tags[]"]
+        return ["tags[]", "genre"]
+
     def fetch_search_page(self, page: int = 1) -> List[Dict[str, Any]]:
         """采集单个搜索列表页。"""
-        params = {"genre": self.genre, "page": page}
         logger.info("采集搜索页: genre=%s page=%s", self.genre, page)
-        return parse_search(self._get(SEARCH_URL, params=params))
+        # 已确定有效的参数名, 直接复用 (避免每页重复试探)。
+        if self._search_key is not None:
+            html_text = self._get(
+                SEARCH_URL, params=self._search_params(self._search_key, page)
+            )
+            return parse_search(html_text)
+        # 首次采集: 依次尝试 genre / tags[], 记住第一个有结果的参数名。
+        for key in self._candidate_keys():
+            cards = parse_search(
+                self._get(SEARCH_URL, params=self._search_params(key, page))
+            )
+            if cards:
+                self._search_key = key
+                if key != "genre":
+                    logger.info("genre=%s 按标签(%s)采集", self.genre, key)
+                return cards
+        return []
 
     def fetch_watch(self, video_id: int) -> Dict[str, Any]:
         """采集单个视频详情页。"""
