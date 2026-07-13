@@ -227,11 +227,21 @@ export const videoApi = {
     return api.get('/videos/search', { params: { keyword, limit, offset } })
   },
 
-  // Get videos by category (optionally filtered by a tag)
-  getVideosByCategory(category, limit = 20, offset = 0, tag = '') {
+  // Get videos by category (optionally filtered by one or more tags)
+  // tags: string or array of tag names; broad: OR matching when true (dyb 广泛配对)
+  getVideosByCategory(category, limit = 20, offset = 0, tags = '', broad = false) {
     const params = { category, limit, offset }
-    if (tag) {
-      params.tag = tag
+    const list = Array.isArray(tags)
+      ? tags.filter(Boolean)
+      : (tags ? [tags] : [])
+    if (list.length === 1) {
+      // Keep single-tag param for backward compatibility
+      params.tag = list[0]
+    } else if (list.length > 1) {
+      params.tags = list.join(',')
+    }
+    if (list.length > 1 && broad) {
+      params.broad = 1
     }
     return cachedGet('/videos/category', params)
   },
