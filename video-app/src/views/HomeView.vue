@@ -119,7 +119,7 @@ export default {
     AppIcon
   },
   // Constants
-  VIDEOS_PER_CATEGORY: 5,
+  VIDEOS_PER_CATEGORY: 7,
   INITIAL_CATEGORIES_COUNT: 4,
   LOAD_MORE_BATCH_SIZE: 4, // Load 4 more categories each time on scroll
   LOAD_MORE_DELAY: 300, // ms delay for smooth UX when loading more categories
