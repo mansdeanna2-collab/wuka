@@ -14,6 +14,7 @@ API端点:
     GET  /api/videos/<id>           - 获取单个视频
     GET  /api/videos/search         - 搜索视频
     GET  /api/videos/category       - 按分类获取视频
+    GET  /api/videos/category/tags  - 获取分类下的视频标签
     GET  /api/videos/top            - 获取热门视频
     POST /api/videos/<id>/play      - 增加播放次数
     GET  /api/categories            - 获取所有分类
@@ -285,12 +286,36 @@ def get_videos_by_category() -> Tuple[Response, int]:
 
     limit: int = max(1, min(int(request.args.get('limit', 20)), 100))
     offset: int = max(0, int(request.args.get('offset', 0)))
+    tag: str = request.args.get('tag', '').strip()
 
     with get_db() as db:
-        videos: List[Dict[str, Any]] = db.get_videos_by_category(category, limit=limit, offset=offset)
-        total: int = db.count_videos_by_category(category)
+        videos: List[Dict[str, Any]] = db.get_videos_by_category(
+            category, limit=limit, offset=offset, tag=tag or None)
+        total: int = db.count_videos_by_category(category, tag=tag or None)
 
     return api_response(data=videos, total=total)
+
+
+@app.route('/api/videos/category/tags', methods=['GET'])
+@handle_errors
+def get_category_tags() -> Tuple[Response, int]:
+    """
+    获取指定分类下的视频标签 (Get video tags available within a category)
+
+    Query参数 (Query parameters):
+        category: 分类名称 (必需) / Category name (required)
+        limit: 返回标签数量 (默认60, 最大200) / Tag count (default 60, max 200)
+    """
+    category: str = request.args.get('category', '').strip()
+    if not category:
+        return api_response(message="请提供分类名称", code=400)
+
+    limit: int = max(1, min(int(request.args.get('limit', 60)), 200))
+
+    with get_db() as db:
+        tags: List[Dict[str, Any]] = db.get_category_tags(category, limit=limit)
+
+    return api_response(data=tags)
 
 
 @app.route('/api/videos/top', methods=['GET'])

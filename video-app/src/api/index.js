@@ -227,9 +227,18 @@ export const videoApi = {
     return api.get('/videos/search', { params: { keyword, limit, offset } })
   },
 
-  // Get videos by category
-  getVideosByCategory(category, limit = 20, offset = 0) {
-    return cachedGet('/videos/category', { category, limit, offset })
+  // Get videos by category (optionally filtered by a tag)
+  getVideosByCategory(category, limit = 20, offset = 0, tag = '') {
+    const params = { category, limit, offset }
+    if (tag) {
+      params.tag = tag
+    }
+    return cachedGet('/videos/category', params)
+  },
+
+  // Get available video tags within a category
+  getCategoryTags(category, limit = 60) {
+    return cachedGet('/videos/category/tags', { category, limit })
   },
 
   // Get all categories (cache for longer as categories rarely change)

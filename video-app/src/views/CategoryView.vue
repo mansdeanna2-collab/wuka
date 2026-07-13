@@ -1,29 +1,52 @@
 <template>
   <div class="category-view">
-    <!-- Category Header -->
-    <header class="category-header">
-      <button class="back-btn" @click="goBack" aria-label="返回">
-        <AppIcon name="arrow-left" :size="20" />
-      </button>
-      <h1 class="category-title">{{ categoryName }}</h1>
-      <div class="header-spacer"></div>
-    </header>
+    <!-- Fixed Top Bar: header + tag filter -->
+    <div class="category-topbar">
+      <!-- Category Header -->
+      <header class="category-header">
+        <button class="back-btn" @click="goBack" aria-label="返回">
+          <AppIcon name="arrow-left" :size="20" />
+        </button>
+        <h1 class="category-title">{{ categoryName }}</h1>
+        <div class="header-spacer"></div>
+      </header>
+
+      <!-- Tag Filter Bar -->
+      <div v-if="showTagBar" class="tag-filter-bar">
+        <button
+          class="tag-chip"
+          :class="{ active: selectedTag === '' }"
+          @click="selectTag('')"
+        >
+          全部
+        </button>
+        <button
+          v-for="tag in tags"
+          :key="tag.tag"
+          class="tag-chip"
+          :class="{ active: selectedTag === tag.tag }"
+          @click="selectTag(tag.tag)"
+        >
+          {{ tag.tag }}<span v-if="tag.count" class="tag-count">{{ tag.count }}</span>
+        </button>
+      </div>
+    </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-state">
+    <div v-if="loading" class="loading-state" :class="{ 'has-tagbar': showTagBar }">
       <div class="loading-spinner"></div>
       <p>加载中...</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="error-state">
+    <div v-else-if="error" class="error-state" :class="{ 'has-tagbar': showTagBar }">
       <div class="error-icon"><AppIcon name="alert" :size="40" :stroke-width="1.6" /></div>
       <p>{{ errorMessage }}</p>
       <button class="btn btn-primary" @click="loadVideos">重试</button>
     </div>
 
     <!-- Videos Grid -->
-    <div v-else class="main-content">
+    <div v-else class="main-content" :class="{ 'has-tagbar': showTagBar }">
       <div class="videos-grid" v-if="videos.length > 0">
         <VideoCard
           v-for="video in videos"
@@ -36,8 +59,9 @@
       <!-- Empty State -->
       <div v-if="videos.length === 0 && !loading" class="empty-state">
         <div class="empty-icon">📹</div>
-        <p>该分类暂无视频</p>
-        <button class="btn btn-primary" @click="goBack">返回首页</button>
+        <p>{{ selectedTag ? '该标签下暂无视频' : '该分类暂无视频' }}</p>
+        <button v-if="selectedTag" class="btn btn-primary" @click="selectTag('')">查看全部</button>
+        <button v-else class="btn btn-primary" @click="goBack">返回首页</button>
       </div>
 
       <!-- Load More -->
@@ -74,6 +98,8 @@ export default {
   data() {
     return {
       videos: [],
+      tags: [],
+      selectedTag: '',
       loading: true,
       loadingMore: false,
       error: false,
@@ -87,25 +113,45 @@ export default {
   computed: {
     categoryName() {
       return this.$route.params.category || '分类'
+    },
+    showTagBar() {
+      // Only show the filter bar when real tags exist for this category
+      return !this.usingMockData && this.tags.length > 0
     }
   },
   watch: {
     '$route.params.category': {
       handler(newCategory) {
         if (newCategory) {
+          this.selectedTag = ''
+          this.loadTags()
           this.loadVideos()
         }
       }
     }
   },
   mounted() {
+    this.loadTags()
     this.loadVideos()
   },
   methods: {
     goBack() {
       this.$router.push({ name: 'home' })
     },
-    
+
+    async loadTags() {
+      this.tags = []
+      try {
+        const result = await videoApi.getCategoryTags(this.categoryName)
+        const tags = extractArrayData(result)
+        // Normalize: keep only entries that have a tag name
+        this.tags = tags.filter(t => t && t.tag)
+      } catch (e) {
+        console.error('Load category tags error:', e)
+        this.tags = []
+      }
+    },
+
     async loadVideos() {
       this.loading = true
       this.error = false
@@ -113,29 +159,42 @@ export default {
       this.videos = []
       
       try {
-        const result = await videoApi.getVideosByCategory(this.categoryName, this.limit)
+        const result = await videoApi.getVideosByCategory(
+          this.categoryName, this.limit, 0, this.selectedTag)
         const videos = extractArrayData(result)
         
-        if (videos.length === 0) {
-          // Fallback to mock data
+        if (videos.length === 0 && !this.selectedTag) {
+          // Fallback to mock data (only for the unfiltered view)
           this.usingMockData = true
           this.videos = getMockVideosByCategory(this.categoryName, this.limit)
         } else {
+          this.usingMockData = false
           this.videos = videos
         }
         
         this.hasMore = this.videos.length >= this.limit
       } catch (e) {
         console.error('Load category videos error:', e)
-        // Fallback to mock data
-        this.usingMockData = true
-        this.videos = getMockVideosByCategory(this.categoryName, this.limit)
-        this.hasMore = false
+        if (this.selectedTag) {
+          this.videos = []
+          this.hasMore = false
+        } else {
+          // Fallback to mock data
+          this.usingMockData = true
+          this.videos = getMockVideosByCategory(this.categoryName, this.limit)
+          this.hasMore = false
+        }
       } finally {
         this.loading = false
       }
     },
-    
+
+    selectTag(tag) {
+      if (this.selectedTag === tag) return
+      this.selectedTag = tag
+      this.loadVideos()
+    },
+
     async loadMore() {
       if (this.loading || this.loadingMore) return
       
@@ -150,7 +209,8 @@ export default {
       const offset = (this.page - 1) * this.limit
       
       try {
-        const result = await videoApi.getVideosByCategory(this.categoryName, this.limit, offset)
+        const result = await videoApi.getVideosByCategory(
+          this.categoryName, this.limit, offset, this.selectedTag)
         const newVideos = extractArrayData(result)
         this.videos = [...this.videos, ...newVideos]
         this.hasMore = newVideos.length >= this.limit
@@ -176,21 +236,73 @@ export default {
   margin: 0 auto;
 }
 
-/* Category Header */
-.category-header {
+/* Fixed Top Bar (header + tag filter) */
+.category-topbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
+  z-index: 100;
+  background: rgba(26, 26, 46, 0.98);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Category Header */
+.category-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 15px;
-  background: rgba(26, 26, 46, 0.98);
-  z-index: 100;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Tag Filter Bar */
+.tag-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 15px 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tag-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.tag-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  font-size: 0.85em;
+  color: #cfcfcf;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.tag-chip:hover {
+  color: #fff;
+  border-color: rgba(0, 212, 255, 0.4);
+}
+
+.tag-chip.active {
+  color: #fff;
+  background: linear-gradient(90deg, #00d4ff, #7c3aed);
+  border-color: transparent;
+}
+
+.tag-count {
+  font-size: 0.85em;
+  opacity: 0.75;
 }
 
 .back-btn {
@@ -230,6 +342,15 @@ export default {
 .main-content {
   padding-top: 80px;
   padding-bottom: 20px;
+}
+
+.main-content.has-tagbar {
+  padding-top: 132px;
+}
+
+.loading-state.has-tagbar,
+.error-state.has-tagbar {
+  padding-top: 172px;
 }
 
 /* Videos Grid */
@@ -391,6 +512,15 @@ export default {
     padding-top: 70px;
   }
   
+  .main-content.has-tagbar {
+    padding-top: 120px;
+  }
+  
+  .loading-state.has-tagbar,
+  .error-state.has-tagbar {
+    padding-top: 160px;
+  }
+  
   .videos-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
@@ -422,6 +552,15 @@ export default {
   
   .main-content {
     padding-top: 65px;
+  }
+  
+  .main-content.has-tagbar {
+    padding-top: 113px;
+  }
+  
+  .loading-state.has-tagbar,
+  .error-state.has-tagbar {
+    padding-top: 150px;
   }
   
   .videos-grid {

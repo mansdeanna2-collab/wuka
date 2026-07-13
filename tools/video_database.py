@@ -52,7 +52,7 @@ import json
 import logging
 import sqlite3
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 
 # 配置日志
 logger = logging.getLogger(__name__)
@@ -610,9 +610,32 @@ class VideoDatabase:
         row = cursor.fetchone()
         return int(row['cnt'] if isinstance(row, dict) else row[0])
 
+    def _tag_filter_clause(self, tag: str) -> Tuple[str, str]:
+        """
+        构建按标签过滤的 SQL 片段 (Build a SQL fragment for filtering by an exact tag)
+
+        video_tags 以逗号分隔存储 (如 "碧池,巨乳"), 为避免子串误匹配,
+        使用逗号边界匹配: 在两侧补上逗号后用 LIKE '%,tag,%' 精确匹配单个标签。
+
+        Args:
+            tag: 标签名称
+
+        Returns:
+            (SQL条件片段, LIKE匹配参数)
+        """
+        placeholder = '%s' if self.use_mysql else '?'
+        # 逗号拼接: MySQL 用 CONCAT, SQLite 用 || 运算符
+        if self.use_mysql:
+            wrapped = "CONCAT(',', COALESCE(video_tags, ''), ',')"
+        else:
+            wrapped = "(',' || COALESCE(video_tags, '') || ',')"
+        clause = f"{wrapped} LIKE {placeholder}"
+        return clause, f"%,{tag},%"
+
     def get_videos_by_category(self, category: str,
                                limit: Optional[int] = None,
-                               offset: int = 0) -> List[Dict[str, Any]]:
+                               offset: int = 0,
+                               tag: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         按分类获取视频
 
@@ -620,6 +643,7 @@ class VideoDatabase:
             category: 视频分类
             limit: 限制返回数量
             offset: 偏移量
+            tag: 可选的视频标签, 仅返回包含该标签的视频
 
         Returns:
             视频列表
@@ -627,30 +651,90 @@ class VideoDatabase:
         cursor = self.connection.cursor()
         placeholder = '%s' if self.use_mysql else '?'
 
+        where = f'video_category = {placeholder}'
+        params: List[Any] = [category]
+        tag = (tag or '').strip()
+        if tag:
+            clause, like_param = self._tag_filter_clause(tag)
+            where += f' AND {clause}'
+            params.append(like_param)
+
         if limit:
             cursor.execute(
-                f'SELECT * FROM videos WHERE video_category = {placeholder} ORDER BY {self._VIDEO_ORDER_BY} LIMIT {placeholder} OFFSET {placeholder}',
-                (category, limit, offset)
+                f'SELECT * FROM videos WHERE {where} ORDER BY {self._VIDEO_ORDER_BY} LIMIT {placeholder} OFFSET {placeholder}',
+                (*params, limit, offset)
             )
         else:
             cursor.execute(
-                f'SELECT * FROM videos WHERE video_category = {placeholder} ORDER BY {self._VIDEO_ORDER_BY}',
-                (category,)
+                f'SELECT * FROM videos WHERE {where} ORDER BY {self._VIDEO_ORDER_BY}',
+                tuple(params)
             )
 
         rows = cursor.fetchall()
         return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
 
-    def count_videos_by_category(self, category: str) -> int:
-        """获取指定分类的视频总数 (Get total number of videos in a category)"""
+    def count_videos_by_category(self, category: str,
+                                 tag: Optional[str] = None) -> int:
+        """获取指定分类的视频总数 (Get total number of videos in a category)
+
+        Args:
+            category: 视频分类
+            tag: 可选的视频标签, 仅统计包含该标签的视频
+        """
         cursor = self.connection.cursor()
         placeholder = '%s' if self.use_mysql else '?'
+
+        where = f'video_category = {placeholder}'
+        params: List[Any] = [category]
+        tag = (tag or '').strip()
+        if tag:
+            clause, like_param = self._tag_filter_clause(tag)
+            where += f' AND {clause}'
+            params.append(like_param)
+
         cursor.execute(
-            f'SELECT COUNT(*) as cnt FROM videos WHERE video_category = {placeholder}',
-            (category,)
+            f'SELECT COUNT(*) as cnt FROM videos WHERE {where}',
+            tuple(params)
         )
         row = cursor.fetchone()
         return int(row['cnt'] if isinstance(row, dict) else row[0])
+
+    def get_category_tags(self, category: str,
+                          limit: int = 60) -> List[Dict[str, Any]]:
+        """
+        获取指定分类下的视频标签及其数量 (按出现频率降序)
+
+        Args:
+            category: 视频分类
+            limit: 最多返回的标签数量
+
+        Returns:
+            标签列表, 每项为 {"tag": 标签名, "count": 视频数}
+        """
+        cursor = self.connection.cursor()
+        placeholder = '%s' if self.use_mysql else '?'
+        cursor.execute(
+            f"SELECT video_tags FROM videos WHERE video_category = {placeholder} "
+            f"AND video_tags IS NOT NULL AND video_tags != ''",
+            (category,)
+        )
+        rows = cursor.fetchall()
+
+        counts: Dict[str, int] = {}
+        for row in rows:
+            raw = row['video_tags'] if isinstance(row, dict) else row[0]
+            if not raw:
+                continue
+            for tag in str(raw).split(','):
+                tag = tag.strip()
+                if not tag:
+                    continue
+                counts[tag] = counts.get(tag, 0) + 1
+
+        ordered = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+        if limit and limit > 0:
+            ordered = ordered[:limit]
+        return [{"tag": tag, "count": cnt} for tag, cnt in ordered]
 
     def search_videos(self, keyword: str,
                       limit: Optional[int] = None,
