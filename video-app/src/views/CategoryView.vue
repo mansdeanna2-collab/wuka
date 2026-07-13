@@ -14,9 +14,20 @@
       <!-- Tag Filter Bar -->
       <div v-if="showTagBar" class="tag-filter-bar">
         <button
+          class="filter-toggle-btn"
+          :class="{ active: selectedTags.length > 0 }"
+          @click="openFilter"
+          aria-label="筛选标签"
+        >
+          <AppIcon name="filter" :size="16" />
+          <span>筛选</span>
+          <span v-if="selectedTags.length" class="filter-badge">{{ selectedTags.length }}</span>
+        </button>
+        <span class="tag-bar-divider"></span>
+        <button
           class="tag-chip"
-          :class="{ active: selectedTag === '' }"
-          @click="selectTag('')"
+          :class="{ active: selectedTags.length === 0 }"
+          @click="selectAll"
         >
           全部
         </button>
@@ -24,13 +35,64 @@
           v-for="tag in tags"
           :key="tag.tag"
           class="tag-chip"
-          :class="{ active: selectedTag === tag.tag }"
-          @click="selectTag(tag.tag)"
+          :class="{ active: selectedTags.includes(tag.tag) }"
+          @click="toggleTag(tag.tag)"
         >
           {{ tag.tag }}<span v-if="tag.count" class="tag-count">{{ tag.count }}</span>
         </button>
       </div>
     </div>
+
+    <!-- Tag Filter Modal (dyb-style content-tags picker) -->
+    <transition name="filter-fade">
+      <div v-if="showFilterModal" class="filter-modal" @click.self="closeFilter">
+        <div class="filter-panel">
+          <header class="filter-panel-header">
+            <h3>内容标签</h3>
+            <button class="filter-close" @click="closeFilter" aria-label="关闭">
+              <AppIcon name="x" :size="20" />
+            </button>
+          </header>
+
+          <!-- Broad matching toggle -->
+          <div class="broad-match-row">
+            <div class="broad-match-text">
+              <span class="broad-match-title">广泛配对</span>
+              <span class="broad-match-desc">较多结果，较不精准。配对包含任意一个所选标签的影片，而非全部标签。</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" v-model="draftBroad" />
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+
+          <div class="filter-panel-body">
+            <div v-if="tags.length === 0" class="filter-empty">暂无可用标签</div>
+            <label
+              v-for="tag in tags"
+              :key="tag.tag"
+              class="tag-option"
+              :class="{ checked: draftTags.includes(tag.tag) }"
+            >
+              <input
+                type="checkbox"
+                :value="tag.tag"
+                v-model="draftTags"
+              />
+              <span class="tag-option-label">{{ tag.tag }}</span>
+              <span v-if="tag.count" class="tag-option-count">{{ tag.count }}</span>
+            </label>
+          </div>
+
+          <footer class="filter-panel-footer">
+            <button class="btn btn-secondary" @click="clearDraft">清除</button>
+            <button class="btn btn-primary" @click="applyFilter">
+              查看结果<span v-if="draftTags.length" class="apply-count">（{{ draftTags.length }}）</span>
+            </button>
+          </footer>
+        </div>
+      </div>
+    </transition>
 
     <!-- Loading State -->
     <div v-if="loading" class="loading-state" :class="{ 'has-tagbar': showTagBar }">
@@ -59,8 +121,8 @@
       <!-- Empty State -->
       <div v-if="videos.length === 0 && !loading" class="empty-state">
         <div class="empty-icon">📹</div>
-        <p>{{ selectedTag ? '该标签下暂无视频' : '该分类暂无视频' }}</p>
-        <button v-if="selectedTag" class="btn btn-primary" @click="selectTag('')">查看全部</button>
+        <p>{{ selectedTags.length ? '所选标签下暂无视频' : '该分类暂无视频' }}</p>
+        <button v-if="selectedTags.length" class="btn btn-primary" @click="selectAll">查看全部</button>
         <button v-else class="btn btn-primary" @click="goBack">返回首页</button>
       </div>
 
@@ -99,7 +161,11 @@ export default {
     return {
       videos: [],
       tags: [],
-      selectedTag: '',
+      selectedTags: [],
+      broadMatch: false,
+      showFilterModal: false,
+      draftTags: [],
+      draftBroad: false,
       loading: true,
       loadingMore: false,
       error: false,
@@ -123,7 +189,9 @@ export default {
     '$route.params.category': {
       handler(newCategory) {
         if (newCategory) {
-          this.selectedTag = ''
+          this.selectedTags = []
+          this.broadMatch = false
+          this.showFilterModal = false
           this.loadTags()
           this.loadVideos()
         }
@@ -157,13 +225,13 @@ export default {
       this.error = false
       this.page = 1
       this.videos = []
-      
+
       try {
         const result = await videoApi.getVideosByCategory(
-          this.categoryName, this.limit, 0, this.selectedTag)
+          this.categoryName, this.limit, 0, this.selectedTags, this.broadMatch)
         const videos = extractArrayData(result)
-        
-        if (videos.length === 0 && !this.selectedTag) {
+
+        if (videos.length === 0 && this.selectedTags.length === 0) {
           // Fallback to mock data (only for the unfiltered view)
           this.usingMockData = true
           this.videos = getMockVideosByCategory(this.categoryName, this.limit)
@@ -171,11 +239,11 @@ export default {
           this.usingMockData = false
           this.videos = videos
         }
-        
+
         this.hasMore = this.videos.length >= this.limit
       } catch (e) {
         console.error('Load category videos error:', e)
-        if (this.selectedTag) {
+        if (this.selectedTags.length > 0) {
           this.videos = []
           this.hasMore = false
         } else {
@@ -189,28 +257,62 @@ export default {
       }
     },
 
-    selectTag(tag) {
-      if (this.selectedTag === tag) return
-      this.selectedTag = tag
+    selectAll() {
+      if (this.selectedTags.length === 0) return
+      this.selectedTags = []
+      this.loadVideos()
+    },
+
+    // Quick toggle from the horizontal chip bar (applies immediately)
+    toggleTag(tag) {
+      const idx = this.selectedTags.indexOf(tag)
+      if (idx === -1) {
+        this.selectedTags = [...this.selectedTags, tag]
+      } else {
+        this.selectedTags = this.selectedTags.filter(t => t !== tag)
+      }
+      this.loadVideos()
+    },
+
+    openFilter() {
+      // Seed the modal draft from the currently applied filter
+      this.draftTags = [...this.selectedTags]
+      this.draftBroad = this.broadMatch
+      this.showFilterModal = true
+    },
+
+    closeFilter() {
+      this.showFilterModal = false
+    },
+
+    clearDraft() {
+      this.draftTags = []
+      this.draftBroad = false
+    },
+
+    applyFilter() {
+      this.selectedTags = [...this.draftTags]
+      this.broadMatch = this.draftBroad
+      this.showFilterModal = false
       this.loadVideos()
     },
 
     async loadMore() {
       if (this.loading || this.loadingMore) return
-      
+
       // Mock data doesn't support pagination
       if (this.usingMockData) {
         this.hasMore = false
         return
       }
-      
+
       this.loadingMore = true
       this.page++
       const offset = (this.page - 1) * this.limit
-      
+
       try {
         const result = await videoApi.getVideosByCategory(
-          this.categoryName, this.limit, offset, this.selectedTag)
+          this.categoryName, this.limit, offset, this.selectedTags, this.broadMatch)
         const newVideos = extractArrayData(result)
         this.videos = [...this.videos, ...newVideos]
         this.hasMore = newVideos.length >= this.limit
@@ -220,7 +322,7 @@ export default {
         this.loadingMore = false
       }
     },
-    
+
     playVideo(video) {
       this.$router.push({ name: 'player', params: { id: video.video_id } })
     }
@@ -303,6 +405,278 @@ export default {
 .tag-count {
   font-size: 0.85em;
   opacity: 0.75;
+}
+
+/* Filter toggle button (opens modal) */
+.filter-toggle-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  font-size: 0.85em;
+  color: #cfcfcf;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.filter-toggle-btn:hover {
+  color: #fff;
+  border-color: rgba(0, 212, 255, 0.4);
+}
+
+.filter-toggle-btn.active {
+  color: #fff;
+  border-color: rgba(0, 212, 255, 0.5);
+  background: rgba(0, 212, 255, 0.15);
+}
+
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 0.72em;
+  line-height: 1;
+  color: #fff;
+  background: linear-gradient(90deg, #00d4ff, #7c3aed);
+  border-radius: 8px;
+}
+
+.tag-bar-divider {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Filter Modal */
+.filter-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.filter-panel {
+  width: 100%;
+  max-width: 640px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  background: #1c1c30;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5);
+}
+
+.filter-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.filter-panel-header h3 {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: 700;
+  color: #fff;
+}
+
+.filter-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  color: #cfcfcf;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.filter-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* Broad matching toggle */
+.broad-match-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.broad-match-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.broad-match-title {
+  font-size: 0.98em;
+  font-weight: 600;
+  color: #fff;
+}
+
+.broad-match-desc {
+  font-size: 0.78em;
+  line-height: 1.4;
+  color: #8a8a9a;
+}
+
+.switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 26px;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-slider {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 13px;
+  transition: background 0.25s;
+}
+
+.switch-slider::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.25s;
+}
+
+.switch input:checked + .switch-slider {
+  background: linear-gradient(90deg, #00d4ff, #7c3aed);
+}
+
+.switch input:checked + .switch-slider::before {
+  transform: translateX(20px);
+}
+
+/* Tag options grid */
+.filter-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 18px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filter-empty {
+  width: 100%;
+  text-align: center;
+  color: #888;
+  padding: 30px 0;
+}
+
+.tag-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  font-size: 0.85em;
+  color: #cfcfcf;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.tag-option input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.tag-option:hover {
+  border-color: rgba(0, 212, 255, 0.4);
+}
+
+.tag-option.checked {
+  color: #fff;
+  background: linear-gradient(90deg, rgba(0, 212, 255, 0.9), rgba(124, 58, 237, 0.9));
+  border-color: transparent;
+}
+
+.tag-option-count {
+  font-size: 0.85em;
+  opacity: 0.75;
+}
+
+/* Footer */
+.filter-panel-footer {
+  display: flex;
+  gap: 12px;
+  padding: 14px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.filter-panel-footer .btn {
+  flex: 1;
+  padding: 12px;
+}
+
+.filter-panel-footer .btn-secondary {
+  flex: 0 0 30%;
+}
+
+.apply-count {
+  opacity: 0.9;
+}
+
+/* Modal transition */
+.filter-fade-enter-active,
+.filter-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.filter-fade-enter-active .filter-panel,
+.filter-fade-leave-active .filter-panel {
+  transition: transform 0.28s ease;
+}
+
+.filter-fade-enter-from,
+.filter-fade-leave-to {
+  opacity: 0;
+}
+
+.filter-fade-enter-from .filter-panel,
+.filter-fade-leave-to .filter-panel {
+  transform: translateY(100%);
 }
 
 .back-btn {

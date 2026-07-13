@@ -632,10 +632,56 @@ class VideoDatabase:
         clause = f"{wrapped} LIKE {placeholder}"
         return clause, f"%,{tag},%"
 
+    def _tags_filter_clause(self, tags: List[str],
+                            match_any: bool = False) -> Tuple[str, List[str]]:
+        """
+        构建按多个标签过滤的 SQL 片段 (Build a SQL fragment for filtering by multiple tags)
+
+        参考 dyb (Hanime1) 的标签筛选: 支持多标签选择, 并可切换匹配模式。
+        - match_any=False (默认, 精准): 影片需同时包含所有选择的标签 (AND)
+        - match_any=True  (广泛配对): 影片包含任意一个选择的标签即可 (OR)
+
+        Args:
+            tags: 标签名称列表
+            match_any: 是否为"广泛配对"(OR)模式
+
+        Returns:
+            (SQL条件片段, LIKE匹配参数列表)
+        """
+        clauses: List[str] = []
+        params: List[str] = []
+        for tag in tags:
+            tag = (tag or '').strip()
+            if not tag:
+                continue
+            clause, like_param = self._tag_filter_clause(tag)
+            clauses.append(clause)
+            params.append(like_param)
+
+        if not clauses:
+            return '', []
+
+        joiner = ' OR ' if match_any else ' AND '
+        combined = '(' + joiner.join(clauses) + ')'
+        return combined, params
+
+    @staticmethod
+    def _normalize_tags(tag: Optional[str],
+                        tags: Optional[List[str]]) -> List[str]:
+        """合并单标签与多标签参数, 去重并保序 (Merge single/multi tag params)"""
+        merged: List[str] = []
+        for value in [tag] + list(tags or []):
+            value = (value or '').strip()
+            if value and value not in merged:
+                merged.append(value)
+        return merged
+
     def get_videos_by_category(self, category: str,
                                limit: Optional[int] = None,
                                offset: int = 0,
-                               tag: Optional[str] = None) -> List[Dict[str, Any]]:
+                               tag: Optional[str] = None,
+                               tags: Optional[List[str]] = None,
+                               match_any: bool = False) -> List[Dict[str, Any]]:
         """
         按分类获取视频
 
@@ -643,7 +689,9 @@ class VideoDatabase:
             category: 视频分类
             limit: 限制返回数量
             offset: 偏移量
-            tag: 可选的视频标签, 仅返回包含该标签的视频
+            tag: 可选的单个视频标签, 仅返回包含该标签的视频 (向后兼容)
+            tags: 可选的多个视频标签列表
+            match_any: 广泛配对模式 (True=任意匹配 OR, False=全部匹配 AND)
 
         Returns:
             视频列表
@@ -653,11 +701,12 @@ class VideoDatabase:
 
         where = f'video_category = {placeholder}'
         params: List[Any] = [category]
-        tag = (tag or '').strip()
-        if tag:
-            clause, like_param = self._tag_filter_clause(tag)
-            where += f' AND {clause}'
-            params.append(like_param)
+        selected = self._normalize_tags(tag, tags)
+        if selected:
+            clause, like_params = self._tags_filter_clause(selected, match_any)
+            if clause:
+                where += f' AND {clause}'
+                params.extend(like_params)
 
         if limit:
             cursor.execute(
@@ -674,23 +723,28 @@ class VideoDatabase:
         return [dict(row) if isinstance(row, dict) else dict(row) for row in rows]
 
     def count_videos_by_category(self, category: str,
-                                 tag: Optional[str] = None) -> int:
+                                 tag: Optional[str] = None,
+                                 tags: Optional[List[str]] = None,
+                                 match_any: bool = False) -> int:
         """获取指定分类的视频总数 (Get total number of videos in a category)
 
         Args:
             category: 视频分类
-            tag: 可选的视频标签, 仅统计包含该标签的视频
+            tag: 可选的单个视频标签, 仅统计包含该标签的视频 (向后兼容)
+            tags: 可选的多个视频标签列表
+            match_any: 广泛配对模式 (True=任意匹配 OR, False=全部匹配 AND)
         """
         cursor = self.connection.cursor()
         placeholder = '%s' if self.use_mysql else '?'
 
         where = f'video_category = {placeholder}'
         params: List[Any] = [category]
-        tag = (tag or '').strip()
-        if tag:
-            clause, like_param = self._tag_filter_clause(tag)
-            where += f' AND {clause}'
-            params.append(like_param)
+        selected = self._normalize_tags(tag, tags)
+        if selected:
+            clause, like_params = self._tags_filter_clause(selected, match_any)
+            if clause:
+                where += f' AND {clause}'
+                params.extend(like_params)
 
         cursor.execute(
             f'SELECT COUNT(*) as cnt FROM videos WHERE {where}',

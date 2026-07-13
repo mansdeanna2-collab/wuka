@@ -279,6 +279,9 @@ def get_videos_by_category() -> Tuple[Response, int]:
         category: 分类名称 (必需) / Category name (required)
         limit: 返回数量 (默认20, 最大100) / Return count (default 20, max 100)
         offset: 偏移量 (默认0) / Offset (default 0)
+        tag: 单个标签过滤 (可选, 向后兼容) / Single tag filter (optional)
+        tags: 多个标签, 逗号分隔 (可选) / Multiple tags, comma-separated (optional)
+        broad: 广泛配对开关, 1/true 时任意匹配, 否则全部匹配 / Broad match toggle
     """
     category: str = request.args.get('category', '').strip()
     if not category:
@@ -287,11 +290,18 @@ def get_videos_by_category() -> Tuple[Response, int]:
     limit: int = max(1, min(int(request.args.get('limit', 20)), 100))
     offset: int = max(0, int(request.args.get('offset', 0)))
     tag: str = request.args.get('tag', '').strip()
+    # 多标签筛选 (参考 dyb 的标签筛选): tags 以逗号分隔, broad 为广泛配对(任意匹配)
+    raw_tags: str = request.args.get('tags', '')
+    tags: List[str] = [t.strip() for t in raw_tags.split(',') if t.strip()]
+    match_any: bool = str(request.args.get('broad', '')).strip().lower() in (
+        '1', 'true', 'yes', 'on')
 
     with get_db() as db:
         videos: List[Dict[str, Any]] = db.get_videos_by_category(
-            category, limit=limit, offset=offset, tag=tag or None)
-        total: int = db.count_videos_by_category(category, tag=tag or None)
+            category, limit=limit, offset=offset, tag=tag or None,
+            tags=tags or None, match_any=match_any)
+        total: int = db.count_videos_by_category(
+            category, tag=tag or None, tags=tags or None, match_any=match_any)
 
     return api_response(data=videos, total=total)
 
