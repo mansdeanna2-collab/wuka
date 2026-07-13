@@ -19,27 +19,26 @@
           @click="openFilter"
           aria-label="筛选标签"
         >
-          <AppIcon name="filter" :size="16" />
+          <AppIcon name="filter" :size="14" />
           <span>筛选</span>
           <span v-if="selectedTags.length" class="filter-badge">{{ selectedTags.length }}</span>
         </button>
-        <span class="tag-bar-divider"></span>
-        <button
-          class="tag-chip"
-          :class="{ active: selectedTags.length === 0 }"
-          @click="selectAll"
-        >
-          全部
-        </button>
-        <button
-          v-for="tag in tags"
-          :key="tag.tag"
-          class="tag-chip"
-          :class="{ active: selectedTags.includes(tag.tag) }"
-          @click="toggleTag(tag.tag)"
-        >
-          {{ tag.tag }}<span v-if="tag.count" class="tag-count">{{ tag.count }}</span>
-        </button>
+
+        <!-- Only the currently selected tags are shown here (removable) -->
+        <template v-if="selectedTags.length">
+          <span class="tag-bar-divider"></span>
+          <button
+            v-for="tag in selectedTags"
+            :key="tag"
+            class="tag-chip active"
+            :aria-label="`移除标签 ${tag}`"
+            @click="toggleTag(tag)"
+          >
+            <span>{{ tag }}</span>
+            <AppIcon name="x" :size="12" />
+          </button>
+          <button class="tag-clear-btn" @click="selectAll">清除</button>
+        </template>
       </div>
     </div>
 
@@ -381,8 +380,8 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 14px;
-  font-size: 0.85em;
+  padding: 5px 12px;
+  font-size: 0.82em;
   color: #cfcfcf;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -398,8 +397,8 @@ export default {
 
 .tag-chip.active {
   color: #fff;
-  background: linear-gradient(90deg, #00d4ff, #7c3aed);
-  border-color: transparent;
+  background: rgba(0, 212, 255, 0.14);
+  border-color: rgba(0, 212, 255, 0.45);
 }
 
 .tag-count {
@@ -407,14 +406,30 @@ export default {
   opacity: 0.75;
 }
 
+/* Clear-all selected tags */
+.tag-clear-btn {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  font-size: 0.8em;
+  color: #9a9aac;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.tag-clear-btn:hover {
+  color: #fff;
+}
+
 /* Filter toggle button (opens modal) */
 .filter-toggle-btn {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 14px;
-  font-size: 0.85em;
+  gap: 4px;
+  padding: 5px 11px;
+  font-size: 0.8em;
   color: #cfcfcf;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -443,8 +458,8 @@ export default {
   padding: 0 4px;
   font-size: 0.72em;
   line-height: 1;
-  color: #fff;
-  background: linear-gradient(90deg, #00d4ff, #7c3aed);
+  color: #0a0a14;
+  background: var(--color-accent);
   border-radius: 8px;
 }
 
@@ -575,7 +590,7 @@ export default {
 }
 
 .switch input:checked + .switch-slider {
-  background: linear-gradient(90deg, #00d4ff, #7c3aed);
+  background: var(--color-accent);
 }
 
 .switch input:checked + .switch-slider::before {
@@ -628,8 +643,8 @@ export default {
 
 .tag-option.checked {
   color: #fff;
-  background: linear-gradient(90deg, rgba(0, 212, 255, 0.9), rgba(124, 58, 237, 0.9));
-  border-color: transparent;
+  background: rgba(0, 212, 255, 0.16);
+  border-color: rgba(0, 212, 255, 0.55);
 }
 
 .tag-option-count {
