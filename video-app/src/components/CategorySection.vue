@@ -11,12 +11,21 @@
       <!-- Large video (first one) -->
       <div class="video-large" @click="$emit('play', videos[0])">
         <div class="video-thumbnail">
-          <img 
-            v-if="videos[0].video_image"
-            ref="largeImg"
-            :alt="videos[0].video_title"
-            @error="handleImageError"
-          />
+          <template v-if="videos[0].video_image">
+            <img
+              class="thumbnail-bg"
+              ref="largeBgImg"
+              alt=""
+              aria-hidden="true"
+            />
+            <img
+              class="thumbnail-img"
+              ref="largeImg"
+              :alt="videos[0].video_title"
+              @load="mirrorToBg($event, 'large')"
+              @error="handleImageError"
+            />
+          </template>
           <div class="play-icon">
             <span class="play-arrow"></span>
           </div>
@@ -38,12 +47,21 @@
           @click="$emit('play', video)"
         >
           <div class="video-thumbnail">
-            <img 
-              v-if="video.video_image"
-              :ref="el => setSmallImgRef(el, index)"
-              :alt="video.video_title"
-              @error="handleImageError"
-            />
+            <template v-if="video.video_image">
+              <img
+                class="thumbnail-bg"
+                :ref="el => setSmallBgRef(el, index)"
+                alt=""
+                aria-hidden="true"
+              />
+              <img
+                class="thumbnail-img"
+                :ref="el => setSmallImgRef(el, index)"
+                :alt="video.video_title"
+                @load="mirrorToBg($event, index)"
+                @error="handleImageError"
+              />
+            </template>
             <div class="play-icon">
               <span class="play-arrow"></span>
             </div>
@@ -100,6 +118,7 @@ export default {
   data() {
     return {
       smallImgRefs: {},
+      smallBgRefs: {},
       // Tracks the image URL already loaded into each slot (keyed by slot id:
       // 'large' for the featured image, index for small thumbnails) so
       // duplicate URLs still load into every element.
@@ -112,6 +131,7 @@ export default {
       handler() {
         this.loadedUrls = {}
         this.smallImgRefs = {}
+        this.smallBgRefs = {}
         this.$nextTick(() => {
           this.loadAllImages()
         })
@@ -126,6 +146,19 @@ export default {
     setSmallImgRef(el, index) {
       if (el) {
         this.smallImgRefs[index] = el
+      }
+    },
+    setSmallBgRef(el, index) {
+      if (el) {
+        this.smallBgRefs[index] = el
+      }
+    },
+    // Mirror the resolved poster src into the blurred backdrop so the
+    // letterbox area around non-16:9 covers is filled with the same image.
+    mirrorToBg(e, slot) {
+      const bg = slot === 'large' ? this.$refs.largeBgImg : this.smallBgRefs[slot]
+      if (bg && e.target.src) {
+        bg.src = e.target.src
       }
     },
     async loadAllImages() {
@@ -156,7 +189,12 @@ export default {
     },
     handleImageError(e) {
       e.target.src = ''
-      e.target.closest('.video-thumbnail').classList.add('no-image')
+      const thumb = e.target.closest('.video-thumbnail')
+      thumb.classList.add('no-image')
+      const bg = thumb.querySelector('.thumbnail-bg')
+      if (bg) {
+        bg.style.display = 'none'
+      }
     }
   }
 }
@@ -292,10 +330,23 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  /* Use contain so the whole cover image is visible (portrait posters were
-     getting their top/bottom cropped by object-fit: cover). The gradient
-     background fills any letterbox area. */
+}
+
+/* Foreground poster: contain keeps the whole cover visible (portrait posters
+   were getting their top/bottom cropped by object-fit: cover). */
+.video-thumbnail .thumbnail-img {
   object-fit: contain;
+  z-index: 1;
+}
+
+/* Blurred backdrop: a cover-fit, blurred copy of the same poster fills the
+   letterbox gaps left by `contain` so non-16:9 covers look polished instead
+   of showing a flat gradient. Scaled up slightly to hide blurred edges. */
+.video-thumbnail .thumbnail-bg {
+  object-fit: cover;
+  filter: blur(18px) brightness(0.7) saturate(1.2);
+  transform: scale(1.15);
+  z-index: 0;
 }
 
 .play-icon {
@@ -312,6 +363,7 @@ export default {
   justify-content: center;
   opacity: 0;
   transition: opacity 0.3s;
+  z-index: 2;
 }
 
 .video-large:hover .play-icon,
@@ -337,6 +389,7 @@ export default {
   border-radius: 4px;
   font-size: 0.75em;
   color: #fff;
+  z-index: 2;
 }
 
 .video-info {

@@ -9,13 +9,25 @@
     @keydown.space.prevent="handleClick"
   >
     <div class="thumbnail">
-      <img 
-        v-if="video.video_image" 
-        ref="imgElement"
-        :alt="video.video_title"
-        @error="handleImageError"
-        loading="lazy"
-      />
+      <template v-if="video.video_image">
+        <!-- Blurred backdrop fills the letterbox area behind the contained
+             poster so non-16:9 covers look polished instead of showing a
+             plain gradient. Hidden until the poster reports its real ratio. -->
+        <img
+          class="thumbnail-bg"
+          ref="bgElement"
+          alt=""
+          aria-hidden="true"
+        />
+        <img
+          class="thumbnail-img"
+          ref="imgElement"
+          :alt="video.video_title"
+          @load="handleImageLoad"
+          @error="handleImageError"
+          loading="lazy"
+        />
+      </template>
       <div v-else class="placeholder" aria-hidden="true">
         <span>🎬</span>
       </div>
@@ -80,8 +92,18 @@ export default {
     },
     handleImageError(e) {
       e.target.style.display = 'none'
+      if (this.$refs.bgElement) {
+        this.$refs.bgElement.style.display = 'none'
+      }
       if (this.$refs.placeholder) {
         this.$refs.placeholder.style.display = 'flex'
+      }
+    },
+    handleImageLoad(e) {
+      // Mirror the resolved poster src into the blurred backdrop so the
+      // letterbox area around non-16:9 covers is filled with the same image.
+      if (this.$refs.bgElement && e.target.src) {
+        this.$refs.bgElement.src = e.target.src
       }
     },
     async loadImage() {
@@ -145,10 +167,23 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  /* Use contain so the whole cover image is visible (portrait posters were
-     getting their top/bottom cropped by object-fit: cover). The gradient
-     background fills any letterbox area. */
+}
+
+/* Foreground poster: contain keeps the whole cover visible (portrait posters
+   were getting their top/bottom cropped by object-fit: cover). */
+.thumbnail-img {
   object-fit: contain;
+  z-index: 1;
+}
+
+/* Blurred backdrop: a cover-fit, blurred copy of the same poster fills the
+   letterbox gaps left by `contain` so non-16:9 covers look polished instead
+   of showing a flat gradient. Scaled up slightly to hide blurred edges. */
+.thumbnail-bg {
+  object-fit: cover;
+  filter: blur(18px) brightness(0.7) saturate(1.2);
+  transform: scale(1.15);
+  z-index: 0;
 }
 
 .placeholder {
@@ -178,6 +213,7 @@ export default {
   justify-content: center;
   opacity: 0;
   transition: all 0.3s;
+  z-index: 2;
 }
 
 .video-card:hover .play-icon {
@@ -202,6 +238,7 @@ export default {
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
+  z-index: 2;
 }
 
 .info {
