@@ -220,6 +220,13 @@ class VideoDatabase:
         except Exception as e:
             logger.error(f"MySQL连接失败: {e}")
             self._log(f"⚠️ MySQL连接失败，降级到SQLite: {e}")
+            # 关闭可能已建立的 MySQL 连接，避免降级到 SQLite 时泄漏连接
+            if self.connection is not None:
+                try:
+                    self.connection.close()
+                except Exception:
+                    pass
+                self.connection = None
             self.use_mysql = False
             self._init_sqlite()
 

@@ -832,7 +832,7 @@ def check_new_videos() -> Tuple[Response, int]:
 
     except http_requests.RequestException as e:
         logger.error(f"检查新视频失败: {e}")
-        return api_response(message=f"检查失败: {str(e)}", code=500)
+        return api_response(message="检查失败: 采集源请求异常", code=500)
     except Exception as e:
         logger.error(f"检查新视频失败: {e}")
         return api_response(message="检查失败", code=500)
@@ -963,7 +963,7 @@ def collect_videos() -> Tuple[Response, int]:
 
     except http_requests.RequestException as e:
         logger.error(f"采集视频失败: {e}")
-        return api_response(message=f"采集失败: {str(e)}", code=500)
+        return api_response(message="采集失败: 采集源请求异常", code=500)
     except Exception as e:
         logger.error(f"采集视频失败: {e}")
         return api_response(message="采集失败", code=500)
@@ -989,7 +989,7 @@ def get_source_categories() -> Tuple[Response, int]:
 
     except http_requests.RequestException as e:
         logger.error(f"获取分类失败: {e}")
-        return api_response(message=f"获取分类失败: {str(e)}", code=500)
+        return api_response(message="获取分类失败: 采集源请求异常", code=500)
     except Exception as e:
         logger.error(f"获取分类失败: {e}")
         return api_response(message="获取分类失败", code=500)
