@@ -122,11 +122,24 @@
       </div>
 
       <p v-if="collectingHanime && hanimeIsCollectAll" class="intro-desc collecting-hint">
-        正在采集全部页面，逐页抓取详情，可能需要较长时间，请耐心等待…
+        正在采集全部页面，逐页抓取并保存，可能需要较长时间，请耐心等待…
       </p>
       <p v-else-if="refreshingHanimeMedia" class="intro-desc collecting-hint">
         正在逐个重新抓取封面与播放地址，视频较多时耗时较长，请耐心等待…
       </p>
+
+      <div v-if="collectingHanime && hanimeProgress" class="collection-progress">
+        <div class="progress-header">
+          <span class="loading-spinner small"></span>
+          <span class="progress-text">采集进度：{{ hanimeProgressText }}</span>
+        </div>
+        <div v-if="!hanimeProgress.collect_all && hanimeProgress.total_pages" class="progress-bar">
+          <div
+            class="progress-bar-fill"
+            :style="{ width: progressPercent + '%' }"
+          ></div>
+        </div>
+      </div>
 
       <div v-if="hanimeRefreshResult" class="collection-result">
         <h5>更新结果</h5>
@@ -296,6 +309,8 @@ export default {
       hanimeSkipDuplicates: true,
       collectingHanime: false,
       hanimeResult: null,
+      // Live per-page collection progress (from streaming endpoint)
+      hanimeProgress: null,
       // Refresh all media (image + play url) for the hanime category
       refreshingHanimeMedia: false,
       hanimeRefreshResult: null,
@@ -309,6 +324,32 @@ export default {
     // Whether the hanime page selector is set to "采集全部"
     hanimeIsCollectAll() {
       return this.hanimeMaxPages === 'all'
+    },
+    // Human-readable progress text for the streaming hanime collection.
+    hanimeProgressText() {
+      const p = this.hanimeProgress
+      if (!p) return ''
+      const page = p.page || 0
+      const parts = []
+      if (p.collect_all || p.total_pages == null) {
+        parts.push(`已采集 ${page} 页（采集全部）`)
+      } else {
+        const remaining = p.remaining_pages != null
+          ? p.remaining_pages
+          : Math.max(0, (p.total_pages || 0) - page)
+        parts.push(`已采集 ${page} / ${p.total_pages} 页，剩余 ${remaining} 页`)
+      }
+      const collected = p.collected_count || 0
+      const updated = p.updated_count || 0
+      parts.push(`新增 ${collected} 个`)
+      if (updated > 0) parts.push(`更新链接 ${updated} 个`)
+      return parts.join('，')
+    },
+    // Progress bar percentage for the fixed-page (non 采集全部) collection.
+    progressPercent() {
+      const p = this.hanimeProgress
+      if (!p || p.collect_all || !p.total_pages) return 0
+      return Math.min(100, Math.round(((p.page || 0) / p.total_pages) * 100))
     }
   },
   mounted() {
@@ -390,18 +431,33 @@ export default {
 
       this.collectingHanime = true
       this.hanimeResult = null
+      this.hanimeProgress = null
 
       const collectAll = this.hanimeIsCollectAll
+      const options = {
+        genre: this.hanimeGenre || '裏番',
+        category: this.hanimeCategory || '里番动漫',
+        max_pages: collectAll ? 1 : parseInt(this.hanimeMaxPages),
+        collect_all: collectAll,
+        delay: parseFloat(this.hanimeDelay),
+        skip_duplicates: this.hanimeSkipDuplicates
+      }
 
       try {
-        const result = await videoApi.collectHanime({
-          genre: this.hanimeGenre || '裏番',
-          category: this.hanimeCategory || '里番动漫',
-          max_pages: collectAll ? 1 : parseInt(this.hanimeMaxPages),
-          collect_all: collectAll,
-          delay: parseFloat(this.hanimeDelay),
-          skip_duplicates: this.hanimeSkipDuplicates
-        })
+        let result
+        try {
+          // Preferred path: stream progress and save each page as it is scraped.
+          result = await videoApi.collectHanimeStream(options, evt => {
+            if (evt.event === 'progress' || evt.event === 'start') {
+              this.hanimeProgress = evt.data
+            }
+          })
+        } catch (streamErr) {
+          // Fallback for environments without fetch streaming: one-shot collect.
+          console.warn('Hanime stream collection failed, falling back:', streamErr)
+          result = await videoApi.collectHanime(options)
+          result = result?.data || result
+        }
 
         this.hanimeResult = result?.data || result
 
@@ -507,6 +563,48 @@ export default {
 .collecting-hint {
   margin-top: 12px;
   color: var(--admin-warning, #d97706);
+}
+
+/* Live collection progress */
+.collection-progress {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--admin-surface-alt, rgba(0, 0, 0, 0.03));
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius, 8px);
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-text {
+  font-weight: 600;
+  color: var(--admin-text, #1f2937);
+}
+
+.loading-spinner.small {
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+}
+
+.progress-bar {
+  margin-top: 10px;
+  width: 100%;
+  height: 8px;
+  background: var(--admin-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--admin-primary);
+  border-radius: 999px;
+  transition: width 0.3s ease;
 }
 
 /* Panels */

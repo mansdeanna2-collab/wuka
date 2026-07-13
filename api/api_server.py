@@ -27,6 +27,7 @@ from __future__ import annotations
 import os
 import sys
 import uuid
+import json
 import logging
 import time
 from datetime import datetime
@@ -35,7 +36,9 @@ from contextlib import contextmanager
 from typing import Any, Callable, cast, Dict, Generator, List, Optional, Tuple, TypeVar
 
 import requests as http_requests
-from flask import Flask, jsonify, request, Response, g, send_from_directory
+from flask import (
+    Flask, jsonify, request, Response, g, send_from_directory, stream_with_context
+)
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 
@@ -1054,6 +1057,90 @@ def _media_update_with_backup(existing: Dict[str, Any], new_url: str,
     return updates
 
 
+def _hanime_parse_params(data: Dict[str, Any]) -> Dict[str, Any]:
+    """解析 hanime 采集请求参数, 供普通与流式采集端点复用。"""
+    genre = (data.get('genre') or hanime_scraper.DEFAULT_GENRE).strip()
+    # 入库分类默认归到前端「里番动漫」子分类, 与搜索 genre 解耦
+    category = (data.get('category') or '里番动漫').strip() or '里番动漫'
+    collect_all: bool = bool(data.get('collect_all', False))
+    # 采集全部时给一个较大的上限, iter_pages() 在遇到空页时会自动停止
+    if collect_all:
+        max_pages = 1000
+    else:
+        max_pages = max(1, min(int(data.get('max_pages', 1)), 20))
+    skip_duplicates: bool = data.get('skip_duplicates', True)
+    delay: float = max(0.0, min(float(data.get('delay', 1.0)), 10.0))
+    return {
+        'genre': genre,
+        'category': category,
+        'collect_all': collect_all,
+        'max_pages': max_pages,
+        'skip_duplicates': skip_duplicates,
+        'delay': delay,
+    }
+
+
+def _hanime_preview(item: Dict[str, Any]) -> Dict[str, Any]:
+    """生成用于前端预览的精简视频信息。"""
+    return {
+        'video_id': item.get('video_id'),
+        'video_title': item.get('video_title', ''),
+        'best_quality': item.get('best_quality'),
+        'tags': item.get('tags', []),
+        'play_count': item.get('play_count', 0),
+        'upload_date': item.get('upload_date', ''),
+    }
+
+
+def _save_hanime_item(
+    db: VideoDatabase,
+    item: Dict[str, Any],
+    genre: str,
+    category: str,
+    skip_duplicates: bool,
+    stats: Dict[str, int],
+    collected_videos: List[Dict[str, Any]],
+) -> None:
+    """处理并保存单个 hanime 采集条目, 就地累加统计数据。
+
+    去重以「名称(标题)」为准: 若已存在同名视频, 只替换图片/视频链接,
+    不新增重复的视频数据; 否则按 video_id 兜底判重后新增。
+    """
+    video_id = item.get('video_id')
+    # 没有可播放地址的条目视为无效, 跳过
+    if not video_id or not item.get('video_url'):
+        stats['skipped'] += 1
+        return
+
+    record = hanime_scraper._to_video_record(item, genre)
+    # 采集的视频统一归到目标分类(里番动漫)
+    record['video_category'] = category
+
+    title = (record.get('video_title') or '').strip()
+    existing = db.get_video_by_title(title) if title else None
+    if existing is None:
+        existing = db.get_video(video_id)
+
+    if existing:
+        if skip_duplicates:
+            # 只替换链接(图片链接与视频链接), 保留其余数据与采集时间;
+            # 链接变化时把旧地址存为备用地址, 供播放失败时自动切换。
+            updates = _media_update_with_backup(
+                existing, record['video_url'], record['video_image']
+            )
+            if updates and db.update_video(existing['video_id'], updates):
+                stats['updated'] += 1
+            stats['duplicate'] += 1
+            return
+        # 未开启去重时, 按主键覆盖(可能重置采集时间)
+        if db.insert_video(record):
+            collected_videos.append(_hanime_preview(item))
+        return
+
+    if db.insert_video(record):
+        collected_videos.append(_hanime_preview(item))
+
+
 @app.route('/api/admin/collect-hanime', methods=['POST'])
 @handle_errors
 def collect_hanime() -> Tuple[Response, int]:
@@ -1074,91 +1161,44 @@ def collect_hanime() -> Tuple[Response, int]:
     if hanime_scraper is None:
         return api_response(message="采集模块 hanime_scraper 未安装", code=500)
 
-    data = request.get_json() or {}
-    genre = (data.get('genre') or hanime_scraper.DEFAULT_GENRE).strip()
-    # 入库分类默认归到前端「里番动漫」子分类, 与搜索 genre 解耦
-    category = (data.get('category') or '里番动漫').strip() or '里番动漫'
-    collect_all: bool = bool(data.get('collect_all', False))
-    # 采集全部时给一个较大的上限, scrape() 在遇到空页时会自动停止
-    if collect_all:
-        max_pages = 1000
-    else:
-        max_pages = max(1, min(int(data.get('max_pages', 1)), 20))
-    skip_duplicates: bool = data.get('skip_duplicates', True)
-    delay: float = max(0.0, min(float(data.get('delay', 1.0)), 10.0))
+    params = _hanime_parse_params(request.get_json() or {})
+    genre = params['genre']
+    category = params['category']
+    collect_all = params['collect_all']
+    max_pages = params['max_pages']
+    skip_duplicates = params['skip_duplicates']
+    delay = params['delay']
 
     collected_videos: List[Dict[str, Any]] = []
-    skipped_count = 0
-    duplicate_count = 0
-    updated_count = 0
+    stats: Dict[str, int] = {'skipped': 0, 'duplicate': 0, 'updated': 0}
     pages_processed = 0
+    total_items = 0
 
     try:
         scraper = hanime_scraper.HanimeScraper(genre=genre, delay=delay)
-        items = scraper.scrape(pages=max_pages, with_details=True)
-        # 实际处理页数: 采集全部时以采集到的视频反推, 否则取请求页数
-        pages_processed = max_pages if not collect_all else 0
+        # 逐页采集: 每采完一页就立即入库, 避免整批采集(尤其"采集全部")
+        # 中途失败时前面已采集的数据丢失。
+        for page, page_items in scraper.iter_pages(
+            pages=max_pages, with_details=True
+        ):
+            total_items += len(page_items)
+            with get_db() as db:
+                for item in page_items:
+                    _save_hanime_item(
+                        db, item, genre, category,
+                        skip_duplicates, stats, collected_videos,
+                    )
+            pages_processed = page
 
-        with get_db() as db:
-            for item in items:
-                video_id = item.get('video_id')
-                # 没有可播放地址的条目视为无效, 跳过
-                if not video_id or not item.get('video_url'):
-                    skipped_count += 1
-                    continue
-
-                record = hanime_scraper._to_video_record(item, genre)
-                # 采集的视频统一归到目标分类(里番动漫)
-                record['video_category'] = category
-
-                # 去重以「名称(标题)」为准: 若已存在同名视频, 只替换图片/视频链接,
-                # 不新增重复的视频数据; 否则按 video_id 兜底判重后新增。
-                title = (record.get('video_title') or '').strip()
-                existing = db.get_video_by_title(title) if title else None
-                if existing is None:
-                    existing = db.get_video(video_id)
-
-                if existing:
-                    if skip_duplicates:
-                        # 只替换链接(图片链接与视频链接), 保留其余数据与采集时间;
-                        # 链接变化时把旧地址存为备用地址, 供播放失败时自动切换。
-                        updates = _media_update_with_backup(
-                            existing, record['video_url'], record['video_image']
-                        )
-                        if updates and db.update_video(existing['video_id'], updates):
-                            updated_count += 1
-                        duplicate_count += 1
-                        continue
-                    # 未开启去重时, 按主键覆盖(可能重置采集时间)
-                    if db.insert_video(record):
-                        collected_videos.append({
-                            'video_id': video_id,
-                            'video_title': item.get('video_title', ''),
-                            'best_quality': item.get('best_quality'),
-                            'tags': item.get('tags', []),
-                            'play_count': item.get('play_count', 0),
-                            'upload_date': item.get('upload_date', ''),
-                        })
-                    continue
-
-                if db.insert_video(record):
-                    collected_videos.append({
-                        'video_id': video_id,
-                        'video_title': item.get('video_title', ''),
-                        'best_quality': item.get('best_quality'),
-                        'tags': item.get('tags', []),
-                        'play_count': item.get('play_count', 0),
-                        'upload_date': item.get('upload_date', ''),
-                    })
-
+        updated_count = stats['updated']
         result = {
             'collected_count': len(collected_videos),
             'updated_count': updated_count,
-            'skipped_count': skipped_count,
-            'duplicate_count': duplicate_count,
+            'skipped_count': stats['skipped'],
+            'duplicate_count': stats['duplicate'],
             'pages_processed': pages_processed,
             'collect_all': collect_all,
-            'total_items': len(items),
+            'total_items': total_items,
             'genre': genre,
             'category': category,
             'collected_at': datetime.now().isoformat(),
@@ -1183,6 +1223,108 @@ def collect_hanime() -> Tuple[Response, int]:
     except Exception as e:
         logger.error(f"Hanime采集失败: {e}")
         return api_response(message="采集失败", code=500)
+
+
+def _sse_event(event: str, payload: Dict[str, Any]) -> str:
+    """构造一条 Server-Sent Events 消息。"""
+    return f"event: {event}\ndata: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+
+@app.route('/api/admin/collect-hanime-stream', methods=['POST'])
+@handle_errors
+def collect_hanime_stream() -> Response:
+    """
+    Hanime1 采集(流式) —— 采集完一页保存一页, 并实时上报进度。
+
+    与 /api/admin/collect-hanime 相同的请求参数, 但以 Server-Sent Events (SSE)
+    的形式逐页返回进度: 每采完一页立即入库并推送一条 `progress` 事件
+    (含当前页、总页数、剩余页数与累计统计), 全部完成后推送一条 `done` 事件
+    (含最终结果), 出错时推送 `error` 事件。
+    """
+    if hanime_scraper is None:
+        return api_response(message="采集模块 hanime_scraper 未安装", code=500)[0]
+
+    params = _hanime_parse_params(request.get_json() or {})
+    genre = params['genre']
+    category = params['category']
+    collect_all = params['collect_all']
+    max_pages = params['max_pages']
+    skip_duplicates = params['skip_duplicates']
+    delay = params['delay']
+    # 用于进度展示的目标页数: 采集全部时未知(None)
+    target_pages: Optional[int] = None if collect_all else max_pages
+
+    def generate() -> Generator[str, None, None]:
+        collected_videos: List[Dict[str, Any]] = []
+        stats: Dict[str, int] = {'skipped': 0, 'duplicate': 0, 'updated': 0}
+        pages_processed = 0
+        total_items = 0
+
+        yield _sse_event('start', {
+            'collect_all': collect_all,
+            'total_pages': target_pages,
+        })
+
+        try:
+            scraper = hanime_scraper.HanimeScraper(genre=genre, delay=delay)
+            for page, page_items in scraper.iter_pages(
+                pages=max_pages, with_details=True
+            ):
+                total_items += len(page_items)
+                with get_db() as db:
+                    for item in page_items:
+                        _save_hanime_item(
+                            db, item, genre, category,
+                            skip_duplicates, stats, collected_videos,
+                        )
+                pages_processed = page
+
+                remaining = (
+                    None if target_pages is None
+                    else max(0, target_pages - page)
+                )
+                yield _sse_event('progress', {
+                    'page': page,
+                    'total_pages': target_pages,
+                    'remaining_pages': remaining,
+                    'collected_count': len(collected_videos),
+                    'updated_count': stats['updated'],
+                    'skipped_count': stats['skipped'],
+                    'duplicate_count': stats['duplicate'],
+                    'total_items': total_items,
+                    'collect_all': collect_all,
+                })
+
+            result = {
+                'collected_count': len(collected_videos),
+                'updated_count': stats['updated'],
+                'skipped_count': stats['skipped'],
+                'duplicate_count': stats['duplicate'],
+                'pages_processed': pages_processed,
+                'collect_all': collect_all,
+                'total_items': total_items,
+                'genre': genre,
+                'category': category,
+                'collected_at': datetime.now().isoformat(),
+                'collected_videos': collected_videos[:50],
+            }
+            yield _sse_event('done', result)
+
+        except http_requests.RequestException as e:
+            logger.error(f"Hanime采集失败: {e}")
+            yield _sse_event('error', {'message': '采集失败: 采集源请求异常'})
+        except Exception as e:
+            logger.error(f"Hanime采集失败: {e}")
+            yield _sse_event('error', {'message': '采集失败'})
+
+    headers = {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        # 关闭 nginx 反向代理的响应缓冲, 否则进度事件会被缓存到最后才一次性下发
+        'X-Accel-Buffering': 'no',
+        'Connection': 'keep-alive',
+    }
+    return Response(stream_with_context(generate()), headers=headers)
 
 
 @app.route('/api/admin/refresh-hanime-media', methods=['POST'])

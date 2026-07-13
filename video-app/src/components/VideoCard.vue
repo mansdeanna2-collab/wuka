@@ -145,7 +145,10 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  /* Use contain so the whole cover image is visible (portrait posters were
+     getting their top/bottom cropped by object-fit: cover). The gradient
+     background fills any letterbox area. */
+  object-fit: contain;
 }
 
 .placeholder {
