@@ -1,0 +1,3465 @@
+<html lang="zhs">
+
+<head>
+                <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                    <meta name="referrer" content="no-referrer">
+                <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="google-site-verification" content="oV77KljbCxlciy-aD-Uy_dZSYUENVR_6jAhWSp_cb48" />
+        <meta name="exoclick-site-verification" content="c02975e2897725fd5f30045bf364309a">
+                    <meta name="juicyads-site-verification" content="cc330848f3dfc20e8259699c6a096411">
+                <meta name="clckd" content="9ab0d622f1127813f9ef70e8aaad5ff4" />
+        <link rel="shortcut icon" type="image/x-icon" href="https://vdownload.hembed.com/image/icon/tab_logo.png?secure=EJYLwnrDlidVi_wFp3DaGw==,4867726124"/>
+        <link rel="apple-touch-icon" href="https://vdownload.hembed.com/image/icon/tab_logo.png?secure=EJYLwnrDlidVi_wFp3DaGw==,4867726124"/>
+        <link rel="canonical" href="https://hanime1.me/search?genre=3DCG" />
+        <meta name="RATING" content="RTA-5042-1996-1400-1577-RTA" />
+        <meta name="rating" content="adult"/>
+        <meta name="author" content="Hanime1" />
+    
+	<title>搜尋&nbsp;-&nbsp;3DCG&nbsp;-&nbsp;Hanime1.me</title>
+	<meta name="title" content="搜尋 - 3DCG - Hanime1.me">
+	<meta name="description" content="Hanime1.me 帶給你最完美的H動漫、H動畫、裏番、里番、成人色情卡通片的線上看體驗，絕對沒有天殺的片頭廣告！">
+
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="zPJUyJfoOBr7hOsB9bUoRoMvCShP3LcvDrTSAYua">
+
+    <!-- Styles -->
+    <!-- <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Encode+Sans+Condensed:wght@700&family=Noto+Sans+TC:wght@300;400;500;700&family=Raleway:wght@300;400;600&family=Material+Icons&family=Material+Icons+Outlined&family=Material+Icons+Sharp&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0..1,0&display=swap" rel="stylesheet"> -->
+
+    <link rel="preconnect" href="https://fonts.loli.net">
+    <link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
+    <link href="https://fonts.loli.net/css2?family=Material+Icons&family=Material+Icons+Outlined&family=Material+Icons+Sharp&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0..1,0&display=swap" rel="stylesheet">
+
+    <link href="/css/app.css?id=9328540f222243f91168" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js" defer></script>
+</head>
+<body>
+    <div class="app-main-content-wrapper" style="overflow-x: hidden; ">
+        	<div class="hidden-xs">
+		<div id="main-nav" style="z-index: 10000 !important; position: static !important;" class="main-nav hidden-xs">
+		  <a href="/" style="padding-right: 2.5%; color: white; font-size: 1.4em;">
+            <span style="color: crimson">H</span>anime1<span style="color: crimson">.</span>me
+    </a>
+
+    
+    <a class="nav-item hidden-xs nav-desktop-items nav-desktop-裏番-item " href="https://hanime1.me/search?genre=裏番">里番</a>
+                        <a class="nav-item hidden-xs hidden-sm hidden-md nav-desktop-items " href="/previews/202607">新番预告</a>
+            
+    <a class="nav-item hidden-xs nav-desktop-items nav-desktop-泡麵番-item " href="https://hanime1.me/search?genre=泡麵番">泡面番</a>
+    
+    <a class="nav-item hidden-xs nav-desktop-items nav-desktop-Motion Anime-item " href="https://hanime1.me/search?genre=Motion Anime">Motion Anime</a>
+    
+    <a class="nav-item hidden-xs nav-desktop-items nav-desktop-3DCG-item active" href="https://hanime1.me/search?genre=3DCG">3DCG</a>
+    
+    <a class="nav-item hidden-xs nav-desktop-items nav-desktop-2.5D-item " href="https://hanime1.me/search?genre=2.5D">2.5D</a>
+    
+    <a class="nav-item hidden-xs nav-desktop-items nav-desktop-2D動畫-item " href="https://hanime1.me/search?genre=2D動畫">2D动画</a>
+    
+    <a class="nav-item hidden-xs nav-desktop-items nav-desktop-AI生成-item " href="https://hanime1.me/search?genre=AI生成">AI生成</a>
+    
+    <a class="nav-item hidden-xs nav-desktop-items nav-desktop-MMD-item " href="https://hanime1.me/search?genre=MMD">MMD</a>
+    
+    <a class="nav-item hidden-xs nav-desktop-items nav-desktop-Cosplay-item " href="https://hanime1.me/search?genre=Cosplay">Cosplay</a>
+
+    <!-- <a class="nav-item hidden-xs hidden-sm hidden-md nav-desktop-items" href="https://hanimeone.me/comics">H漫画</a> -->
+    <a class="nav-item hidden-xs hidden-sm nav-desktop-items nav-desktop-uncen-game-item" href="https://l.erodalabs.com/s/0CxEQ4" target="_blank">无码18禁游</a>
+
+
+    <a style="padding-right: 0px; padding-left: 10px" class="nav-icon pull-right" href="https://hanime1.me/login"><span style="vertical-align: middle; font-size: 28px" class="material-icons-outlined">account_circle</span></a>
+
+<a class="nav-icon pull-right no-select" href="https://hanime1.me/search"><span style="vertical-align: middle; font-size: 28px;" class="material-icons-outlined">search</span></a>
+
+<a class="nav-icon pull-right no-select" href="/previews/202607"><span style="vertical-align: middle; font-size: 25px" class="material-icons-outlined">cast</span></a>		</div>
+	</div>
+	<div id="main-nav-home-mobile" style="z-index: 10000 !important; overflow-x: hidden; background: black; background-color: black; transition: height 0.3s, background-color 0.4s, backdrop-filter 0.4s, -webkit-backdrop-filter 0.4s, top 0.4s;" class="hidden-sm hidden-md hidden-lg">
+
+	  <div style="padding: 0 15px;">
+	    <a href="/" style="padding-right: 2.5%; color: white; font-size: 1.40em; line-height: 57px; margin-left: 5px;">
+	      <img style="width: 15px; margin-top: -7px; margin-right: 2px;" src="https://vdownload.hembed.com/image/icon/nav_logo.png?secure=HxkFdqiVxMMXXjau9riwGg==,4855471889">
+	    </a>
+
+	    <form id="search-form" style="display: inline-block; margin-left: 5px; width: calc(100% - 84px); position: relative;">
+		    <input id="nav-query" name="nav-query" style="width: 100%; height: 32px; margin-top: -10px; vertical-align: middle; border-radius: 3px; background-color: #272727; border-color: #272727 !important; line-height: 32px; padding-left: 41px; font-size: 15px; padding-top: 4px" class="search-nav-bar" type="text" value="" placeholder="搜寻 Hanime1.me">
+		    <img style="width: 26px; position: absolute; top: 5px; left: 10px; opacity: 0.4;" src="https://vdownload.hembed.com/image/icon/search_input_placeholder.png?secure=10N-U1uEz-5YMgWwuLCfPw==,4855472065">
+		</form>
+
+			      <a id="user-modal-trigger" href="https://hanime1.me/login" style="padding-left: 1px; padding-right: 0px; cursor: pointer;" class="nav-icon pull-right no-select" >
+	          <img style="width: 24px; border-radius: 2px;" src="https://vdownload.hembed.com/image/icon/user_default_image.jpg?secure=ue9M119kdZxHcZqDPrunLQ==,4855471320">
+	      </a>
+	    	  </div>
+	  <div class="hidden-sm hidden-md hidden-lg hidden-xl video-buttons-wrapper desktop-inline-mobile-block hide-scrollbar" style="position: absolute; top: 40px; transition: top 0.5s; width: 100%; text-align: center; z-index: 99; height: 40px; line-height: 40px; overflow-y: hidden; padding: 0 15px;">
+	<div class="home-genre-tabs-wrapper" data-toggle="modal" data-target="#genre-modal">
+		<span style="background-color: rgba(255,255,255,.3)" class="home-genre-tabs">3DCG<img style="margin-top: -2px; margin-left: 7px; width: 12px;" src="https://vdownload.hembed.com/image/icon/arrow_down.png?secure=2CKFWyW8NLKoTjn7Szq8lw==,4855470564"></span>
+	</div>
+
+	<div class="home-genre-tabs-wrapper" data-toggle="modal" data-target="#tags" style="">
+		<span style="" class="home-genre-tabs">标签<img style="margin-top: -2px; margin-left: 7px; width: 12px;" src="https://vdownload.hembed.com/image/icon/arrow_down.png?secure=2CKFWyW8NLKoTjn7Szq8lw==,4855470564"></span>
+	</div>
+
+	<div class="home-genre-tabs-wrapper" data-toggle="modal" data-target="#sort-modal">
+		<span style="排序方式" class="home-genre-tabs">排序方式<img style="margin-top: -2px; margin-left: 7px; width: 12px;" src="https://vdownload.hembed.com/image/icon/arrow_down.png?secure=2CKFWyW8NLKoTjn7Szq8lw==,4855470564"></span>
+	</div>
+
+		<div class="home-genre-tabs-wrapper" data-toggle="modal" data-target="#date-modal" style="">
+		<span style="" class="home-genre-tabs">发布日期<img style="margin-top: -2px; margin-left: 7px; width: 12px;" src="https://vdownload.hembed.com/image/icon/arrow_down.png?secure=2CKFWyW8NLKoTjn7Szq8lw==,4855470564"></span>
+	</div>
+
+	<div class="home-genre-tabs-wrapper" data-toggle="modal" data-target="#duration-modal">
+		<span style="時長" class="home-genre-tabs">時長<img style="margin-top: -2px; margin-left: 7px; width: 12px;" src="https://vdownload.hembed.com/image/icon/arrow_down.png?secure=2CKFWyW8NLKoTjn7Szq8lw==,4855470564"></span>
+	</div>
+
+	<div class="home-genre-tabs-wrapper search-type-button" style="margin-right: 0px;">
+		<span class="home-genre-tabs">
+							<span class="search-type-input">搜寻作者</span>
+				<img style="width: 11px; margin-top: -3px; margin-left: 2px" src="https://vdownload.hembed.com/image/icon/search_artist_icon.jpg?secure=qYBLGsqhJQrL4DsgOnOPkA==,4853050902">
+					</span>
+	</div>
+</div>	</div>
+
+        <div style="overflow-x: hidden;">
+            
+            
+<form style="overflow-y: hidden; overflow-x: hidden;" id="hentai-form" action="https://hanime1.me/search" method="GET">
+	<!-- <input type="hidden" id="page" name="page" value="1"> -->
+
+	<div id="search-nav-desktop" style="margin-bottom: 35px; padding-top: 10px; padding-bottom: 10px" class="search-nav-wrapper hidden-xs">
+
+	<div class="dropdown no-select" style="display: inline-block; padding: 0;">
+		<button style="color: white; font-size: 30px; display: inline-block; margin-right: 20px; background-color: transparent; outline: 0; border: 0;;" type="button" data-toggle="modal" data-target="#genre-modal">
+			3DCG
+			<i class="material-icons" style="vertical-align: middle; margin-top: -5px; margin-left: 0px;">arrow_drop_down</i>
+		</button>
+	</div>
+
+	<div class="dropdown no-select" style="display: inline-block; padding: 0; ">
+		<button style="outline:0; color:white; margin-top: -15px;" class="btn btn-secondary dropdown-toggle search-nav-desktop" type="button" data-toggle="modal" data-target="#tags">
+			标签			<i class="material-icons" style="vertical-align: middle; margin-top: -3px; margin-left: 16px; margin-right: -7px">arrow_drop_down</i>
+		</button>
+	</div>
+
+	<div class="dropdown no-select" style="display: inline-block; padding: 0;">
+		<button style="outline:0; color:white; margin-top: -15px;" class="btn btn-secondary dropdown-toggle search-nav-desktop" type="button" data-toggle="modal" data-target="#sort-modal">
+			排序方式
+			<i class="material-icons" style="vertical-align: middle; margin-top: -3px; margin-left: 16px; margin-right: -7px">arrow_drop_down</i>
+		</button>
+	</div>
+
+	<div class="dropdown no-select" style="display: inline-block; padding: 0; ">
+		<button style="outline:0; color:white; margin-top: -15px;" class="btn btn-secondary dropdown-toggle search-nav-desktop" type="button" data-toggle="modal" data-target="#date-modal">
+						发布日期
+			<i class="material-icons" style="vertical-align: middle; margin-top: -3px; margin-left: 16px; margin-right: -7px">arrow_drop_down</i>
+		</button>
+	</div>
+
+	<div class="dropdown no-select" style="display: inline-block; padding: 0;">
+		<button style="outline:0; color:white; margin-top: -15px;" class="btn btn-secondary dropdown-toggle search-nav-desktop" type="button" data-toggle="modal" data-target="#duration-modal">
+			時長
+			<i class="material-icons" style="vertical-align: middle; margin-top: -3px; margin-left: 16px; margin-right: -7px">arrow_drop_down</i>
+		</button>
+	</div>
+
+	<div style="display: inline-block; position: relative;">
+		<input id="query" name="query" type="text" value="" placeholder="搜索" class="search-input-desktop">
+		<div id="search-btn" class="search-btn" style="top:-12px; right: 1px; border-radius: 0px; background-color: rgba(255,255,255,.1); width: 34px;"><i style="margin-top: 4px; margin-left: 7px; color: rgba(255,255,255,0.5); font-size: 22px;" class="material-icons">search</i></div>
+	</div>
+
+	<input type="hidden" id="type" name="type" value="">
+
+	<div class="dropdown no-select search-nav-opacity scrollable-search-type-button">
+		<button style="outline:0; color:white; padding: 5px 11px 5px 12px; background-color: rgba(0,0,0,.1);" class="btn btn-secondary dropdown-toggle search-nav-desktop search-type-button" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							<span class="search-type-input">搜寻作者</span>
+				<img style="width: 15px; margin-top: -3px; margin-left: 12px" src="https://vdownload.hembed.com/image/icon/search_artist_icon.jpg?secure=qYBLGsqhJQrL4DsgOnOPkA==,4853050902">
+					</button>
+	</div>
+</div>
+	<div id="genre-modal" class="modal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="material-icons pull-left no-select modal-close-btn" data-dismiss="modal">close</span>
+        <h4 class="modal-title">影片类型</h4>
+      </div>
+      <div class="modal-body" style="padding: 0; text-align: center">
+        <input type="hidden" id="genre" name="genre" value="3DCG">
+
+                  <div style="line-height: 30px" class="simple-dropdown-item genre-option " data-value="全部"><div class="hentai-sort-options">全部</div></div>
+    			<hr style="margin: 0; border-color: #323434;">
+                  <div style="line-height: 30px" class="simple-dropdown-item genre-option " data-value="裏番"><div class="hentai-sort-options">里番</div></div>
+    			<hr style="margin: 0; border-color: #323434;">
+                  <div style="line-height: 30px" class="simple-dropdown-item genre-option " data-value="泡麵番"><div class="hentai-sort-options">泡面番</div></div>
+    			<hr style="margin: 0; border-color: #323434;">
+                  <div style="line-height: 30px" class="simple-dropdown-item genre-option " data-value="Motion Anime"><div class="hentai-sort-options">Motion Anime</div></div>
+    			<hr style="margin: 0; border-color: #323434;">
+                  <div style="line-height: 30px" class="simple-dropdown-item genre-option active" data-value="3DCG"><div class="hentai-sort-options">3DCG</div></div>
+    			<hr style="margin: 0; border-color: #323434;">
+                  <div style="line-height: 30px" class="simple-dropdown-item genre-option " data-value="2.5D"><div class="hentai-sort-options">2.5D</div></div>
+    			<hr style="margin: 0; border-color: #323434;">
+                  <div style="line-height: 30px" class="simple-dropdown-item genre-option " data-value="2D動畫"><div class="hentai-sort-options">2D动画</div></div>
+    			<hr style="margin: 0; border-color: #323434;">
+                  <div style="line-height: 30px" class="simple-dropdown-item genre-option " data-value="AI生成"><div class="hentai-sort-options">AI生成</div></div>
+    			<hr style="margin: 0; border-color: #323434;">
+                  <div style="line-height: 30px" class="simple-dropdown-item genre-option " data-value="MMD"><div class="hentai-sort-options">MMD</div></div>
+    			<hr style="margin: 0; border-color: #323434;">
+                  <div style="line-height: 30px" class="simple-dropdown-item genre-option " data-value="Cosplay"><div class="hentai-sort-options">Cosplay</div></div>
+    			<hr style="margin: 0; border-color: #323434;">
+        
+                  <a style="color: white; text-decoration: none; line-height: 30px" href="https://l.erodalabs.com/s/0CxEQ4" target="_blank"><div class="simple-dropdown-item">无码18禁游</div></a>
+          <hr style="margin: 0; border-color: #323434;">
+      		<a style="color: white; text-decoration: none; line-height: 30px" href="/previews/202607"><div class="simple-dropdown-item genre-option">新番预告</div></a>
+      		<hr style="margin: 0; border-color: #323434;">
+      		<a style="color: white; text-decoration: none; line-height: 30px" href="https://hanimeone.me/comics"><div class="simple-dropdown-item genre-option">H漫画</div></a>
+      		<hr class="hidden-sm hidden-md hidden-lg hidden-xl" style="margin: 0; border-color: #323434;">
+              </div>
+
+      <hr style="border-color: #323434; margin: 0">
+	  <div class="modal-footer">
+		<div data-dismiss="modal">取消</div>
+		<button class="pull-right btn btn-primary" type="submit">显示搜索结果</button>
+	  </div>
+    </div>
+  </div>
+</div>
+	<div id="tags" class="modal" role="dialog">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <span class="material-icons pull-left no-select modal-close-btn" data-dismiss="modal">close</span>
+	        <h4 class="modal-title">内容标签</h4>
+	      </div>
+	      <div class="modal-body" style="overflow-y: scroll; padding-top: 0px;">
+	      	<div style="background-color: #323434; margin: 0 -15px 20px -15px; padding: 5px 15px 0px 15px;">
+				<h5 style="font-weight: bold">
+			  		广泛配对			      	<label class="hentai-switch" style="float: right">
+						<input type="checkbox" name="broad" id="broad" >
+						<span class="hentai-slider round"></span>
+					</label>
+				</h5>
+			    <p style="color: gray; padding-bottom: 12px; font-size: 1.25rem; padding-right: 60px; font-weight: normal;">较多结果，较不精准。配对所有包含任何一个选择的标签的影片，而非全部标签。</p>
+		    </div>
+
+		    <h5 style="margin-top: 20px; margin-bottom: 15px; font-weight: bold">影片属性</h5>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="無碼" >
+				  <span class="checkmark">无码</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="AI解碼" >
+				  <span class="checkmark">AI解码</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="中文字幕" >
+				  <span class="checkmark">中文字幕</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="中文配音" >
+				  <span class="checkmark">中文配音</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="同人作品" >
+				  <span class="checkmark">同人作品</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="斷面圖" >
+				  <span class="checkmark">断面图</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="ASMR" >
+				  <span class="checkmark">ASMR</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="1080p" >
+				  <span class="checkmark">1080p</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="60FPS" >
+				  <span class="checkmark">60FPS</span>
+				</label>
+	        
+	        <h5 style="margin-top: 15px; margin-bottom: 15px; font-weight: bold">人物关系</h5>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="近親" >
+				  <span class="checkmark">近亲</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="姐" >
+				  <span class="checkmark">姐</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="妹" >
+				  <span class="checkmark">妹</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="母" >
+				  <span class="checkmark">母</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="女兒" >
+				  <span class="checkmark">女儿</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="師生" >
+				  <span class="checkmark">师生</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="情侶" >
+				  <span class="checkmark">情侣</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="青梅竹馬" >
+				  <span class="checkmark">青梅竹马</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="同事" >
+				  <span class="checkmark">同事</span>
+				</label>
+	        
+	        <h5 style="margin-top: 15px; margin-bottom: 15px; font-weight: bold">角色设定</h5>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="JK" >
+				  <span class="checkmark">JK</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="處女" >
+				  <span class="checkmark">处女</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="御姐" >
+				  <span class="checkmark">御姐</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="熟女" >
+				  <span class="checkmark">熟女</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="人妻" >
+				  <span class="checkmark">人妻</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="女教師" >
+				  <span class="checkmark">女教师</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="男教師" >
+				  <span class="checkmark">男教师</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="女醫生" >
+				  <span class="checkmark">女医生</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="女病人" >
+				  <span class="checkmark">女病人</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="護士" >
+				  <span class="checkmark">护士</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="OL" >
+				  <span class="checkmark">OL</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="女警" >
+				  <span class="checkmark">女警</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="大小姐" >
+				  <span class="checkmark">大小姐</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="偶像" >
+				  <span class="checkmark">偶像</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="女僕" >
+				  <span class="checkmark">女仆</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="巫女" >
+				  <span class="checkmark">巫女</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="魔女" >
+				  <span class="checkmark">魔女</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="修女" >
+				  <span class="checkmark">修女</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="風俗娘" >
+				  <span class="checkmark">风俗娘</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="公主" >
+				  <span class="checkmark">公主</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="女忍者" >
+				  <span class="checkmark">女忍者</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="女戰士" >
+				  <span class="checkmark">女战士</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="女騎士" >
+				  <span class="checkmark">女骑士</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="魔法少女" >
+				  <span class="checkmark">魔法少女</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="異種族" >
+				  <span class="checkmark">异种族</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="天使" >
+				  <span class="checkmark">天使</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="妖精" >
+				  <span class="checkmark">妖精</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="魔物娘" >
+				  <span class="checkmark">魔物娘</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="魅魔" >
+				  <span class="checkmark">魅魔</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="吸血鬼" >
+				  <span class="checkmark">吸血鬼</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="女鬼" >
+				  <span class="checkmark">女鬼</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="獸娘" >
+				  <span class="checkmark">兽娘</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="福瑞" >
+				  <span class="checkmark">福瑞</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="乳牛" >
+				  <span class="checkmark">乳牛</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="機械娘" >
+				  <span class="checkmark">机械娘</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="碧池" >
+				  <span class="checkmark">碧池</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="痴女" >
+				  <span class="checkmark">痴女</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="雌小鬼" >
+				  <span class="checkmark">雌小鬼</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="不良少女" >
+				  <span class="checkmark">不良少女</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="傲嬌" >
+				  <span class="checkmark">傲娇</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="病嬌" >
+				  <span class="checkmark">病娇</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="無口" >
+				  <span class="checkmark">无口</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="無表情" >
+				  <span class="checkmark">无表情</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="眼神死" >
+				  <span class="checkmark">眼神死</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="正太" >
+				  <span class="checkmark">正太</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="偽娘" >
+				  <span class="checkmark">伪娘</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="扶他" >
+				  <span class="checkmark">扶他</span>
+				</label>
+	        
+	        <h5 style="margin-top: 15px; margin-bottom: 15px; font-weight: bold">外貌身材</h5>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="短髮" >
+				  <span class="checkmark">短发</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="馬尾" >
+				  <span class="checkmark">马尾</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="雙馬尾" >
+				  <span class="checkmark">双马尾</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="丸子頭" >
+				  <span class="checkmark">丸子头</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="巨乳" >
+				  <span class="checkmark">巨乳</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="乳環" >
+				  <span class="checkmark">乳环</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="舌環" >
+				  <span class="checkmark">舌环</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="貧乳" >
+				  <span class="checkmark">贫乳</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="黑皮膚" >
+				  <span class="checkmark">黑皮肤</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="曬痕" >
+				  <span class="checkmark">晒痕</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="眼鏡娘" >
+				  <span class="checkmark">眼镜娘</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="獸耳" >
+				  <span class="checkmark">兽耳</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="尖耳朵" >
+				  <span class="checkmark">尖耳朵</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="異色瞳" >
+				  <span class="checkmark">异色瞳</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="美人痣" >
+				  <span class="checkmark">美人痣</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="肌肉女" >
+				  <span class="checkmark">肌肉女</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="白虎" >
+				  <span class="checkmark">白虎</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="陰毛" >
+				  <span class="checkmark">阴毛</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="腋毛" >
+				  <span class="checkmark">腋毛</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="大屌" >
+				  <span class="checkmark">大屌</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="著衣" >
+				  <span class="checkmark">着衣</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="水手服" >
+				  <span class="checkmark">水手服</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="體操服" >
+				  <span class="checkmark">体操服</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="泳裝" >
+				  <span class="checkmark">泳装</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="比基尼" >
+				  <span class="checkmark">比基尼</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="死庫水" >
+				  <span class="checkmark">死库水</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="和服" >
+				  <span class="checkmark">和服</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="兔女郎" >
+				  <span class="checkmark">兔女郎</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="圍裙" >
+				  <span class="checkmark">围裙</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="啦啦隊" >
+				  <span class="checkmark">啦啦队</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="絲襪" >
+				  <span class="checkmark">丝袜</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="吊襪帶" >
+				  <span class="checkmark">吊袜带</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="熱褲" >
+				  <span class="checkmark">热裤</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="迷你裙" >
+				  <span class="checkmark">迷你裙</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="性感內衣" >
+				  <span class="checkmark">性感内衣</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="緊身衣" >
+				  <span class="checkmark">紧身衣</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="丁字褲" >
+				  <span class="checkmark">丁字裤</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="高跟鞋" >
+				  <span class="checkmark">高跟鞋</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="睡衣" >
+				  <span class="checkmark">睡衣</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="婚紗" >
+				  <span class="checkmark">婚纱</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="旗袍" >
+				  <span class="checkmark">旗袍</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="古裝" >
+				  <span class="checkmark">古装</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="哥德" >
+				  <span class="checkmark">哥德</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="口罩" >
+				  <span class="checkmark">口罩</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="刺青" >
+				  <span class="checkmark">刺青</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="淫紋" >
+				  <span class="checkmark">淫纹</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="身體寫字" >
+				  <span class="checkmark">身体写字</span>
+				</label>
+	        
+	        <h5 style="margin-top: 15px; margin-bottom: 15px; font-weight: bold">情境场所</h5>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="校園" >
+				  <span class="checkmark">校园</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="教室" >
+				  <span class="checkmark">教室</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="圖書館" >
+				  <span class="checkmark">图书馆</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="保健室" >
+				  <span class="checkmark">保健室</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="游泳池" >
+				  <span class="checkmark">游泳池</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="愛情賓館" >
+				  <span class="checkmark">爱情宾馆</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="醫院" >
+				  <span class="checkmark">医院</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="辦公室" >
+				  <span class="checkmark">办公室</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="浴室" >
+				  <span class="checkmark">浴室</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="窗邊" >
+				  <span class="checkmark">窗边</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="公共廁所" >
+				  <span class="checkmark">公共厕所</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="公眾場合" >
+				  <span class="checkmark">公众场合</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="戶外野戰" >
+				  <span class="checkmark">户外野战</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="電車" >
+				  <span class="checkmark">电车</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="車震" >
+				  <span class="checkmark">车震</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="遊艇" >
+				  <span class="checkmark">游艇</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="露營帳篷" >
+				  <span class="checkmark">露营帐篷</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="電影院" >
+				  <span class="checkmark">电影院</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="健身房" >
+				  <span class="checkmark">健身房</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="沙灘" >
+				  <span class="checkmark">沙滩</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="溫泉" >
+				  <span class="checkmark">温泉</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="夜店" >
+				  <span class="checkmark">夜店</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="監獄" >
+				  <span class="checkmark">监狱</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="教堂" >
+				  <span class="checkmark">教堂</span>
+				</label>
+	        
+	        <h5 style="margin-top: 15px; margin-bottom: 15px; font-weight: bold">故事剧情</h5>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="純愛" >
+				  <span class="checkmark">纯爱</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="戀愛喜劇" >
+				  <span class="checkmark">恋爱喜剧</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="後宮" >
+				  <span class="checkmark">后宫</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="十指緊扣" >
+				  <span class="checkmark">十指紧扣</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="開大車" >
+				  <span class="checkmark">开大车</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="NTR" >
+				  <span class="checkmark">NTR</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="精神控制" >
+				  <span class="checkmark">精神控制</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="藥物" >
+				  <span class="checkmark">药物</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="痴漢" >
+				  <span class="checkmark">痴汉</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="阿嘿顏" >
+				  <span class="checkmark">阿嘿颜</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="精神崩潰" >
+				  <span class="checkmark">精神崩溃</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="獵奇" >
+				  <span class="checkmark">猎奇</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="BDSM" >
+				  <span class="checkmark">BDSM</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="綑綁" >
+				  <span class="checkmark">捆绑</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="眼罩" >
+				  <span class="checkmark">眼罩</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="項圈" >
+				  <span class="checkmark">项圈</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="調教" >
+				  <span class="checkmark">调教</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="異物插入" >
+				  <span class="checkmark">异物插入</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="尋歡洞" >
+				  <span class="checkmark">寻欢洞</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="肉便器" >
+				  <span class="checkmark">肉便器</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="性奴隸" >
+				  <span class="checkmark">性奴隶</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="胃凸" >
+				  <span class="checkmark">胃凸</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="強制" >
+				  <span class="checkmark">强制</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="輪姦" >
+				  <span class="checkmark">轮奸</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="凌辱" >
+				  <span class="checkmark">凌辱</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="性暴力" >
+				  <span class="checkmark">性暴力</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="逆強制" >
+				  <span class="checkmark">逆强制</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="女王樣" >
+				  <span class="checkmark">女王样</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="榨精" >
+				  <span class="checkmark">榨精</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="母女丼" >
+				  <span class="checkmark">母女丼</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="姐妹丼" >
+				  <span class="checkmark">姐妹丼</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="出軌" >
+				  <span class="checkmark">出轨</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="醉酒" >
+				  <span class="checkmark">醉酒</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="攝影" >
+				  <span class="checkmark">摄影</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="睡眠姦" >
+				  <span class="checkmark">睡眠奸</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="機械姦" >
+				  <span class="checkmark">机械奸</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="蟲姦" >
+				  <span class="checkmark">虫奸</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="性轉換" >
+				  <span class="checkmark">性转换</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="百合" >
+				  <span class="checkmark">百合</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="耽美" >
+				  <span class="checkmark">耽美</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="時間停止" >
+				  <span class="checkmark">时间停止</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="異世界" >
+				  <span class="checkmark">异世界</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="怪獸" >
+				  <span class="checkmark">怪兽</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="哥布林" >
+				  <span class="checkmark">哥布林</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="世界末日" >
+				  <span class="checkmark">世界末日</span>
+				</label>
+	        
+	        <h5 style="margin-top: 15px; margin-bottom: 15px; font-weight: bold">性交体位</h5>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="手交" >
+				  <span class="checkmark">手交</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="指交" >
+				  <span class="checkmark">指交</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="乳交" >
+				  <span class="checkmark">乳交</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="乳頭交" >
+				  <span class="checkmark">乳头交</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="肛交" >
+				  <span class="checkmark">肛交</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="雙洞齊下" >
+				  <span class="checkmark">双洞齐下</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="腳交" >
+				  <span class="checkmark">脚交</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="素股" >
+				  <span class="checkmark">素股</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="拳交" >
+				  <span class="checkmark">拳交</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="3P" >
+				  <span class="checkmark">3P</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="群交" >
+				  <span class="checkmark">群交</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="口交" >
+				  <span class="checkmark">口交</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="跪舔" >
+				  <span class="checkmark">跪舔</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="深喉嚨" >
+				  <span class="checkmark">深喉咙</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="口爆" >
+				  <span class="checkmark">口爆</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="吞精" >
+				  <span class="checkmark">吞精</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="舔蛋蛋" >
+				  <span class="checkmark">舔蛋蛋</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="舔穴" >
+				  <span class="checkmark">舔穴</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="69" >
+				  <span class="checkmark">69</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="自慰" >
+				  <span class="checkmark">自慰</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="腋交" >
+				  <span class="checkmark">腋交</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="舔腋下" >
+				  <span class="checkmark">舔腋下</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="髮交" >
+				  <span class="checkmark">发交</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="舔耳朵" >
+				  <span class="checkmark">舔耳朵</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="舔腳" >
+				  <span class="checkmark">舔脚</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="內射" >
+				  <span class="checkmark">内射</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="外射" >
+				  <span class="checkmark">外射</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="顏射" >
+				  <span class="checkmark">颜射</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="潮吹" >
+				  <span class="checkmark">潮吹</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="懷孕" >
+				  <span class="checkmark">怀孕</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="噴奶" >
+				  <span class="checkmark">喷奶</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="放尿" >
+				  <span class="checkmark">放尿</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="排便" >
+				  <span class="checkmark">排便</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="騎乘位" >
+				  <span class="checkmark">骑乘位</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="背後位" >
+				  <span class="checkmark">背后位</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="顏面騎乘" >
+				  <span class="checkmark">颜面骑乘</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="火車便當" >
+				  <span class="checkmark">火车便当</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="一字馬" >
+				  <span class="checkmark">一字马</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="性玩具" >
+				  <span class="checkmark">性玩具</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="飛機杯" >
+				  <span class="checkmark">飞机杯</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="跳蛋" >
+				  <span class="checkmark">跳蛋</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="毒龍鑽" >
+				  <span class="checkmark">毒龙钻</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="觸手" >
+				  <span class="checkmark">触手</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="獸交" >
+				  <span class="checkmark">兽交</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="頸手枷" >
+				  <span class="checkmark">颈手枷</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="扯頭髮" >
+				  <span class="checkmark">扯头发</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="掐脖子" >
+				  <span class="checkmark">掐脖子</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="打屁股" >
+				  <span class="checkmark">打屁股</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="肉棒打臉" >
+				  <span class="checkmark">肉棒打脸</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="陰道外翻" >
+				  <span class="checkmark">阴道外翻</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="男乳首責" >
+				  <span class="checkmark">男乳首责</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="接吻" >
+				  <span class="checkmark">接吻</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="舌吻" >
+				  <span class="checkmark">舌吻</span>
+				</label>
+	        	        	<label class="hentai-tags-wrapper">
+				  <input name="tags[]" type="checkbox" value="POV" >
+				  <span class="checkmark">POV</span>
+				</label>
+	        	      </div>
+	      <hr style="border-color: #323434; margin: 0">
+	      <div class="modal-footer">
+			<div data-dismiss="modal">取消</div>
+			<button class="pull-right btn btn-primary" type="submit">显示搜索结果</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<div id="sort-modal" class="modal" role="dialog">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <span class="material-icons pull-left no-select modal-close-btn" data-dismiss="modal">close</span>
+	        <h4 class="modal-title">排序方式</h4>
+	      </div>
+	      <div class="modal-body" style="padding: 0; text-align: center">
+	        <input type="hidden" id="sort" name="sort" value="">
+
+	        		        	        
+	        		        <div class="simple-dropdown-item hentai-sort-options-wrapper " data-value="最新上市"><div class="hentai-sort-options">最新上市</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-sort-options-wrapper " data-value="最新上傳"><div class="hentai-sort-options">最新上传</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-sort-options-wrapper " data-value="本日排行"><div class="hentai-sort-options">本日排行</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-sort-options-wrapper " data-value="本週排行"><div class="hentai-sort-options">本周排行</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-sort-options-wrapper " data-value="本月排行"><div class="hentai-sort-options">本月排行</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-sort-options-wrapper " data-value="觀看次數"><div class="hentai-sort-options">观看次数</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-sort-options-wrapper " data-value="讚好比例"><div class="hentai-sort-options">点赞比例</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-sort-options-wrapper " data-value="時長最長"><div class="hentai-sort-options">时长最长</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-sort-options-wrapper " data-value="他們在看"><div class="hentai-sort-options">他们在看</div></div>
+				<hr class="hidden-sm hidden-md hidden-lg hidden-xl" style="margin: 0; border-color: #323434;">
+	        	      </div>
+	      <hr style="border-color: #323434; margin: 0">
+	      <div class="modal-footer">
+	      	<div data-dismiss="modal">取消</div>
+			<button class="pull-right btn btn-primary" type="submit">显示搜索结果</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<div id="date-modal" class="modal" role="dialog">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <span class="material-icons pull-left no-select modal-close-btn" data-dismiss="modal">close</span>
+	        <h4 class="modal-title">发布日期</h4>
+	      </div>
+	      <div class="modal-body" style="padding: 0; text-align: center">
+	      	<input type="hidden" id="date" name="date" value="">
+
+	      						        <div class="simple-dropdown-item hentai-date-options-wrapper " data-value=""><div class="hentai-date-options">全部</div></div>
+				<hr style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-date-options-wrapper " data-value="過去 24 小時"><div class="hentai-date-options">过去 24 小时</div></div>
+				<hr style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-date-options-wrapper " data-value="過去 2 天"><div class="hentai-date-options">过去 2 天</div></div>
+				<hr style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-date-options-wrapper " data-value="過去 1 週"><div class="hentai-date-options">过去 1 周</div></div>
+				<hr style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-date-options-wrapper " data-value="過去 1 個月"><div class="hentai-date-options">过去 1 个月</div></div>
+				<hr style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-date-options-wrapper " data-value="過去 3 個月"><div class="hentai-date-options">过去 3 个月</div></div>
+				<hr style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-date-options-wrapper " data-value="過去 1 年"><div class="hentai-date-options">过去 1 年</div></div>
+				<hr style="margin: 0; border-color: #323434;">
+	        			<div class="form-group" style="padding: 24px 15px 43px 15px;">
+				<select class="form-control" id="date-year" style="width: calc(50% - 5px); display: inline-block; float: left;">
+					<option value="全部">全部年份...</option>
+											<option value="2026 年" >2026 年</option>
+											<option value="2025 年" >2025 年</option>
+											<option value="2024 年" >2024 年</option>
+											<option value="2023 年" >2023 年</option>
+											<option value="2022 年" >2022 年</option>
+											<option value="2021 年" >2021 年</option>
+											<option value="2020 年" >2020 年</option>
+											<option value="2019 年" >2019 年</option>
+											<option value="2018 年" >2018 年</option>
+											<option value="2017 年" >2017 年</option>
+											<option value="2016 年" >2016 年</option>
+											<option value="2015 年" >2015 年</option>
+											<option value="2014 年" >2014 年</option>
+											<option value="2013 年" >2013 年</option>
+											<option value="2012 年" >2012 年</option>
+											<option value="2011 年" >2011 年</option>
+											<option value="2010 年" >2010 年</option>
+											<option value="2009 年" >2009 年</option>
+											<option value="2008 年" >2008 年</option>
+											<option value="2007 年" >2007 年</option>
+											<option value="2006 年" >2006 年</option>
+											<option value="2005 年" >2005 年</option>
+											<option value="2004 年" >2004 年</option>
+											<option value="2003 年" >2003 年</option>
+											<option value="2002 年" >2002 年</option>
+											<option value="2001 年" >2001 年</option>
+											<option value="2000 年" >2000 年</option>
+											<option value="1999 年" >1999 年</option>
+											<option value="1998 年" >1998 年</option>
+											<option value="1997 年" >1997 年</option>
+											<option value="1996 年" >1996 年</option>
+											<option value="1995 年" >1995 年</option>
+											<option value="1994 年" >1994 年</option>
+											<option value="1993 年" >1993 年</option>
+											<option value="1992 年" >1992 年</option>
+											<option value="1991 年" >1991 年</option>
+											<option value="1990 年" >1990 年</option>
+									</select>
+				<select class="form-control" id="date-month" style="width: calc(50% - 5px); display: inline-block; float: right;">
+					<option value="全部">全部月份...</option>
+											<option value="1 月" >1 月</option>
+											<option value="2 月" >2 月</option>
+											<option value="3 月" >3 月</option>
+											<option value="4 月" >4 月</option>
+											<option value="5 月" >5 月</option>
+											<option value="6 月" >6 月</option>
+											<option value="7 月" >7 月</option>
+											<option value="8 月" >8 月</option>
+											<option value="9 月" >9 月</option>
+											<option value="10 月" >10 月</option>
+											<option value="11 月" >11 月</option>
+											<option value="12 月" >12 月</option>
+									</select>
+			</div>
+	      </div>
+	      <hr style="border-color: #323434; margin: 0">
+	      <div class="modal-footer">
+			<div data-dismiss="modal">取消</div>
+			<button id="date-submit-btn" class="pull-right btn btn-primary" type="button">显示搜索结果</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<div id="duration-modal" class="modal" role="dialog">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <span class="material-icons pull-left no-select modal-close-btn" data-dismiss="modal">close</span>
+	        <h4 class="modal-title">時長</h4>
+	      </div>
+	      <div class="modal-body" style="padding: 0; text-align: center">
+	        <input type="hidden" id="duration" name="duration" value="">
+	        	        		        <div class="simple-dropdown-item hentai-duration-options-wrapper " data-value=""><div class="hentai-duration-options">全部</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-duration-options-wrapper " data-value="1 分鐘 +"><div class="hentai-duration-options">1 分钟 +</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-duration-options-wrapper " data-value="5 分鐘 +"><div class="hentai-duration-options">5 分钟 +</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-duration-options-wrapper " data-value="10 分鐘 +"><div class="hentai-duration-options">10 分钟 +</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-duration-options-wrapper " data-value="20 分鐘 +"><div class="hentai-duration-options">20 分钟 +</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-duration-options-wrapper " data-value="30 分鐘 +"><div class="hentai-duration-options">30 分钟 +</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-duration-options-wrapper " data-value="60 分鐘 +"><div class="hentai-duration-options">60 分钟 +</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-duration-options-wrapper " data-value="0 - 10 分鐘"><div class="hentai-duration-options">0 - 10 分钟</div></div>
+				<hr class="" style="margin: 0; border-color: #323434;">
+	        		        <div class="simple-dropdown-item hentai-duration-options-wrapper " data-value="0 - 20 分鐘"><div class="hentai-duration-options">0 - 20 分钟</div></div>
+				<hr class="hidden-sm hidden-md hidden-lg hidden-xl" style="margin: 0; border-color: #323434;">
+	        	      </div>
+	      <hr style="border-color: #323434; margin: 0">
+	      <div class="modal-footer">
+	      	<div data-dismiss="modal">取消</div>
+			<button class="pull-right btn btn-primary" type="submit">显示搜索结果</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<div id="search-content-padding-desktop" class="hidden-xs"></div>
+</form>
+
+<div id="home-rows-wrapper" class="search-rows-wrapper search-rows-section-margin-top">
+
+	<div class="hidden-sm hidden-md hidden-lg" style="text-align: center; margin-top: 110px; margin-bottom: -19px; z-index: -1; height: 102px; overflow-y: hidden;">
+		<!-- JuicyAds v3.1 -->
+<script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
+<ins id="962793" data-width="300" data-height="112"></ins>
+<script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':962793});</script>
+<!--JuicyAds END-->	</div>
+
+	<div style="margin-bottom: -12px;" class="search-pagination mobile-search-pagination hidden-sm hidden-md hidden-lg"><ul class="pagination" role="navigation">
+        
+                    <li class="page-item disabled" aria-disabled="true" aria-label="pagination.previous">
+                <span class="page-link" aria-hidden="true">&lsaquo;</span>
+            </li>
+        
+        
+                    
+            
+            
+                                                                        <li class="page-item active" aria-current="page"><span class="page-link">1</span></li>
+                                                                                <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=2">2</a></li>
+                                                                                <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=3">3</a></li>
+                                                                                <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=4">4</a></li>
+                                                                    
+                            <li class="page-item disabled" aria-disabled="true"><span class="page-link">...</span></li>
+            
+            
+                                
+            
+            
+                                                                        <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=48">48</a></li>
+                                                                                <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=49">49</a></li>
+                                                        
+        
+                    <li class="page-item">
+                <a class="page-link" href="?genre=3DCG&amp;page=2" rel="next" aria-label="pagination.next">&rsaquo;</a>
+            </li>
+            </ul>
+</div>
+
+		  				<div class="content-padding-new">
+				<div class="row no-gutter">
+					<div class="horizontal-row" style="margin-bottom: 20px;">
+						<!-- Erolabs Desktop Ads -->
+						<span class="hidden-xs"><div title="欲望王座" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://l.erodalabs.com/s/1L6gaU" class="video-link" target="_blank">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/icon/erolabs_search_640x360_desktop.jpg?secure=ow6jgGDHen4IT9kf2-kOVA==,4924768307" loading="lazy">
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        赞助商                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                欲望王座
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://l.erodalabs.com/s/1L6gaU" target="_blank">
+                EROLABS
+            </a>
+        </div>
+    </div>
+</div></span>
+						<!-- Erolabs Mobile Ads -->
+						<span class="hidden-sm hidden-md hidden-lg hidden-xl"><div title="樱境物语" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://l.erodalabs.com/s/0kHIbk" class="video-link" target="_blank">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/icon/erolabs_search_640x360_mobile.jpg?secure=SM6V_T8bKnElnDLC37wLFg==,4924768950" loading="lazy">
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        赞助商                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                樱境物语
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://l.erodalabs.com/s/0kHIbk" target="_blank">
+                EROLABS
+            </a>
+        </div>
+    </div>
+</div></span>
+													<div title="[Tocher] Sparkle x Kafka x Firefly – Elation Unleashed in a Forbidden Dream | Complete!" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407143" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407143l.jpg?secure=ur98a6BxjIvLcHi5-YPa6Q==,1786549368" loading="lazy">
+                
+                <div class="duration">
+                    06:34
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        6.9万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Sparkle x Kafka x Firefly – Elation Unleashed in a Forbidden Dream | Complete!
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Tocher">
+                Tocher • 13小時前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Gagsly] Honoka Wrestling! | DoA Animation S170" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407141" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407141l.jpg?secure=RmYqZtJNKpWv7iJSEwFing==,1786546160" loading="lazy">
+                
+                <div class="duration">
+                    01:17
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 96%
+                    </div>
+                    <div class="stat-item">
+                        3.7万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Honoka Wrestling! | DoA Animation S170
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Gagsly">
+                Gagsly • 14小時前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[3DessJeez] Arknight Laevatain [Animation NoSound]" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407140" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407140l.jpg?secure=0RRWUqZPeVhzB7I01gYwxw==,1786545667" loading="lazy">
+                
+                <div class="duration">
+                    00:39
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        4.3万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Arknight Laevatain [Animation NoSound]
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=3DessJeez">
+                3DessJeez • 14小時前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[AniAniBoy] 81. Spy Date [Animation]" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407136" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407136l.jpg?secure=obnNrWlzjBgszNLLJWZgGQ==,1786507887" loading="lazy">
+                
+                <div class="duration">
+                    05:17
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        4.3万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                81. Spy Date [Animation]
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=AniAniBoy">
+                AniAniBoy • 1天前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Floraxis] Alice 3 + Sound" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407127" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407127l.jpg?secure=HIPi4rFtawDFX1Upk-T7_A==,1786468125" loading="lazy">
+                
+                <div class="duration">
+                    04:25
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        19.1万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Alice 3 + Sound
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Floraxis">
+                Floraxis • 1天前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[HydraFXX] Eve &amp; Raven (4K) [NO WM]" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407115" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407115l.jpg?secure=lVxS4x0fBHDqnMyaaoUD2g==,1786378130" loading="lazy">
+                
+                <div class="duration">
+                    00:44
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        13.2万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Eve &amp; Raven (4K) [NO WM]
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=HydraFXX">
+                HydraFXX • 2天前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[evil_rise7 | vileclipse] K/DA Evelynn on vacation – Animation" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407112" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407112l.jpg?secure=l8HENPTVb6kL5I6cXFPj_A==,1786377348" loading="lazy">
+                
+                <div class="duration">
+                    00:30
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        8.4万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                K/DA Evelynn on vacation – Animation
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=evil_rise7 | vileclipse">
+                evil_rise7 | vileclipse • 2天前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Gagsly] Sayuri Milk Service | DoA Animation S169" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407113" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407113l.jpg?secure=xRDjSHMdnghRz2RNqW8WXA==,1786377620" loading="lazy">
+                
+                <div class="duration">
+                    00:28
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 96%
+                    </div>
+                    <div class="stat-item">
+                        4.4万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Sayuri Milk Service | DoA Animation S169
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Gagsly">
+                Gagsly • 2天前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[apoluna] [妹汁儿灌均] 休伯利安笑传之cum’in cute bronie" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407094" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407094l.jpg?secure=7Zhfrx-FQ_8F74mDf_kQFg==,1786289849" loading="lazy">
+                
+                <div class="duration">
+                    03:22
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        20.5万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                [妹汁儿灌均] 休伯利安笑传之cum’in cute bronie
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=apoluna">
+                apoluna • 3天前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Floraxis] Alice 1 +" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407089" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407089l.jpg?secure=Em3BNqkUTBQgH3vag_jrbg==,1786250235" loading="lazy">
+                
+                <div class="duration">
+                    03:36
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        21.6万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Alice 1 +
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Floraxis">
+                Floraxis • 4天前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Horny Herring Studios] Zhu Yuan Full Animation" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407086" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407086l.jpg?secure=u4Qd6dQNAn5vXUyd-UggrA==,1786244112" loading="lazy">
+                
+                <div class="duration">
+                    02:36
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        16.5万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Zhu Yuan Full Animation
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Horny Herring Studios">
+                Horny Herring Studios • 4天前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[NIORAQ] Training with Yixuan 💛" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407079" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407079l.jpg?secure=_-6Gvgp1yvVuR3ucjBzNxA==,1786224757" loading="lazy">
+                
+                <div class="duration">
+                    05:13
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        15.2万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Training with Yixuan 💛
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=NIORAQ">
+                NIORAQ • 4天前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Gagsly] Nanami 泳いだあと | DoA Animation S168+" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407057" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407057l.jpg?secure=CgkAonHm4spq2qz1zsZG7A==,1786076995" loading="lazy">
+                
+                <div class="duration">
+                    00:27
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        12.9万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Nanami 泳いだあと | DoA Animation S168+
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Gagsly">
+                Gagsly • 6天前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[NsfwSeeker77] Elsa Young Blood" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407056" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407056l.jpg?secure=JdSyvEl0UNPj3UNuStUXDQ==,1786075780" loading="lazy">
+                
+                <div class="duration">
+                    00:30
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        15.2万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Elsa Young Blood
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=NsfwSeeker77">
+                NsfwSeeker77 • 6天前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Conseit] (4K NW) Emma Frost Summer!!! –" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407055" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407055l.jpg?secure=AdZUOe6WqqMzL9VewuLjFw==,1786075655" loading="lazy">
+                
+                <div class="duration">
+                    01:10
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 97%
+                    </div>
+                    <div class="stat-item">
+                        12.6万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                (4K NW) Emma Frost Summer!!! –
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Conseit">
+                Conseit • 6天前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Floraxis] Remielle 1" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407033" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407033l.jpg?secure=WAmfo_w1Ytj4q95nsAYNmQ==,1785953377" loading="lazy">
+                
+                <div class="duration">
+                    01:49
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        28.5万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Remielle 1
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Floraxis">
+                Floraxis • 1週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Black Bird Animations] Artoria Orc Loop Animation" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407036" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407036l.jpg?secure=5fo0rYeFxU3U5BUgtAXhsA==,1785956546" loading="lazy">
+                
+                <div class="duration">
+                    00:59
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        10.8万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Artoria Orc Loop Animation
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Black Bird Animations">
+                Black Bird Animations • 1週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[lmsk] Elegg &amp; Cinderella swimsuits test 1440p(Alt ver.)" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406999" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406999l.jpg?secure=zXwYeZgad1-icb8gTcH8gg==,1785771383" loading="lazy">
+                
+                <div class="duration">
+                    00:20
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 97%
+                    </div>
+                    <div class="stat-item">
+                        8.3万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Elegg &amp; Cinderella swimsuits test 1440p(Alt ver.)
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=lmsk">
+                lmsk • 1週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Ryan Reos] Animation – Sister Lacrima Quickie" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407030" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407030l.jpg?secure=G8b3rg6uidzZkiTJK9Hifw==,1785952104" loading="lazy">
+                
+                <div class="duration">
+                    01:20
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        9万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Animation – Sister Lacrima Quickie
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Ryan Reos">
+                Ryan Reos • 1週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Zman] Horny Alibi😩" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406972" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406972l.jpg?secure=aXFp_QCXIl36NQ3QcWtVgA==,1785613698" loading="lazy">
+                
+                <div class="duration">
+                    02:28
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 95%
+                    </div>
+                    <div class="stat-item">
+                        17.5万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Horny Alibi😩
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Zman">
+                Zman • 1週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Jerid] Lobelia asleep 2" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406956" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406956l.jpg?secure=e7aubB6vAsFCfgkx6jTK1Q==,1785554179" loading="lazy">
+                
+                <div class="duration">
+                    12:24
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        14.3万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Lobelia asleep 2
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Jerid">
+                Jerid • 1週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[SeventyFive] Eve – 2nd June Video [Full Version + 2B costume]" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406950" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406950l.jpg?secure=Ndl70oCGLmuE_T6q61KAHQ==,1785517250" loading="lazy">
+                
+                <div class="duration">
+                    05:01
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        13.4万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Eve – 2nd June Video [Full Version + 2B costume]
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=SeventyFive">
+                SeventyFive • 1週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[bamhor] Tifa Aerith Animation 3" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=405626" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/405626l.jpg?secure=Kb-pPLW__obM8P5lA8NFng==,1785465483" loading="lazy">
+                
+                <div class="duration">
+                    04:04
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 100%
+                    </div>
+                    <div class="stat-item">
+                        49.6万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Tifa Aerith Animation 3
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=bamhor">
+                bamhor • 1週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Brutalisk Entertainment] Video: Emma Frost in the Gym" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406968" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406968l.jpg?secure=ZZPMvSDh0TvvbtkWF9O5EA==,1785609780" loading="lazy">
+                
+                <div class="duration">
+                    06:47
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        18.1万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Video: Emma Frost in the Gym
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Brutalisk Entertainment">
+                Brutalisk Entertainment • 1週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[bouquetman] Nyotengu animation" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407050" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407050l.jpg?secure=dSqp8sGoHk-pjAUkpCd6rA==,1786035623" loading="lazy">
+                
+                <div class="duration">
+                    00:45
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        9.4万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Nyotengu animation
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=bouquetman">
+                bouquetman • 1週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[LinuxDx] Hoshimi Miyabi The Bulky Goon&#039;s Secret Cumslut" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406929" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406929l.jpg?secure=uw71E5FUQBqccW7CqaLokA==,1785465432" loading="lazy">
+                
+                <div class="duration">
+                    05:11
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        15.3万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Hoshimi Miyabi The Bulky Goon&#039;s Secret Cumslut
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=LinuxDx">
+                LinuxDx • 1週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Floraxis] Aemeath" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407121" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407121l.jpg?secure=8gHae8FT_q5TnDWXj4DQXA==,1786406426" loading="lazy">
+                
+                <div class="duration">
+                    03:01
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        9.6万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Aemeath
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Floraxis">
+                Floraxis • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Brutalisk Entertainment] Scene: Wedding Part 3 (Tifa/Fat Tifa/BBC/Cloud/Eve versions) +videos" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406888" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406888l.jpg?secure=mCCYdte-MISn4OFBwPVUWA==,1785465416" loading="lazy">
+                
+                <div class="duration">
+                    15:59
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        33.8万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Scene: Wedding Part 3 (Tifa/Fat Tifa/BBC/Cloud/Eve versions) +videos
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Brutalisk Entertainment">
+                Brutalisk Entertainment • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Su Chie] Rover x Aemeth part 1" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406578" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406578l.jpg?secure=0vPSeqKCviA_ciFDczE41A==,1785465576" loading="lazy">
+                
+                <div class="duration">
+                    02:54
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        48万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Rover x Aemeth part 1
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Su Chie">
+                Su Chie • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[xholy3Dx] Cloud Tifa Aerth onsen" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406882" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406882l.jpg?secure=yF7bnYVBDG3UTHceVmuOPg==,1785465534" loading="lazy">
+                
+                <div class="duration">
+                    00:50
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        9万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Cloud Tifa Aerth onsen
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=xholy3Dx">
+                xholy3Dx • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Bewyx] Domina Owns the Beach (4K)(Alts)" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406875" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406875l.jpg?secure=lTg__9PGc3BosQ4x_0HGFA==,1785465416" loading="lazy">
+                
+                <div class="duration">
+                    01:42
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 97%
+                    </div>
+                    <div class="stat-item">
+                        10.9万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Domina Owns the Beach (4K)(Alts)
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Bewyx">
+                Bewyx • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[蜜フレーバー] デカ尻メイドとムラムラ坊ちゃん" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407013" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407013l.jpg?secure=xY2KLJkn3xp6PmL06s-UyA==,1785869682" loading="lazy">
+                
+                <div class="duration">
+                    08:16
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        11.5万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                デカ尻メイドとムラムラ坊ちゃん
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=蜜フレーバー">
+                蜜フレーバー • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Kaepora] Domina X Mercy in the K Club" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406843" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406843l.jpg?secure=exVJjePFEGuOdumPd5NqwQ==,1785465509" loading="lazy">
+                
+                <div class="duration">
+                    01:00
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 95%
+                    </div>
+                    <div class="stat-item">
+                        8.7万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Domina X Mercy in the K Club
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Kaepora">
+                Kaepora • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Visualoos] Eve Waiting Room 4K 60FPS NW" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406840" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406840l.jpg?secure=P-cYMF3_KzfKkYBqJ8qJaA==,1785465416" loading="lazy">
+                
+                <div class="duration">
+                    04:16
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 100%
+                    </div>
+                    <div class="stat-item">
+                        22.9万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Eve Waiting Room 4K 60FPS NW
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Visualoos">
+                Visualoos • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[LM19] 172 Tifa animation + NO WM" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406873" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406873l.jpg?secure=c4jKpfLo-J_aBL1XhIPYWw==,1785465405" loading="lazy">
+                
+                <div class="duration">
+                    01:36
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        7.8万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                172 Tifa animation + NO WM
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=LM19">
+                LM19 • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Conseit] (4K -NW) Zoeyy masturbation!!!" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406825" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406825l.jpg?secure=3Y2MQayGbgyp7-WwLnJnKA==,1785465533" loading="lazy">
+                
+                <div class="duration">
+                    00:33
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 97%
+                    </div>
+                    <div class="stat-item">
+                        8.9万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                (4K -NW) Zoeyy masturbation!!!
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Conseit">
+                Conseit • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Pantsushi] Will it fit in Juri 3 holes? 4K + 1080p" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406821" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406821l.jpg?secure=XZUwEAShRUbcB9uMk8bGCw==,1785465468" loading="lazy">
+                
+                <div class="duration">
+                    04:31
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        26万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Will it fit in Juri 3 holes? 4K + 1080p
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Pantsushi">
+                Pantsushi • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Gagsly] Yukino ひとりだと思ったら | DoA Animation S167" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407060" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407060l.jpg?secure=ycDsUIrIzmOHYmzboGbt9Q==,1786102537" loading="lazy">
+                
+                <div class="duration">
+                    00:36
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 96%
+                    </div>
+                    <div class="stat-item">
+                        3.9万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Yukino ひとりだと思ったら | DoA Animation S167
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Gagsly">
+                Gagsly • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[LOM] Robin! [Short animation #001]" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406818" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406818l.jpg?secure=A5YSIwGU8P3XyLHI0oej1w==,1785465399" loading="lazy">
+                
+                <div class="duration">
+                    00:30
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        18.5万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Robin! [Short animation #001]
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=LOM">
+                LOM • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Xordel] Eve Part 2" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406813" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406813l.jpg?secure=OMrnZFp0WsttmUfTu5dxrA==,1785465400" loading="lazy">
+                
+                <div class="duration">
+                    02:30
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        19.1万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Eve Part 2
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Xordel">
+                Xordel • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Zman] Ada meets the pig man👠🐗" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406851" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406851l.jpg?secure=RbKl4hYArQcKTIG2DOItxQ==,1785465497" loading="lazy">
+                
+                <div class="duration">
+                    01:15
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 96%
+                    </div>
+                    <div class="stat-item">
+                        14.5万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Ada meets the pig man👠🐗
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Zman">
+                Zman • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[ZENmocap] 「ご主人様が満足しすぎて気を失っている…！」～寸止め専門イメクラで過剰ご奉仕のリアルメイドが決して止めない暴走騎乗位～「ご主人様がいけないんです！」" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406855" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406855l.jpg?secure=6cD_LCmkbhX3dVzVUy8bUw==,1785465486" loading="lazy">
+                
+                <div class="duration">
+                    20:16
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        22.6万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                「ご主人様が満足しすぎて気を失っている…！」～寸止め専門イメクラで過剰ご奉仕のリアルメイドが決して止めない暴走騎乗位～「ご主人様がいけないんです！」
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=ZENmocap">
+                ZENmocap • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[3DessJeez] Miss Zhao / Shenhe – Add Sound" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406793" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406793l.jpg?secure=iZqkPv2s1-ffnHbe3Ar9eQ==,1785465466" loading="lazy">
+                
+                <div class="duration">
+                    03:58
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        34.9万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Miss Zhao / Shenhe – Add Sound
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=3DessJeez">
+                3DessJeez • 2週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[TDonTran] Scarlet Animation 3 4K" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406782" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406782l.jpg?secure=TyRal3b_KC1oaK8WEIKCGw==,1785465459" loading="lazy">
+                
+                <div class="duration">
+                    01:03
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 97%
+                    </div>
+                    <div class="stat-item">
+                        21.8万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Scarlet Animation 3 4K
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=TDonTran">
+                TDonTran • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[lmsk] Cissia’s new sweaty home 1440p(Alt ver.)" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406781" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406781l.jpg?secure=N26b6uEBDn6Xv7szAL2vcA==,1785465468" loading="lazy">
+                
+                <div class="duration">
+                    02:51
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        23.6万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Cissia’s new sweaty home 1440p(Alt ver.)
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=lmsk">
+                lmsk • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Liepraag] Juno on da free use Beach 4k" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406757" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406757l.jpg?secure=sZv5ar6qvFo7YAYKU6qEJA==,1785465571" loading="lazy">
+                
+                <div class="duration">
+                    01:22
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        16.1万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Juno on da free use Beach 4k
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Liepraag">
+                Liepraag • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Erovirus] H.B.I Infiltration Mission (Aerith’s POV) [4K]" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406756" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406756l.jpg?secure=MES7BLBHYDhoyY2EscHXSA==,1785465523" loading="lazy">
+                
+                <div class="duration">
+                    01:22
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        15.5万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                H.B.I Infiltration Mission (Aerith’s POV) [4K]
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Erovirus">
+                Erovirus • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Gagsly] Fiona 冷たい風 | DoA Animation S166" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407063" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407063l.jpg?secure=-uxYYHF_3-WZpCHBg_k55w==,1786106659" loading="lazy">
+                
+                <div class="duration">
+                    00:17
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 97%
+                    </div>
+                    <div class="stat-item">
+                        4.8万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Fiona 冷たい風 | DoA Animation S166
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Gagsly">
+                Gagsly • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[xholy3Dx] Lara underworld" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406881" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406881l.jpg?secure=uuiq3CWOJStTpzpHELvOZw==,1785465534" loading="lazy">
+                
+                <div class="duration">
+                    01:00
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        3.5万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Lara underworld
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=xholy3Dx">
+                xholy3Dx • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Bewyx] Eve’s Relaxing Sauna Day Goes Off the Rails (4K)(Alts)" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406733" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406733l.jpg?secure=qP53YDSep5P9_w2im-zORg==,1785465416" loading="lazy">
+                
+                <div class="duration">
+                    02:30
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 97%
+                    </div>
+                    <div class="stat-item">
+                        30.5万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Eve’s Relaxing Sauna Day Goes Off the Rails (4K)(Alts)
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Bewyx">
+                Bewyx • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Aries&#039; Possession] Tifa &amp; Cloud: Shinra HQ (4K)" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406727" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406727l.jpg?secure=X73K0s-sTyYI-aLUptysrw==,1785465534" loading="lazy">
+                
+                <div class="duration">
+                    01:06
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        11.7万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Tifa &amp; Cloud: Shinra HQ (4K)
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Aries&#039; Possession">
+                Aries&#039; Possession • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[TR Sensual Studio] Workout Session! [Animation]" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406728" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406728l.jpg?secure=TcoH9svghwAt7Y9i45dZ3g==,1785465489" loading="lazy">
+                
+                <div class="duration">
+                    05:10
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        7.8万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Workout Session! [Animation]
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=TR Sensual Studio">
+                TR Sensual Studio • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Bewyx] Luna Snow Breaks the Formula (4K)(Alts)" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406868" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406868l.jpg?secure=g6f1-CArDxORzZEJYXFduw==,1785465500" loading="lazy">
+                
+                <div class="duration">
+                    02:00
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        10.7万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Luna Snow Breaks the Formula (4K)(Alts)
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Bewyx">
+                Bewyx • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Su Chie] Zhu yuan x Cissia" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406721" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406721l.jpg?secure=4vUMxdhlM_o1DUJXCjRW9g==,1785465535" loading="lazy">
+                
+                <div class="duration">
+                    01:05
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 99%
+                    </div>
+                    <div class="stat-item">
+                        18.1万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Zhu yuan x Cissia
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Su Chie">
+                Su Chie • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[InitialA] Cissnei Animations" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406720" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406720l.jpg?secure=JbvxCP2IRrjDeSTllCXJAA==,1785465598" loading="lazy">
+                
+                <div class="duration">
+                    04:36
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        15.6万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Cissnei Animations
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=InitialA">
+                InitialA • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[3DessJeez] ZhuYuan / Vivian" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406712" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406712l.jpg?secure=H-bOYqG0prmaN8F-vNgE8A==,1785465535" loading="lazy">
+                
+                <div class="duration">
+                    00:10
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 97%
+                    </div>
+                    <div class="stat-item">
+                        13.6万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                ZhuYuan / Vivian
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=3DessJeez">
+                3DessJeez • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[chaosheartt] Rachnera Arachnera" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406711" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406711l.jpg?secure=sTtiy5HGLWuASRZSxt9kuA==,1785465416" loading="lazy">
+                
+                <div class="duration">
+                    00:31
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        10.1万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Rachnera Arachnera
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=chaosheartt">
+                chaosheartt • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Liepraag] Pomni New proportions 4k" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=406702" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/406702l.jpg?secure=SjMbT7NlwXCTDfVYc_zMmw==,1785465424" loading="lazy">
+                
+                <div class="duration">
+                    00:38
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 97%
+                    </div>
+                    <div class="stat-item">
+                        13.9万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Pomni New proportions 4k
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Liepraag">
+                Liepraag • 3週前
+            </a>
+        </div>
+    </div>
+</div>													<div title="[Gagsly] Marie Rose 優しい介護 | DoA Animation S165" class="video-item-container">
+    <div class="horizontal-card">
+        <a href="https://hanime1.me/watch?v=407064" class="video-link">
+            <div class="thumb-container">
+                <img class="main-thumb" src="https://vdownload.hembed.com/image/thumbnail/407064l.jpg?secure=DT5KZ4s8yaKk_fksw05HFA==,1786106792" loading="lazy">
+                
+                <div class="duration">
+                    00:50
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <i class="material-icons">thumb_up</i> 98%
+                    </div>
+                    <div class="stat-item">
+                        9.8万次
+                    </div>
+                </div>
+            </div>
+
+            <div class="title">
+                Marie Rose 優しい介護 | DoA Animation S165
+            </div>
+        </a>
+
+        <div class="subtitle">
+            <a href="https://hanime1.me/search?query=Gagsly">
+                Gagsly • 3週前
+            </a>
+        </div>
+    </div>
+</div>											</div>
+				</div>
+			</div>
+	    	
+	<div class="search-doujin-pagination-desktop-margin search-pagination hidden-xs mobile-search-bottom-pagination"><ul class="pagination" role="navigation">
+        
+                    <li class="page-item disabled" aria-disabled="true" aria-label="pagination.previous">
+                <span class="page-link" aria-hidden="true">&lsaquo;</span>
+            </li>
+        
+        
+                    
+            
+            
+                                                                        <li class="page-item active" aria-current="page"><span class="page-link">1</span></li>
+                                                                                <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=2">2</a></li>
+                                                                                <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=3">3</a></li>
+                                                                                <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=4">4</a></li>
+                                                                    
+                            <li class="page-item disabled" aria-disabled="true"><span class="page-link">...</span></li>
+            
+            
+                                
+            
+            
+                                                                        <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=48">48</a></li>
+                                                                                <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=49">49</a></li>
+                                                        
+        
+                    <li class="page-item">
+                <a class="page-link" href="?genre=3DCG&amp;page=2" rel="next" aria-label="pagination.next">&rsaquo;</a>
+            </li>
+            </ul>
+</div>
+	<!-- <div style="margin-top: -26px;" class="search-pagination mobile-search-pagination hidden-sm hidden-md hidden-lg mobile-search-bottom-pagination"><ul class="pagination" role="navigation">
+        
+                    <li class="page-item disabled" aria-disabled="true" aria-label="pagination.previous">
+                <span class="page-link" aria-hidden="true">&lsaquo;</span>
+            </li>
+        
+        
+                    
+            
+            
+                                                                        <li class="page-item active" aria-current="page"><span class="page-link">1</span></li>
+                                                                                <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=2">2</a></li>
+                                                                                <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=3">3</a></li>
+                                                                                <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=4">4</a></li>
+                                                                    
+                            <li class="page-item disabled" aria-disabled="true"><span class="page-link">...</span></li>
+            
+            
+                                
+            
+            
+                                                                        <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=48">48</a></li>
+                                                                                <li class="page-item"><a class="page-link" href="?genre=3DCG&amp;page=49">49</a></li>
+                                                        
+        
+                    <li class="page-item">
+                <a class="page-link" href="?genre=3DCG&amp;page=2" rel="next" aria-label="pagination.next">&rsaquo;</a>
+            </li>
+            </ul>
+</div> -->
+
+	<form id="skip-page-form" class="skip-to-page" method="GET" action="https://hanime1.me/search">
+
+	    		    		        <input type="hidden" name="genre" value="3DCG">
+		    		
+		<a href="#" class="skip-page-button hover-lighter-2 hidden-sm hidden-md hidden-lg hidden-xl">上一頁</a>
+		<div class="skip-page-wrapper" style="position: relative; width: 87px;">
+		    <input style="position: absolute; top: 8px; width: 23px;" id="skip-page-input" name="page" type="text" maxlength="4" onfocus="this.focus();this.select();" oninput="validateNumberInput(this, 1, 49)" value="1">
+		    <div style="position: absolute; top: 8px; right: 12px; color: #757575;">
+		        /&nbsp;&nbsp;49
+		    </div>
+	    </div>
+	    <button class="hover-lighter-2 hidden-xs skip-page-button" style="margin-left: 10px;" type="submit">跳轉</button>
+	    <a href="https://hanime1.me/search?genre=3DCG&amp;page=2" class="skip-page-button hover-lighter-2 hidden-sm hidden-md hidden-lg hidden-xl">下一頁</a>
+
+	    <script>
+			function validateNumberInput(el, min, max) {
+			  el.value = el.value.replace(/[^0-9]/g, ''); // Allow digits only
+			  let val = parseInt(el.value, 10);
+			  if (val > max) el.value = max;
+			  if (val < min && el.value.length === String(min).length) el.value = min;
+			}
+		</script>
+    </form>
+
+	<div class="hidden-xs" style="text-align: center; margin-top: 15px; padding-bottom: -100px; height: 275px; overflow: hidden;">
+	<div style="color: white; margin-bottom: 3px; padding: 2px 0px">点点广告，赞助我们（●´∀｀）ノ♡</div>
+	<!-- include('layouts.exoclick', ['id' => '5058646', 'width' => '300', 'height' => '250']) -->
+	<!-- JuicyAds v3.1 -->
+<script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
+<ins id="906454" data-width="300" data-height="262"></ins>
+<script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':906454});</script>
+<!--JuicyAds END-->
+	<span style="vertical-align: top; margin-top: 5px;">
+		<!-- JuicyAds v3.1 -->
+<script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
+<ins id="919232" data-width="300" data-height="262"></ins>
+<script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':919232});</script>
+<!--JuicyAds END-->
+		<!-- <script type="application/javascript">
+		    var ad_idzone = "4372838",
+		    ad_width = "300",
+		    ad_height = "250";
+		</script> -->
+	</span>
+
+	<!-- include('layouts.exoclick', ['id' => '5058646', 'width' => '300', 'height' => '250']) -->
+	<!-- JuicyAds v3.1 -->
+<script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
+<ins id="962789" data-width="300" data-height="262"></ins>
+<script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':962789});</script>
+<!--JuicyAds END--></div>
+	<span class="hidden-xs"><br><br><br></span>
+
+	<div class="hidden-sm hidden-md hidden-lg" style="text-align: center; margin-top: -12px">
+		<!-- JuicyAds v3.1 -->
+<script type="text/javascript" data-cfasync="false" async src="https://poweredby.jads.co/js/jads.js"></script>
+<ins id="941419" data-width="300" data-height="112"></ins>
+<script type="text/javascript" data-cfasync="false" async>(adsbyjuicy = window.adsbyjuicy || []).push({'adzone':941419});</script>
+<!--JuicyAds END-->	</div>
+</div>
+
+<script>
+	var urlParams = new URLSearchParams(window.location.search);
+	// $(".mobile-search-pagination .pagination .disabled").addClass('hidden-xs');
+	if (urlParams.has('page') && urlParams.get('page') > 2) {
+		$(".mobile-search-pagination .pagination .page-item:nth-child(3)").addClass('hidden');
+	}
+	if (urlParams.has('page') && urlParams.get('page') < 49 - 1) {
+		$(".mobile-search-pagination .pagination .page-item:nth-last-child(3)").addClass('hidden');
+	}
+</script>
+
+        </div>
+
+        <!-- The actual snackbar -->
+        <div id="snackbar">Some text some message..</div>
+    </div>
+
+    <!-- CSS Styles Deferred -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+            <!-- External Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.0/dist/js.cookie.min.js" defer></script>
+
+        <!-- Local Scripts -->
+        <script src="/js/app.js?id=8d9ec1a9a34a05660f19" defer></script>
+
+                    <!-- Hanime1 Google Analytics -->
+            <script async src="https://www.googletagmanager.com/gtag/js?id=UA-125786247-2"></script>
+            <script>
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'UA-125786247-2');
+            </script>
+        
+        <script data-cfasync="false" type="text/javascript">(function(s,o,l,v,e,d){if(s[o]==null&&s[l+e]){s[o]="loading";s[l+e](d,l=function(){s[o]="complete";s[v+e](d,l,!1)},!1)}})(document,"readyState","add","remove","EventListener","DOMContentLoaded");(function(){var s=document.createElement("script");s.type="text/javascript";s.async=true;s.src="https://cdn.impactserving.com/Scripts/infinity.js.aspx?guid=75b4ac7f-9a66-41df-8b31-822964ff008b";s.id="infinity";s.setAttribute("data-guid","75b4ac7f-9a66-41df-8b31-822964ff008b");s.setAttribute("data-version","async");var e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(s,e)})();</script>
+    </body>
+</html>
