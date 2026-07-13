@@ -8,39 +8,35 @@
           <AppIcon name="arrow-left" :size="20" />
         </button>
         <h1 class="category-title">{{ categoryName }}</h1>
-        <div class="header-spacer"></div>
-      </header>
-
-      <!-- Tag Filter Bar -->
-      <div v-if="showTagBar" class="tag-filter-bar">
-        <!-- Only the currently selected tags are shown here (removable) -->
-        <div class="tag-bar-selected">
-          <template v-if="selectedTags.length">
-            <button
-              v-for="tag in selectedTags"
-              :key="tag"
-              class="tag-chip active"
-              :aria-label="`移除标签 ${tag}`"
-              @click="toggleTag(tag)"
-            >
-              <span>{{ tag }}</span>
-              <AppIcon name="x" :size="12" />
-            </button>
-            <button class="tag-clear-btn" @click="selectAll">清除</button>
-          </template>
-        </div>
-
-        <!-- Filter button pinned to the right -->
+        <!-- Filter trigger on the right of the title, on the same header line -->
         <button
+          v-if="showTagBar"
           class="filter-toggle-btn"
           :class="{ active: selectedTags.length > 0 }"
           @click="openFilter"
           aria-label="筛选标签"
         >
-          <AppIcon name="filter" :size="12" />
           <span>筛选</span>
           <span v-if="selectedTags.length" class="filter-badge">{{ selectedTags.length }}</span>
         </button>
+        <div v-else class="header-spacer"></div>
+      </header>
+
+      <!-- Selected tag chips (only shown when some tags are selected) -->
+      <div v-if="showSelectedBar" class="tag-filter-bar">
+        <div class="tag-bar-selected">
+          <button
+            v-for="tag in selectedTags"
+            :key="tag"
+            class="tag-chip active"
+            :aria-label="`移除标签 ${tag}`"
+            @click="toggleTag(tag)"
+          >
+            <span>{{ tag }}</span>
+            <AppIcon name="x" :size="12" />
+          </button>
+          <button class="tag-clear-btn" @click="selectAll">清除</button>
+        </div>
       </div>
     </div>
 
@@ -96,20 +92,20 @@
     </transition>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-state" :class="{ 'has-tagbar': showTagBar }">
+    <div v-if="loading" class="loading-state" :class="{ 'has-tagbar': showSelectedBar }">
       <div class="loading-spinner"></div>
       <p>加载中...</p>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="error-state" :class="{ 'has-tagbar': showTagBar }">
+    <div v-else-if="error" class="error-state" :class="{ 'has-tagbar': showSelectedBar }">
       <div class="error-icon"><AppIcon name="alert" :size="40" :stroke-width="1.6" /></div>
       <p>{{ errorMessage }}</p>
       <button class="btn btn-primary" @click="loadVideos">重试</button>
     </div>
 
     <!-- Videos Grid -->
-    <div v-else class="main-content" :class="{ 'has-tagbar': showTagBar }">
+    <div v-else class="main-content" :class="{ 'has-tagbar': showSelectedBar }">
       <div class="videos-grid" v-if="videos.length > 0">
         <VideoCard
           v-for="video in videos"
@@ -184,8 +180,12 @@ export default {
       return this.$route.params.category || '分类'
     },
     showTagBar() {
-      // Only show the filter bar when real tags exist for this category
+      // Only show the filter trigger when real tags exist for this category
       return !this.usingMockData && this.tags.length > 0
+    },
+    showSelectedBar() {
+      // The selected-tag chip row only appears once some tags are selected
+      return this.showTagBar && this.selectedTags.length > 0
     }
   },
   watch: {
@@ -465,32 +465,30 @@ export default {
   color: #fff;
 }
 
-/* Filter toggle button (opens modal) - compact, pinned to the right */
+/* Filter toggle (opens modal) - plain light-blue text on the header line */
 .filter-toggle-btn {
   flex: 0 0 auto;
-  margin-left: auto;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 3px 9px;
-  font-size: 0.72em;
-  color: #cfcfcf;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
+  gap: 4px;
+  padding: 0;
+  font-size: 0.9em;
+  color: #00d4ff;
+  background: transparent;
+  border: none;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: opacity 0.25s;
 }
 
 .filter-toggle-btn:hover {
-  color: #fff;
-  border-color: rgba(0, 212, 255, 0.4);
+  opacity: 0.75;
+  color: #00d4ff;
 }
 
 .filter-toggle-btn.active {
-  color: #fff;
-  border-color: rgba(0, 212, 255, 0.5);
-  background: rgba(0, 212, 255, 0.15);
+  color: #00d4ff;
+  background: transparent;
+  border: none;
 }
 
 .filter-badge {
