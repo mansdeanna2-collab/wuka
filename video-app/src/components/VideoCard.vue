@@ -169,10 +169,10 @@ export default {
   height: 100%;
 }
 
-/* Foreground poster: contain keeps the whole cover visible (portrait posters
-   were getting their top/bottom cropped by object-fit: cover). */
+/* Foreground poster: cover fills the whole 16:9 frame so covers look full
+   instead of letterboxed. */
 .thumbnail-img {
-  object-fit: contain;
+  object-fit: cover;
   z-index: 1;
 }
 
