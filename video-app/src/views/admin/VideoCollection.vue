@@ -67,12 +67,16 @@
     <div class="panel collection-controls">
       <h4><AppIcon name="download" :size="18" /> Hanime1 裏番采集</h4>
       <p class="intro-desc">
-        从 hanime1.me 采集裏番(里番)动漫:自动解析最高画质播放地址、标签、观看次数与上传日期并入库。
+        从 hanime1.me 采集裏番(里番)动漫:自动解析最高画质播放地址、标签、观看次数与上传日期,默认归类到「里番动漫」并入库。同名视频只替换图片/视频链接,不新增重复数据。
       </p>
       <div class="control-row">
         <div class="control-group">
           <label>采集分类 (genre)</label>
           <input v-model="hanimeGenre" class="select-input" placeholder="裏番" />
+        </div>
+        <div class="control-group">
+          <label>入库分类</label>
+          <input v-model="hanimeCategory" class="select-input" placeholder="里番动漫" />
         </div>
         <div class="control-group">
           <label>采集页数</label>
@@ -96,7 +100,7 @@
         <div class="control-group checkbox-group">
           <label>
             <input type="checkbox" v-model="hanimeSkipDuplicates" />
-            跳过已有视频
+            重复名称只替换链接
           </label>
         </div>
         <button
@@ -112,8 +116,8 @@
         <h5>采集结果</h5>
         <div class="result-summary">
           <span class="highlight">成功采集: {{ hanimeResult.collected_count }} 个</span>
+          <span>更新链接: {{ hanimeResult.updated_count || 0 }} 个</span>
           <span>跳过无效: {{ hanimeResult.skipped_count }} 个</span>
-          <span>已存在: {{ hanimeResult.duplicate_count }} 个</span>
           <span>处理页数: {{ hanimeResult.pages_processed }} 页</span>
         </div>
 
@@ -259,6 +263,7 @@ export default {
 
       // Hanime1 Collection
       hanimeGenre: '裏番',
+      hanimeCategory: '里番动漫',
       hanimeMaxPages: 1,
       hanimeDelay: 1,
       hanimeSkipDuplicates: true,
@@ -353,6 +358,7 @@ export default {
       try {
         const result = await videoApi.collectHanime({
           genre: this.hanimeGenre || '裏番',
+          category: this.hanimeCategory || '里番动漫',
           max_pages: parseInt(this.hanimeMaxPages),
           delay: parseFloat(this.hanimeDelay),
           skip_duplicates: this.hanimeSkipDuplicates
@@ -360,8 +366,13 @@ export default {
 
         this.hanimeResult = result?.data || result
 
-        if (this.hanimeResult.collected_count > 0) {
-          this.showToast(`成功采集 ${this.hanimeResult.collected_count} 个视频`, 'success')
+        const collected = this.hanimeResult.collected_count || 0
+        const updated = this.hanimeResult.updated_count || 0
+        if (collected > 0 || updated > 0) {
+          const parts = []
+          if (collected > 0) parts.push(`新增 ${collected} 个`)
+          if (updated > 0) parts.push(`更新链接 ${updated} 个`)
+          this.showToast('采集完成: ' + parts.join('，'), 'success')
         } else {
           this.showToast('没有新视频可采集', 'info')
         }
