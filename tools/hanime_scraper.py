@@ -94,20 +94,33 @@ def _clean_text(text: str) -> str:
     return text.strip()
 
 
-# 搜索页中的单个视频卡片:
-#   <a ... href="https://hanime1.me/watch?v=407014" >
-#       ... <img ... src="https://.../image/cover/407014.jpg?...">
-#       ... <div class="home-rows-videos-title">放入他所不知道的秘密</div>
+# 搜索页中的单个视频卡片。hanime1.me 有两种列表卡片布局:
+#   1) 官方 genre(裏番/泡麵番 等)使用「首页行」布局:
+#      <a ... href="https://hanime1.me/watch?v=407014" >
+#          ... <img ... src="https://.../image/cover/407014.jpg?...">
+#          ... <div class="home-rows-videos-title">放入他所不知道的秘密</div>
+#      </a>
+#   2) 其余分类(3DCG、Motion Anime、AI生成 等)使用「横向卡片」布局:
+#      <a ... href="https://hanime1.me/watch?v=407058" class="video-link">
+#          ... <img class="main-thumb" src="https://.../image/thumbnail/407058l.jpg?...">
+#          ... <div class="title">褐色むちむち...</div>
+#      </a>
+# 之前只解析布局 1, 导致除裏番/泡麵番外的分类解析出 0 条卡片而"采集失败";
+# 下面的正则同时兼容两种布局(封面 image/cover 或缩略图 image/thumbnail,
+# 标题 home-rows-videos-title 或 title)。
 _CARD_RE = re.compile(
     r'<a[^>]+href="https?://hanime1\.me/watch\?v=(?P<vid>\d+)"[^>]*>'
     r'(?P<body>.*?)</a>',
     re.DOTALL,
 )
 _CARD_IMG_RE = re.compile(
-    r'<img[^>]+src="(?P<img>https?://[^"]*?/image/cover/[^"]+)"', re.DOTALL
+    r'<img[^>]+src="(?P<img>https?://[^"]*?/image/(?:cover|thumbnail)/[^"]+)"',
+    re.DOTALL,
 )
+# 布局 1: <div class="home-rows-videos-title">; 布局 2: <div class="title">
 _CARD_TITLE_RE = re.compile(
-    r'<div[^>]*class="[^"]*home-rows-videos-title[^"]*"[^>]*>(?P<title>.*?)</div>',
+    r'<div[^>]*class="(?:[^"]*\s)?(?:home-rows-videos-title|title)(?:\s[^"]*)?"'
+    r'[^>]*>(?P<title>.*?)</div>',
     re.DOTALL,
 )
 
@@ -125,7 +138,7 @@ def parse_search(page_html: str) -> List[Dict[str, Any]]:
 
         img_match = _CARD_IMG_RE.search(body)
         title_match = _CARD_TITLE_RE.search(body)
-        # 只有带封面(image/cover)且带标题的才是真正的视频卡片,
+        # 只有带封面(image/cover 或 image/thumbnail)且带标题的才是真正的视频卡片,
         # 过滤掉占位/广告卡片。
         if not img_match or not title_match:
             continue
