@@ -159,7 +159,8 @@ def get_db() -> Generator[VideoDatabase, None, None]:
 def api_response(
     data: Optional[Any] = None,
     message: str = "success",
-    code: int = 200
+    code: int = 200,
+    total: Optional[int] = None
 ) -> Tuple[Response, int]:
     """
     统一API响应格式 (Unified API response format)
@@ -168,6 +169,7 @@ def api_response(
         data: Response data
         message: Response message
         code: HTTP status code
+        total: 数据总量, 用于分页 (Total count for pagination, optional)
 
     Returns:
         Tuple of (JSON response, status code)
@@ -177,6 +179,8 @@ def api_response(
         "message": message,
         "data": data
     }
+    if total is not None:
+        response["total"] = total
     return jsonify(response), code
 
 
@@ -221,8 +225,9 @@ def get_videos() -> Tuple[Response, int]:
 
     with get_db() as db:
         videos: List[Dict[str, Any]] = db.get_all_videos(limit=limit, offset=offset)
+        total: int = db.count_all_videos()
 
-    return api_response(data=videos)
+    return api_response(data=videos, total=total)
 
 
 @app.route('/api/videos/search', methods=['GET'])
@@ -245,8 +250,9 @@ def search_videos() -> Tuple[Response, int]:
 
     with get_db() as db:
         videos: List[Dict[str, Any]] = db.search_videos(keyword, limit=limit, offset=offset)
+        total: int = db.count_search_videos(keyword)
 
-    return api_response(data=videos)
+    return api_response(data=videos, total=total)
 
 
 @app.route('/api/videos/<int:video_id>', methods=['GET'])
@@ -282,8 +288,9 @@ def get_videos_by_category() -> Tuple[Response, int]:
 
     with get_db() as db:
         videos: List[Dict[str, Any]] = db.get_videos_by_category(category, limit=limit, offset=offset)
+        total: int = db.count_videos_by_category(category)
 
-    return api_response(data=videos)
+    return api_response(data=videos, total=total)
 
 
 @app.route('/api/videos/top', methods=['GET'])
@@ -675,8 +682,9 @@ def get_category_videos_admin() -> Tuple[Response, int]:
 
     with get_db() as db:
         videos: List[Dict[str, Any]] = db.get_videos_by_category(category, limit=limit, offset=offset)
+        total: int = db.count_videos_by_category(category)
 
-    return api_response(data=videos)
+    return api_response(data=videos, total=total)
 
 
 @app.route('/api/admin/duplicates', methods=['GET'])

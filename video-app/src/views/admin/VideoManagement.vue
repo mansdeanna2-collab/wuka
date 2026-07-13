@@ -57,7 +57,7 @@
           >
             <AppIcon name="trash" :size="14" /> 删除选中 ({{ selectedIds.length }})
           </button>
-          <span class="list-count">{{ managedVideos.length }} 个视频</span>
+          <span class="list-count">共 {{ totalVideos }} 个视频</span>
         </div>
       </div>
 
@@ -115,6 +115,62 @@
           <AppIcon name="film" :size="40" />
           <p>暂无视频数据</p>
         </div>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="!loadingVideos && totalPages > 1" class="pagination">
+        <button
+          class="page-btn"
+          :disabled="currentPage === 1"
+          @click="goToPage(1)"
+        >
+          首页
+        </button>
+        <button
+          class="page-btn"
+          :disabled="currentPage === 1"
+          @click="goToPage(currentPage - 1)"
+        >
+          上一页
+        </button>
+        <button
+          v-if="pageNumbers[0] > 1"
+          class="page-btn"
+          @click="goToPage(pageNumbers[0] - 1)"
+        >
+          …
+        </button>
+        <button
+          v-for="page in pageNumbers"
+          :key="page"
+          class="page-btn"
+          :class="{ active: page === currentPage }"
+          @click="goToPage(page)"
+        >
+          {{ page }}
+        </button>
+        <button
+          v-if="pageNumbers[pageNumbers.length - 1] < totalPages"
+          class="page-btn"
+          @click="goToPage(pageNumbers[pageNumbers.length - 1] + 1)"
+        >
+          …
+        </button>
+        <button
+          class="page-btn"
+          :disabled="currentPage === totalPages"
+          @click="goToPage(currentPage + 1)"
+        >
+          下一页
+        </button>
+        <button
+          class="page-btn"
+          :disabled="currentPage === totalPages"
+          @click="goToPage(totalPages)"
+        >
+          末页
+        </button>
+        <span class="page-info">第 {{ currentPage }} / {{ totalPages }} 页</span>
       </div>
     </div>
 
@@ -316,6 +372,11 @@ export default {
       videoSearchKeyword: '',
       filterCategory: '',
 
+      // Pagination
+      currentPage: 1,
+      pageSize: 50,
+      totalVideos: 0,
+
       showAddVideoModal: false,
       newVideo: {
         video_title: '',
@@ -363,6 +424,23 @@ export default {
     // Some (but not all) listed videos are selected -> show indeterminate state
     someSelected() {
       return this.selectedIds.length > 0 && !this.allSelected
+    },
+    // Total number of pages based on the server-reported total count
+    totalPages() {
+      return Math.max(1, Math.ceil(this.totalVideos / this.pageSize))
+    },
+    // Windowed list of page numbers to render around the current page
+    pageNumbers() {
+      const total = this.totalPages
+      const current = this.currentPage
+      const delta = 2
+      const pages = []
+      const start = Math.max(1, current - delta)
+      const end = Math.min(total, current + delta)
+      for (let i = start; i <= end; i++) {
+        pages.push(i)
+      }
+      return pages
     }
   },
   mounted() {
@@ -396,33 +474,65 @@ export default {
     },
 
     // Video Management
+    // Reload the list from the first page whenever the search keyword or
+    // category filter changes.
     async searchVideos() {
+      this.currentPage = 1
+      await this.loadVideos()
+    },
+
+    // Load the current page of videos, honoring the active search/category filter.
+    async loadVideos() {
       this.loadingVideos = true
       // Reset any prior selection when the list changes
       this.clearSelection()
 
+      const offset = (this.currentPage - 1) * this.pageSize
+
       try {
         let result
         if (this.videoSearchKeyword) {
-          result = await videoApi.searchVideos(this.videoSearchKeyword, 50)
+          result = await videoApi.searchVideos(this.videoSearchKeyword, this.pageSize, offset)
           let videos = extractArrayData(result)
           if (this.filterCategory) {
             videos = videos.filter(v => v.video_category === this.filterCategory)
           }
           this.managedVideos = videos
         } else if (this.filterCategory) {
-          result = await videoApi.getCategoryVideosAdmin(this.filterCategory, 50)
+          result = await videoApi.getCategoryVideosAdmin(this.filterCategory, this.pageSize, offset)
           this.managedVideos = extractArrayData(result)
         } else {
-          result = await videoApi.getVideos({ limit: 50 })
+          result = await videoApi.getVideos({ limit: this.pageSize, offset })
           this.managedVideos = extractArrayData(result)
         }
+        this.totalVideos =
+          typeof result?.total === 'number' ? result.total : this.managedVideos.length
       } catch (e) {
         console.error('Search videos error:', e)
         this.showToast('加载视频失败', 'error')
       } finally {
         this.loadingVideos = false
       }
+    },
+
+    // Navigate to a specific page (bounded to the valid range).
+    async goToPage(page) {
+      if (page < 1 || page > this.totalPages || page === this.currentPage) return
+      this.currentPage = page
+      await this.loadVideos()
+      // Scroll back to the top of the list for better UX on long pages
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    },
+
+    // After deleting items, keep the current page filled: step back a page when
+    // the current page is emptied, otherwise reload to backfill from later pages.
+    async reloadAfterDeletion() {
+      if (this.managedVideos.length === 0 && this.currentPage > 1) {
+        this.currentPage -= 1
+      }
+      await this.loadVideos()
     },
 
     openAddVideoModal() {
@@ -524,9 +634,12 @@ export default {
         // Remove deleted items from the local list instantly (real-time UI update)
         const idSet = new Set(ids)
         this.managedVideos = this.managedVideos.filter(v => !idSet.has(v.video_id))
+        this.totalVideos = Math.max(0, this.totalVideos - deleted)
         this.clearSelection()
         this.showBatchDeleteModal = false
         this.showToast(`成功删除 ${deleted} 个视频`, 'success')
+        // Refresh the page so it backfills from later pages (or steps back when empty)
+        await this.reloadAfterDeletion()
       } catch (e) {
         console.error('Batch delete error:', e)
         this.showToast('批量删除失败', 'error')
@@ -543,11 +656,14 @@ export default {
         // Remove from the local list instantly (real-time UI update)
         const deletedId = this.deletingVideo.video_id
         this.managedVideos = this.managedVideos.filter(v => v.video_id !== deletedId)
+        this.totalVideos = Math.max(0, this.totalVideos - 1)
         // Also drop it from any pending batch selection
         this.selectedIds = this.selectedIds.filter(id => id !== deletedId)
         this.showToast('视频删除成功', 'success')
         this.showDeleteModal = false
         this.deletingVideo = null
+        // Refresh the page so it backfills from later pages (or steps back when empty)
+        await this.reloadAfterDeletion()
       } catch (e) {
         console.error('Delete video error:', e)
         this.showToast('删除视频失败', 'error')
@@ -1000,6 +1116,53 @@ export default {
   flex-direction: column;
   gap: 10px;
 }
+
+/* Pagination */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--admin-border);
+}
+
+.page-btn {
+  min-width: 36px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--admin-text);
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  border-color: var(--admin-primary);
+  color: var(--admin-primary);
+}
+
+.page-btn.active {
+  background: var(--admin-primary);
+  border-color: var(--admin-primary);
+  color: #fff;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  margin-left: 8px;
+  font-size: 13px;
+  color: var(--admin-text-faint);
+}
+
 
 .video-item {
   display: flex;
