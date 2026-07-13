@@ -65,10 +65,25 @@
 
     <!-- Hanime1 Collection -->
     <div class="panel collection-controls">
-      <h4><AppIcon name="download" :size="18" /> Hanime1 裏番采集</h4>
+      <h4><AppIcon name="download" :size="18" /> Hanime1 动漫采集</h4>
       <p class="intro-desc">
-        从 hanime1.me 采集裏番(里番)动漫:自动解析最高画质播放地址、标签、观看次数与上传日期,默认归类到「里番动漫」并入库。同名视频只替换图片/视频链接,不新增重复数据。链接变化时会保留旧地址为备用地址,播放失败时前端自动切换重试。
+        从 hanime1.me 采集动漫:自动解析最高画质播放地址、标签、观看次数与上传日期,按所选「入库分类」入库。可用下方快选按钮一键切换里番动漫、泡麵番、Motion Anime、3DCG、2.5D、2D動畫、AI生成、MMD 等不同动漫分类,也可手动填写。同名视频只替换图片/视频链接,不新增重复数据。链接变化时会保留旧地址为备用地址,播放失败时前端自动切换重试。
       </p>
+
+      <!-- Genre presets: quick-fill hanime search genre + storage category -->
+      <div class="genre-presets">
+        <span class="genre-presets-label">动漫分类快选：</span>
+        <button
+          v-for="preset in hanimePresets"
+          :key="preset.category"
+          type="button"
+          class="genre-preset-btn"
+          :class="{ active: hanimeGenre === preset.genre && hanimeCategory === preset.category }"
+          @click="applyHanimePreset(preset)"
+        >
+          {{ preset.label }}
+        </button>
+      </div>
       <div class="control-row">
         <div class="control-group">
           <label>采集分类 (genre)</label>
@@ -304,6 +319,18 @@ export default {
       // Hanime1 Collection
       hanimeGenre: '裏番',
       hanimeCategory: '里番动漫',
+      // Quick-select presets for the different anime genres available on hanime1.
+      // `genre` is the site search genre; `category` is the storage/display category.
+      hanimePresets: [
+        { label: '里番动漫', genre: '裏番', category: '里番动漫' },
+        { label: '泡麵番', genre: '泡麵番', category: '泡麵番' },
+        { label: 'Motion Anime', genre: 'Motion Anime', category: 'Motion Anime' },
+        { label: '3DCG', genre: '3DCG', category: '3DCG' },
+        { label: '2.5D', genre: '2.5D', category: '2.5D' },
+        { label: '2D動畫', genre: '2D動畫', category: '2D動畫' },
+        { label: 'AI生成', genre: 'AI生成', category: 'AI生成' },
+        { label: 'MMD', genre: 'MMD', category: 'MMD' }
+      ],
       hanimeMaxPages: 1,
       hanimeDelay: 1,
       hanimeSkipDuplicates: true,
@@ -425,9 +452,14 @@ export default {
       }
     },
 
+    // Apply a genre preset: fill both the search genre and storage category.
+    applyHanimePreset(preset) {
+      this.hanimeGenre = preset.genre
+      this.hanimeCategory = preset.category
+    },
+
     // Start Hanime1 collection
-    async startHanimeCollection() {
-      if (this.collectingHanime || this.refreshingHanimeMedia) return
+    async startHanimeCollection() {      if (this.collectingHanime || this.refreshingHanimeMedia) return
 
       this.collectingHanime = true
       this.hanimeResult = null
@@ -563,6 +595,42 @@ export default {
 .collecting-hint {
   margin-top: 12px;
   color: var(--admin-warning, #d97706);
+}
+
+/* Genre presets (quick-fill genre + category) */
+.genre-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 4px;
+}
+
+.genre-presets-label {
+  font-size: 0.85em;
+  color: var(--admin-text-muted);
+}
+
+.genre-preset-btn {
+  padding: 5px 12px;
+  font-size: 0.85em;
+  color: var(--admin-text, #1f2937);
+  background: var(--admin-surface-alt, rgba(0, 0, 0, 0.03));
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.genre-preset-btn:hover {
+  border-color: var(--admin-primary, #2563eb);
+  color: var(--admin-primary, #2563eb);
+}
+
+.genre-preset-btn.active {
+  color: #fff;
+  background: var(--admin-primary, #2563eb);
+  border-color: var(--admin-primary, #2563eb);
 }
 
 /* Live collection progress */

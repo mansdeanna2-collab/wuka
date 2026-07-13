@@ -142,6 +142,19 @@
           <!-- Available Subcategories -->
           <div class="available-section">
             <h4>可选视频分类</h4>
+            <!-- Add a custom category type that may not exist in the DB yet -->
+            <div class="add-custom-row">
+              <input
+                v-model="customCategoryName"
+                type="text"
+                class="form-input"
+                placeholder="输入分类名称，如 泡麵番、3DCG、MMD"
+                @keyup.enter="addCustomCategory"
+              />
+              <button class="btn btn-primary btn-small-add" @click="addCustomCategory">
+                添加分类
+              </button>
+            </div>
             <div v-if="loadingCategories" class="loading-small">
               <div class="loading-spinner small"></div>
               <span>加载中...</span>
@@ -158,7 +171,7 @@
               </button>
             </div>
             <p v-if="availableCategories.length === 0 && !loadingCategories" class="empty-categories">
-              无法获取视频分类，请检查API连接
+              暂无已有视频分类，可在上方输入框添加自定义分类类型
             </p>
           </div>
         </div>
@@ -255,6 +268,7 @@ export default {
       editingNav: null,
       deletingNav: null,
       selectedSubcategories: [],
+      customCategoryName: '',
       
       // Toast notification
       toastMessage: '',
@@ -387,6 +401,24 @@ export default {
         this.selectedSubcategories.splice(index, 1)
       }
     },
+
+    // Add a custom category type (may not exist in the DB yet, e.g. a genre that
+    // has not been collected). It becomes available and is selected immediately.
+    addCustomCategory() {
+      const name = (this.customCategoryName || '').trim()
+      if (!name) {
+        this.showToast('请输入分类名称', 'error')
+        return
+      }
+      if (!this.availableCategories.some(c => c.name === name)) {
+        this.availableCategories.unshift({ name, count: 0 })
+      }
+      if (!this.selectedSubcategories.includes(name)) {
+        this.selectedSubcategories.push(name)
+      }
+      this.customCategoryName = ''
+      this.showToast(`已添加分类「${name}」`, 'success')
+    },
     
     async removeSubcategory(navKey, subName) {
       const navCat = this.navCategories.find(n => n.key === navKey)
@@ -415,6 +447,7 @@ export default {
       this.showSubcategoriesModal = false
       this.editingNav = null
       this.selectedSubcategories = []
+      this.customCategoryName = ''
     },
     
     // Reset to default - show confirmation modal
@@ -910,6 +943,21 @@ export default {
 .available-section {
   border-top: 1px solid var(--admin-border);
   padding-top: 20px;
+}
+
+.add-custom-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.add-custom-row .form-input {
+  flex: 1 1 auto;
+}
+
+.btn-small-add {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .loading-small {
