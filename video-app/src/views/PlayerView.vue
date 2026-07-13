@@ -26,6 +26,7 @@
       <VideoPlayer
         ref="player"
         :src="video.video_url"
+        :fallback-src="video.video_url_backup"
         :poster="video.video_image"
         :autoplay="true"
         @play="onPlay"

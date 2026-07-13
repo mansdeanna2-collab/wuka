@@ -763,6 +763,33 @@ def update_video(video_id: int) -> Tuple[Response, int]:
         return api_response(message="更新失败", code=500)
 
 
+@app.route('/api/admin/videos/batch-delete', methods=['POST'])
+@handle_errors
+def batch_delete_videos() -> Tuple[Response, int]:
+    """
+    批量删除视频 (Batch delete videos)
+
+    Request Body:
+        video_ids: 要删除的视频ID列表 (必需)
+    """
+    data = request.get_json() or {}
+    video_ids = data.get('video_ids')
+    if not isinstance(video_ids, list) or not video_ids:
+        return api_response(message="请提供要删除的视频ID列表", code=400)
+
+    # 限制单次批量删除数量, 避免超大请求
+    if len(video_ids) > 1000:
+        return api_response(message="单次最多删除1000个视频", code=400)
+
+    with get_db() as db:
+        deleted_count: int = db.delete_videos(video_ids)
+
+    return api_response(
+        data={'deleted_count': deleted_count, 'requested_count': len(video_ids)},
+        message=f"成功删除 {deleted_count} 个视频"
+    )
+
+
 @app.route('/api/admin/collection-status', methods=['GET'])
 @handle_errors
 def get_collection_status() -> Tuple[Response, int]:
@@ -995,6 +1022,38 @@ def get_source_categories() -> Tuple[Response, int]:
         return api_response(message="获取分类失败", code=500)
 
 
+def _media_update_with_backup(existing: Dict[str, Any], new_url: str,
+                              new_image: str) -> Dict[str, Any]:
+    """构建"更新链接/图片"的字段字典, 并在链接变化时保留旧链接为备用地址。
+
+    采集源 (如 hanime) 的播放地址在白天/夜间可能不同, 因此当新采集到的
+    video_url 与现有地址不同时, 把旧地址存入 video_url_backup, 播放失败时前端
+    可自动切换到备用地址重试。
+
+    Args:
+        existing: 数据库中已存在的视频记录
+        new_url: 新采集到的视频播放地址
+        new_image: 新采集到的封面图片地址
+
+    Returns:
+        传给 db.update_video 的更新字段字典
+    """
+    updates: Dict[str, Any] = {}
+    old_url = (existing.get('video_url') or '').strip()
+    new_url = (new_url or '').strip()
+    # 仅当地址确实发生变化(或原本为空)时才更新, 便于"更新全部"准确统计未变化数量
+    if new_url and new_url != old_url:
+        updates['video_url'] = new_url
+        # 旧地址存在且不同才存为备用地址, 供播放失败时自动切换
+        if old_url:
+            updates['video_url_backup'] = old_url
+    # 图片地址存在且发生变化时才更新, 避免用空值覆盖已有封面
+    new_image = (new_image or '').strip()
+    if new_image and new_image != (existing.get('video_image') or '').strip():
+        updates['video_image'] = new_image
+    return updates
+
+
 @app.route('/api/admin/collect-hanime', methods=['POST'])
 @handle_errors
 def collect_hanime() -> Tuple[Response, int]:
@@ -1008,6 +1067,7 @@ def collect_hanime() -> Tuple[Response, int]:
         genre: 采集分类 (可选, 默认: 裏番) —— hanime 搜索用的类型
         category: 入库分类 (可选, 默认: 里番动漫) —— 保存到数据库/前端展示的分类
         max_pages: 采集列表页数 (可选, 默认1, 最大20)
+        collect_all: 采集全部页 (可选, 默认false) —— 一直翻页直到没有更多视频
         skip_duplicates: 重复名称的视频是否只替换链接不新增 (可选, 默认true)
         delay: 每次请求间隔秒数 (可选, 默认1.0)
     """
@@ -1018,7 +1078,12 @@ def collect_hanime() -> Tuple[Response, int]:
     genre = (data.get('genre') or hanime_scraper.DEFAULT_GENRE).strip()
     # 入库分类默认归到前端「里番动漫」子分类, 与搜索 genre 解耦
     category = (data.get('category') or '里番动漫').strip() or '里番动漫'
-    max_pages: int = max(1, min(int(data.get('max_pages', 1)), 20))
+    collect_all: bool = bool(data.get('collect_all', False))
+    # 采集全部时给一个较大的上限, scrape() 在遇到空页时会自动停止
+    if collect_all:
+        max_pages = 1000
+    else:
+        max_pages = max(1, min(int(data.get('max_pages', 1)), 20))
     skip_duplicates: bool = data.get('skip_duplicates', True)
     delay: float = max(0.0, min(float(data.get('delay', 1.0)), 10.0))
 
@@ -1026,10 +1091,13 @@ def collect_hanime() -> Tuple[Response, int]:
     skipped_count = 0
     duplicate_count = 0
     updated_count = 0
+    pages_processed = 0
 
     try:
         scraper = hanime_scraper.HanimeScraper(genre=genre, delay=delay)
         items = scraper.scrape(pages=max_pages, with_details=True)
+        # 实际处理页数: 采集全部时以采集到的视频反推, 否则取请求页数
+        pages_processed = max_pages if not collect_all else 0
 
         with get_db() as db:
             for item in items:
@@ -1052,12 +1120,13 @@ def collect_hanime() -> Tuple[Response, int]:
 
                 if existing:
                     if skip_duplicates:
-                        # 只替换链接(图片链接与视频链接), 保留其余数据与采集时间
-                        db.update_video(existing['video_id'], {
-                            'video_url': record['video_url'],
-                            'video_image': record['video_image'],
-                        })
-                        updated_count += 1
+                        # 只替换链接(图片链接与视频链接), 保留其余数据与采集时间;
+                        # 链接变化时把旧地址存为备用地址, 供播放失败时自动切换。
+                        updates = _media_update_with_backup(
+                            existing, record['video_url'], record['video_image']
+                        )
+                        if updates and db.update_video(existing['video_id'], updates):
+                            updated_count += 1
                         duplicate_count += 1
                         continue
                     # 未开启去重时, 按主键覆盖(可能重置采集时间)
@@ -1087,7 +1156,9 @@ def collect_hanime() -> Tuple[Response, int]:
             'updated_count': updated_count,
             'skipped_count': skipped_count,
             'duplicate_count': duplicate_count,
-            'pages_processed': max_pages,
+            'pages_processed': pages_processed,
+            'collect_all': collect_all,
+            'total_items': len(items),
             'genre': genre,
             'category': category,
             'collected_at': datetime.now().isoformat(),
@@ -1112,6 +1183,101 @@ def collect_hanime() -> Tuple[Response, int]:
     except Exception as e:
         logger.error(f"Hanime采集失败: {e}")
         return api_response(message="采集失败", code=500)
+
+
+@app.route('/api/admin/refresh-hanime-media', methods=['POST'])
+@handle_errors
+def refresh_hanime_media() -> Tuple[Response, int]:
+    """
+    更新全部裏番视频的图片与播放地址 (Refresh all hanime videos' image & url)
+
+    遍历数据库中指定分类的所有视频, 逐个重新访问 hanime 详情页, 抓取最新的
+    播放地址与封面图片并更新。若播放地址发生变化, 旧地址会被保存为备用地址
+    (video_url_backup), 播放失败时前端可自动切换到备用地址重试。
+
+    Request Body:
+        category: 要刷新的入库分类 (可选, 默认: 里番动漫)
+        delay: 每次请求间隔秒数 (可选, 默认1.0)
+        limit: 最多刷新多少个视频 (可选, 0 或不填表示全部)
+    """
+    if hanime_scraper is None:
+        return api_response(message="采集模块 hanime_scraper 未安装", code=500)
+
+    data = request.get_json() or {}
+    category = (data.get('category') or '里番动漫').strip() or '里番动漫'
+    delay: float = max(0.0, min(float(data.get('delay', 1.0)), 10.0))
+    limit: int = max(0, int(data.get('limit', 0)))
+
+    updated_count = 0
+    unchanged_count = 0
+    failed_count = 0
+    checked_count = 0
+
+    try:
+        scraper = hanime_scraper.HanimeScraper(delay=delay)
+
+        with get_db() as db:
+            videos = db.get_videos_by_category(category)
+            if limit:
+                videos = videos[:limit]
+
+            for video in videos:
+                video_id = video.get('video_id')
+                if not video_id:
+                    continue
+                checked_count += 1
+                try:
+                    detail = scraper.fetch_watch(int(video_id))
+                except http_requests.RequestException as e:
+                    logger.warning(f"刷新详情页失败 v={video_id}: {e}")
+                    failed_count += 1
+                    if delay:
+                        time.sleep(delay)
+                    continue
+
+                new_url = detail.get('video_url') or ''
+                new_image = detail.get('video_image') or ''
+                # 没解析到播放地址视为失败, 保留原数据不动
+                if not new_url:
+                    failed_count += 1
+                    if delay:
+                        time.sleep(delay)
+                    continue
+
+                updates = _media_update_with_backup(video, new_url, new_image)
+                if updates:
+                    if db.update_video(video_id, updates):
+                        updated_count += 1
+                    else:
+                        failed_count += 1
+                else:
+                    unchanged_count += 1
+
+                if delay:
+                    time.sleep(delay)
+
+        result = {
+            'category': category,
+            'checked_count': checked_count,
+            'updated_count': updated_count,
+            'unchanged_count': unchanged_count,
+            'failed_count': failed_count,
+            'refreshed_at': datetime.now().isoformat(),
+        }
+
+        if checked_count == 0:
+            return api_response(data=result, message="该分类下没有视频")
+        return api_response(
+            data=result,
+            message=f"更新完成: 刷新 {updated_count} 个, 未变化 {unchanged_count} 个, 失败 {failed_count} 个"
+        )
+
+    except http_requests.RequestException as e:
+        logger.error(f"刷新Hanime媒体失败: {e}")
+        return api_response(message="更新失败: 采集源请求异常", code=500)
+    except Exception as e:
+        logger.error(f"刷新Hanime媒体失败: {e}")
+        return api_response(message="更新失败", code=500)
 
 
 # ==================== 错误处理 (Error Handlers) ====================

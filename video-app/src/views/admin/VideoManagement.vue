@@ -40,7 +40,25 @@
           <AppIcon name="film" :size="18" />
           {{ filterCategory ? `分类：${filterCategory}` : '全部视频' }}
         </h3>
-        <span class="list-count">{{ managedVideos.length }} 个视频</span>
+        <div class="list-header-actions">
+          <label v-if="managedVideos.length > 0" class="select-all-label">
+            <input
+              type="checkbox"
+              :checked="allSelected"
+              :indeterminate.prop="someSelected"
+              @change="toggleSelectAll"
+            />
+            全选
+          </label>
+          <button
+            v-if="selectedIds.length > 0"
+            class="btn btn-danger btn-sm"
+            @click="confirmBatchDelete"
+          >
+            <AppIcon name="trash" :size="14" /> 删除选中 ({{ selectedIds.length }})
+          </button>
+          <span class="list-count">{{ managedVideos.length }} 个视频</span>
+        </div>
       </div>
 
       <div v-if="loadingVideos" class="loading-state">
@@ -53,7 +71,15 @@
           v-for="video in managedVideos"
           :key="video.video_id"
           class="video-item"
+          :class="{ selected: isSelected(video.video_id) }"
         >
+          <label class="video-select" @click.stop>
+            <input
+              type="checkbox"
+              :checked="isSelected(video.video_id)"
+              @change="toggleSelect(video.video_id)"
+            />
+          </label>
           <img
             v-if="video.video_image"
             :src="formatImageUrl(video.video_image)"
@@ -240,6 +266,26 @@
       </div>
     </div>
 
+    <!-- Batch Delete Confirmation Modal -->
+    <div v-if="showBatchDeleteModal" class="modal-overlay" @click.self="showBatchDeleteModal = false">
+      <div class="modal modal-small">
+        <div class="modal-header">
+          <h3><AppIcon name="alert" :size="18" /> 确认批量删除</h3>
+          <button class="close-btn" @click="showBatchDeleteModal = false">
+            <AppIcon name="x" :size="20" />
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>确定要删除选中的 {{ selectedIds.length }} 个视频吗？</p>
+          <p class="warning-text">此操作不可恢复！</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="showBatchDeleteModal = false">取消</button>
+          <button class="btn btn-danger" @click="batchDelete">确认删除</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Toast Notification -->
     <transition name="toast">
       <div v-if="toastMessage" class="toast-message" :class="toastType">
@@ -283,6 +329,10 @@ export default {
       showDeleteModal: false,
       deletingVideo: null,
 
+      // Batch selection / delete
+      selectedIds: [],
+      showBatchDeleteModal: false,
+
       // Edit video modal
       showEditVideoModal: false,
       editingVideo: {
@@ -300,6 +350,19 @@ export default {
       // Toast
       toastMessage: '',
       toastType: ''
+    }
+  },
+  computed: {
+    // All currently listed videos are selected
+    allSelected() {
+      return (
+        this.managedVideos.length > 0 &&
+        this.managedVideos.every(v => this.selectedIds.includes(v.video_id))
+      )
+    },
+    // Some (but not all) listed videos are selected -> show indeterminate state
+    someSelected() {
+      return this.selectedIds.length > 0 && !this.allSelected
     }
   },
   mounted() {
@@ -335,6 +398,8 @@ export default {
     // Video Management
     async searchVideos() {
       this.loadingVideos = true
+      // Reset any prior selection when the list changes
+      this.clearSelection()
 
       try {
         let result
@@ -416,6 +481,58 @@ export default {
       this.showDeleteModal = true
     },
 
+    // ---- Batch selection helpers ----
+    isSelected(id) {
+      return this.selectedIds.includes(id)
+    },
+
+    toggleSelect(id) {
+      const idx = this.selectedIds.indexOf(id)
+      if (idx === -1) {
+        this.selectedIds.push(id)
+      } else {
+        this.selectedIds.splice(idx, 1)
+      }
+    },
+
+    toggleSelectAll() {
+      if (this.allSelected) {
+        this.selectedIds = []
+      } else {
+        this.selectedIds = this.managedVideos.map(v => v.video_id)
+      }
+    },
+
+    clearSelection() {
+      this.selectedIds = []
+    },
+
+    confirmBatchDelete() {
+      if (this.selectedIds.length === 0) return
+      this.showBatchDeleteModal = true
+    },
+
+    async batchDelete() {
+      if (this.selectedIds.length === 0) return
+
+      const ids = [...this.selectedIds]
+      try {
+        const result = await videoApi.batchDeleteVideos(ids)
+        // Clear API cache so lists reflect the deletion immediately
+        videoApi.clearCache()
+        const deleted = result?.data?.deleted_count ?? ids.length
+        // Remove deleted items from the local list instantly (real-time UI update)
+        const idSet = new Set(ids)
+        this.managedVideos = this.managedVideos.filter(v => !idSet.has(v.video_id))
+        this.clearSelection()
+        this.showBatchDeleteModal = false
+        this.showToast(`成功删除 ${deleted} 个视频`, 'success')
+      } catch (e) {
+        console.error('Batch delete error:', e)
+        this.showToast('批量删除失败', 'error')
+      }
+    },
+
     async deleteVideo() {
       if (!this.deletingVideo) return
 
@@ -426,6 +543,8 @@ export default {
         // Remove from the local list instantly (real-time UI update)
         const deletedId = this.deletingVideo.video_id
         this.managedVideos = this.managedVideos.filter(v => v.video_id !== deletedId)
+        // Also drop it from any pending batch selection
+        this.selectedIds = this.selectedIds.filter(id => id !== deletedId)
         this.showToast('视频删除成功', 'success')
         this.showDeleteModal = false
         this.deletingVideo = null
@@ -799,6 +918,43 @@ export default {
   padding: 3px 12px;
   background: var(--admin-surface-3);
   border-radius: 12px;
+}
+
+.list-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.select-all-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85em;
+  color: var(--admin-text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.select-all-label input {
+  cursor: pointer;
+}
+
+.video-select {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.video-select input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.video-item.selected {
+  border-color: var(--admin-primary-border);
+  background: var(--admin-primary-soft, var(--admin-surface-3));
 }
 
 /* Loading State */

@@ -29,11 +29,11 @@
         </div>
       </div>
       
-      <!-- Small videos (2+2 grid) -->
+      <!-- Small videos (2x3 grid, up to 6) -->
       <div class="videos-small">
         <div 
           class="video-small"
-          v-for="(video, index) in videos.slice(1, 5)"
+          v-for="(video, index) in videos.slice(1, 7)"
           :key="video.video_id"
           @click="$emit('play', video)"
         >
@@ -111,6 +111,7 @@ export default {
       immediate: true,
       handler() {
         this.loadedUrls = {}
+        this.smallImgRefs = {}
         this.$nextTick(() => {
           this.loadAllImages()
         })
@@ -140,7 +141,7 @@ export default {
       }
       
       // Load small video images in parallel
-      const smallVideos = this.videos.slice(1, 5)
+      const smallVideos = this.videos.slice(1, 7)
       for (let i = 0; i < smallVideos.length; i++) {
         const video = smallVideos[i]
         const imgUrl = video?.video_image

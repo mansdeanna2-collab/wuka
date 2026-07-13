@@ -150,6 +150,18 @@ _TAG_RE = re.compile(
 _DETAIL_TITLE_RE = re.compile(
     r'<h3[^>]*id="shareBtn-title"[^>]*>(?P<title>.*?)</h3>', re.DOTALL
 )
+# 详情页封面图片: 优先 og:image, 兜底 poster / image/cover 链接
+_OG_IMAGE_RE = re.compile(
+    r'<meta[^>]+property="og:image"[^>]+content="(?P<img>https?://[^"]+)"',
+    re.DOTALL,
+)
+_POSTER_RE = re.compile(
+    r'poster="(?P<img>https?://[^"]+)"', re.DOTALL
+)
+_COVER_IMG_RE = re.compile(
+    r'(?P<img>https?://[^"\']*?/image/cover/[^"\']+?\.(?:jpg|jpeg|png|webp)[^"\']*)',
+    re.DOTALL,
+)
 # 观看次数与上传日期: "观看次数：228万次&nbsp;&nbsp;2026-07-05"
 _VIEWS_RE = re.compile(r"观看次数[：:]\s*([0-9.]+\s*[万亿]?)\s*次?")
 _DATE_RE = re.compile(r"(\d{4}-\d{1,2}-\d{1,2})")
@@ -230,6 +242,15 @@ def _pick_best_source(sources: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]
     return max(sources, key=lambda s: s["quality"])
 
 
+def _parse_watch_image(page_html: str) -> str:
+    """从详情页解析封面图片地址 (og:image -> poster -> image/cover 兜底)。"""
+    for regex in (_OG_IMAGE_RE, _POSTER_RE, _COVER_IMG_RE):
+        m = regex.search(page_html)
+        if m:
+            return html.unescape(m.group("img"))
+    return ""
+
+
 def parse_watch(page_html: str) -> Dict[str, Any]:
     """解析视频详情页, 返回最高画质播放地址与标签等信息。"""
     sources = _parse_sources(page_html)
@@ -250,6 +271,7 @@ def parse_watch(page_html: str) -> Dict[str, Any]:
 
     return {
         "title": title,
+        "video_image": _parse_watch_image(page_html),
         "sources": sorted(sources, key=lambda s: s["quality"], reverse=True),
         "best_quality": best["quality"] if best else None,
         "video_url": best["url"] if best else None,
