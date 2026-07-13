@@ -2,7 +2,7 @@
   <div class="video-collection-page">
     <div class="page-intro">
       <h3><AppIcon name="download" :size="20" /> 视频采集</h3>
-      <p class="intro-desc">从采集源检查并抓取最新视频到本地数据库。采集脚本将在后续版本重写。</p>
+      <p class="intro-desc">从采集源检查并抓取最新视频到本地数据库。支持通用采集源与 Hanime1 裏番采集。</p>
     </div>
 
     <!-- Collection Controls -->
@@ -59,6 +59,90 @@
           <span>跳过无效: {{ collectionResult.skipped_count }} 个</span>
           <span>已存在: {{ collectionResult.duplicate_count }} 个</span>
           <span>处理页数: {{ collectionResult.pages_processed }} 页</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hanime1 Collection -->
+    <div class="panel collection-controls">
+      <h4><AppIcon name="download" :size="18" /> Hanime1 裏番采集</h4>
+      <p class="intro-desc">
+        从 hanime1.me 采集裏番(里番)动漫:自动解析最高画质播放地址、标签、观看次数与上传日期并入库。
+      </p>
+      <div class="control-row">
+        <div class="control-group">
+          <label>采集分类 (genre)</label>
+          <input v-model="hanimeGenre" class="select-input" placeholder="裏番" />
+        </div>
+        <div class="control-group">
+          <label>采集页数</label>
+          <select v-model="hanimeMaxPages" class="select-input">
+            <option value="1">1页</option>
+            <option value="2">2页</option>
+            <option value="3">3页</option>
+            <option value="5">5页</option>
+            <option value="10">10页</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>请求间隔(秒)</label>
+          <select v-model="hanimeDelay" class="select-input">
+            <option value="0.5">0.5秒</option>
+            <option value="1">1秒</option>
+            <option value="2">2秒</option>
+            <option value="3">3秒</option>
+          </select>
+        </div>
+        <div class="control-group checkbox-group">
+          <label>
+            <input type="checkbox" v-model="hanimeSkipDuplicates" />
+            跳过已有视频
+          </label>
+        </div>
+        <button
+          class="btn btn-primary"
+          @click="startHanimeCollection"
+          :disabled="collectingHanime"
+        >
+          {{ collectingHanime ? '采集中...' : '开始采集' }}
+        </button>
+      </div>
+
+      <div v-if="hanimeResult" class="collection-result">
+        <h5>采集结果</h5>
+        <div class="result-summary">
+          <span class="highlight">成功采集: {{ hanimeResult.collected_count }} 个</span>
+          <span>跳过无效: {{ hanimeResult.skipped_count }} 个</span>
+          <span>已存在: {{ hanimeResult.duplicate_count }} 个</span>
+          <span>处理页数: {{ hanimeResult.pages_processed }} 页</span>
+        </div>
+
+        <div
+          v-if="hanimeResult.collected_videos && hanimeResult.collected_videos.length > 0"
+          class="new-videos-list"
+        >
+          <h5>本次采集预览</h5>
+          <div
+            v-for="video in hanimeResult.collected_videos"
+            :key="video.video_id"
+            class="video-item compact"
+          >
+            <div class="video-info">
+              <span class="video-title">{{ video.video_title }}</span>
+              <span class="video-meta">
+                {{ video.best_quality ? video.best_quality + 'p' : '—' }}
+                | 观看 {{ video.play_count }}
+                | {{ video.upload_date || '—' }}
+              </span>
+              <span v-if="video.tags && video.tags.length" class="video-tags">
+                <span
+                  v-for="tag in video.tags.slice(0, 8)"
+                  :key="tag"
+                  class="video-tag-chip"
+                >{{ tag }}</span>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -173,6 +257,14 @@ export default {
       collectingVideos: false,
       collectionResult: null,
 
+      // Hanime1 Collection
+      hanimeGenre: '裏番',
+      hanimeMaxPages: 1,
+      hanimeDelay: 1,
+      hanimeSkipDuplicates: true,
+      collectingHanime: false,
+      hanimeResult: null,
+
       // Toast
       toastMessage: '',
       toastType: ''
@@ -251,11 +343,40 @@ export default {
       }
     },
 
+    // Start Hanime1 collection
+    async startHanimeCollection() {
+      if (this.collectingHanime) return
+
+      this.collectingHanime = true
+      this.hanimeResult = null
+
+      try {
+        const result = await videoApi.collectHanime({
+          genre: this.hanimeGenre || '裏番',
+          max_pages: parseInt(this.hanimeMaxPages),
+          delay: parseFloat(this.hanimeDelay),
+          skip_duplicates: this.hanimeSkipDuplicates
+        })
+
+        this.hanimeResult = result?.data || result
+
+        if (this.hanimeResult.collected_count > 0) {
+          this.showToast(`成功采集 ${this.hanimeResult.collected_count} 个视频`, 'success')
+        } else {
+          this.showToast('没有新视频可采集', 'info')
+        }
+      } catch (e) {
+        console.error('Hanime collection error:', e)
+        this.showToast('采集失败: ' + (e.userMessage || e.message), 'error')
+      } finally {
+        this.collectingHanime = false
+      }
+    },
+
     // Format image URL to handle base64 and special URL formats
     formatImageUrl(url) {
       return formatImageUrl(url)
     },
-
     handleImageError(e) {
       // Use a transparent 1x1 pixel data URI instead of empty string to avoid browser loading current page
       e.target.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
@@ -613,6 +734,23 @@ export default {
 .video-meta {
   font-size: 0.8em;
   color: var(--admin-text-muted);
+}
+
+.video-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.video-tag-chip {
+  font-size: 0.72em;
+  color: var(--admin-text-muted);
+  background: var(--admin-surface-3);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 1px 8px;
+  white-space: nowrap;
 }
 
 /* Toast */

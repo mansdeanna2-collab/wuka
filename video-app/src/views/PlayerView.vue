@@ -41,11 +41,19 @@
             {{ video.video_category }}
           </span>
           <span v-if="video.play_count" class="play-count">
-            {{ formatPlayCount(video.play_count) }} 次播放
+            {{ formatPlayCount(video.play_count) }} 次观看
           </span>
           <span v-if="video.upload_time" class="upload-time">
             {{ video.upload_time }}
           </span>
+        </div>
+
+        <div v-if="videoTags.length > 0" class="video-tags">
+          <span
+            v-for="tag in videoTags"
+            :key="tag"
+            class="video-tag"
+          >{{ tag }}</span>
         </div>
         
         <div v-if="video.video_coins > 0" class="coins-info">
@@ -95,6 +103,17 @@ export default {
       // Guard so play count is only reported once per loaded video, not on
       // every `play` event (resume-after-pause and seeking also fire `play`).
       hasCountedPlay: false
+    }
+  },
+  computed: {
+    // 视频标签: 后端以逗号分隔的字符串存储 (video_tags)
+    videoTags() {
+      const raw = this.video && this.video.video_tags
+      if (!raw || typeof raw !== 'string') return []
+      return raw
+        .split(',')
+        .map(t => t.trim())
+        .filter(t => t.length > 0)
     }
   },
   watch: {
@@ -327,6 +346,22 @@ export default {
   color: #00d4ff;
   padding: 4px 12px;
   border-radius: 20px;
+}
+
+.video-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.video-tag {
+  font-size: 0.8em;
+  color: #cfcfcf;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 3px 10px;
+  border-radius: 14px;
 }
 
 .coins-info {

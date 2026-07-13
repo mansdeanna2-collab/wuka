@@ -10,6 +10,7 @@ export interface Video {
   video_image: string
   video_title: string
   video_category: string
+  video_tags?: string
   play_count: number
   upload_time: string
   video_duration: string
