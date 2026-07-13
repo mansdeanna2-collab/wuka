@@ -63,6 +63,28 @@
         </div>
       </div>
 
+      <!-- Collection / Series (合集) -->
+      <div v-if="collectionVideos.length > 0" class="collection-section">
+        <div class="collection-header">
+          <h3>合集</h3>
+          <span class="collection-count">{{ collectionVideos.length }} 个视频</span>
+        </div>
+        <div class="collection-list">
+          <div
+            v-for="cv in collectionVideos"
+            :key="cv.video_id"
+            class="collection-item"
+            :class="{ 'is-playing': cv.video_id === video.video_id }"
+          >
+            <VideoCard :video="cv" @click="playRelated" />
+            <span
+              v-if="cv.video_id === video.video_id"
+              class="collection-now-playing"
+            >正在播放</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Related Videos -->
       <div v-if="relatedVideos.length > 0" class="related-section">
         <h3>相关视频</h3>
@@ -98,6 +120,7 @@ export default {
     return {
       video: {},
       relatedVideos: [],
+      collectionVideos: [],
       loading: true,
       error: false,
       errorMessage: '',
@@ -160,6 +183,8 @@ export default {
         if (this.video.video_category) {
           this.loadRelatedVideos()
         }
+        // Load the collection/series (合集) this video belongs to
+        this.loadCollection()
       } catch (e) {
         this.error = true
         // Use user-friendly error message from API if available
@@ -187,6 +212,20 @@ export default {
       }
     },
     
+    async loadCollection() {
+      // The collection endpoint always returns at least the current video, so
+      // the "合集" position shows only the playing video when there is no
+      // series, and the full series when one exists.
+      try {
+        const result = await videoApi.getCollection(this.video.video_id)
+        this.collectionVideos = extractArrayData(result)
+      } catch (e) {
+        // Fall back to just the current video so the section still renders.
+        this.collectionVideos = this.video.video_id ? [this.video] : []
+        console.error('Load collection error:', e)
+      }
+    },
+
     async onPlay() {
       // Only count a play once per loaded video. The <video> `play` event also
       // fires when resuming after a pause or after seeking, which previously
@@ -381,6 +420,58 @@ export default {
   font-size: 1.2em;
 }
 
+.collection-section {
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.collection-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.collection-header h3 {
+  color: #fff;
+  font-size: 1.1em;
+  margin: 0;
+}
+
+.collection-count {
+  font-size: 0.85em;
+  color: #8b8b8b;
+}
+
+.collection-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.collection-item {
+  position: relative;
+}
+
+.collection-item.is-playing :deep(.video-card) {
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.4);
+}
+
+.collection-now-playing {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 3;
+  background: rgba(0, 212, 255, 0.9);
+  color: #001018;
+  font-size: 0.75em;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  pointer-events: none;
+}
+
 .related-section {
   padding: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -413,7 +504,8 @@ export default {
     font-size: 1.1em;
   }
   
-  .related-grid {
+  .related-grid,
+  .collection-list {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
@@ -460,16 +552,19 @@ export default {
     font-size: 0.9em;
   }
   
-  .related-section {
+  .related-section,
+  .collection-section {
     padding: 15px 12px;
   }
   
-  .related-section h3 {
+  .related-section h3,
+  .collection-header h3 {
     font-size: 1em;
     margin-bottom: 12px;
   }
   
-  .related-grid {
+  .related-grid,
+  .collection-list {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
@@ -486,18 +581,21 @@ export default {
     padding: 5px 15px;
   }
   
-  .related-section {
+  .related-section,
+  .collection-section {
     padding: 15px;
   }
   
-  .related-grid {
+  .related-grid,
+  .collection-list {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
 /* Tablets */
 @media (min-width: 769px) and (max-width: 1024px) {
-  .related-grid {
+  .related-grid,
+  .collection-list {
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
   }
@@ -518,11 +616,13 @@ export default {
     font-size: 1.5em;
   }
   
-  .related-section {
+  .related-section,
+  .collection-section {
     padding: 25px 0;
   }
   
-  .related-grid {
+  .related-grid,
+  .collection-list {
     grid-template-columns: repeat(4, 1fr);
   }
 }
