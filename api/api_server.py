@@ -56,6 +56,12 @@ except ImportError:
         print("请确保 video_database.py 在正确的位置")
         sys.exit(1)
 
+# 导入 Hanime1 采集器 (可选, 缺失时相关接口会返回明确错误)
+try:
+    import hanime_scraper  # type: ignore
+except ImportError:
+    hanime_scraper = None  # type: ignore
+
 # Type variable for decorated functions
 F = TypeVar('F', bound=Callable[..., Any])
 
@@ -987,6 +993,86 @@ def get_source_categories() -> Tuple[Response, int]:
     except Exception as e:
         logger.error(f"获取分类失败: {e}")
         return api_response(message="获取分类失败", code=500)
+
+
+@app.route('/api/admin/collect-hanime', methods=['POST'])
+@handle_errors
+def collect_hanime() -> Tuple[Response, int]:
+    """
+    Hanime1 裏番/里番 采集 (Hanime1 hentai collection)
+
+    使用 tools/hanime_scraper.py 从 hanime1.me 采集视频, 解析最高画质播放地址、
+    标签、观看次数与上传日期, 并保存到数据库。
+
+    Request Body:
+        genre: 采集分类 (可选, 默认: 裏番)
+        max_pages: 采集列表页数 (可选, 默认1, 最大20)
+        skip_duplicates: 是否跳过已存在的视频 (可选, 默认true)
+        delay: 每次请求间隔秒数 (可选, 默认1.0)
+    """
+    if hanime_scraper is None:
+        return api_response(message="采集模块 hanime_scraper 未安装", code=500)
+
+    data = request.get_json() or {}
+    genre = (data.get('genre') or hanime_scraper.DEFAULT_GENRE).strip()
+    max_pages: int = max(1, min(int(data.get('max_pages', 1)), 20))
+    skip_duplicates: bool = data.get('skip_duplicates', True)
+    delay: float = max(0.0, min(float(data.get('delay', 1.0)), 10.0))
+
+    collected_videos: List[Dict[str, Any]] = []
+    skipped_count = 0
+    duplicate_count = 0
+
+    try:
+        scraper = hanime_scraper.HanimeScraper(genre=genre, delay=delay)
+        items = scraper.scrape(pages=max_pages, with_details=True)
+
+        with get_db() as db:
+            for item in items:
+                video_id = item.get('video_id')
+                # 没有可播放地址的条目视为无效, 跳过
+                if not video_id or not item.get('video_url'):
+                    skipped_count += 1
+                    continue
+
+                if skip_duplicates and db.get_video(video_id):
+                    duplicate_count += 1
+                    continue
+
+                record = hanime_scraper._to_video_record(item, genre)
+                if db.insert_video(record):
+                    collected_videos.append({
+                        'video_id': video_id,
+                        'video_title': item.get('video_title', ''),
+                        'best_quality': item.get('best_quality'),
+                        'tags': item.get('tags', []),
+                        'play_count': item.get('play_count', 0),
+                        'upload_date': item.get('upload_date', ''),
+                    })
+
+        result = {
+            'collected_count': len(collected_videos),
+            'skipped_count': skipped_count,
+            'duplicate_count': duplicate_count,
+            'pages_processed': max_pages,
+            'genre': genre,
+            'collected_at': datetime.now().isoformat(),
+            'collected_videos': collected_videos[:50],
+        }
+
+        if collected_videos:
+            return api_response(
+                data=result,
+                message=f"成功采集 {len(collected_videos)} 个视频"
+            )
+        return api_response(data=result, message="没有新视频可采集")
+
+    except http_requests.RequestException as e:
+        logger.error(f"Hanime采集失败: {e}")
+        return api_response(message=f"采集失败: {str(e)}", code=500)
+    except Exception as e:
+        logger.error(f"Hanime采集失败: {e}")
+        return api_response(message="采集失败", code=500)
 
 
 # ==================== 错误处理 (Error Handlers) ====================

@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY api_server.py .
-# Note: video_database.py is mounted at runtime via docker-compose
+# Note: video_database.py and hanime_scraper.py are mounted at runtime via docker-compose
 
 # Create data directory for SQLite database
 RUN mkdir -p /app/data

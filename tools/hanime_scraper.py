@@ -150,6 +150,52 @@ _TAG_RE = re.compile(
 _DETAIL_TITLE_RE = re.compile(
     r'<h3[^>]*id="shareBtn-title"[^>]*>(?P<title>.*?)</h3>', re.DOTALL
 )
+# 观看次数与上传日期: "观看次数：228万次&nbsp;&nbsp;2026-07-05"
+_VIEWS_RE = re.compile(r"观看次数[：:]\s*([0-9.]+\s*[万亿]?)\s*次?")
+_DATE_RE = re.compile(r"(\d{4}-\d{1,2}-\d{1,2})")
+
+
+def _parse_views(text: str) -> int:
+    """把 "228万次" / "1.2亿" / "1234" 之类的观看次数转换为整数。"""
+    if not text:
+        return 0
+    text = text.strip().replace("次", "")
+    try:
+        if text.endswith("万"):
+            return int(float(text[:-1]) * 10_000)
+        if text.endswith("亿"):
+            return int(float(text[:-1]) * 100_000_000)
+        return int(float(text))
+    except (ValueError, TypeError):
+        return 0
+
+
+def parse_views_and_date(page_html: str) -> Dict[str, Any]:
+    """解析详情页的观看次数与上传日期。
+
+    对应页面片段: 观看次数：228万次&nbsp;&nbsp;2026-07-05
+    """
+    views_text = ""
+    play_count = 0
+    upload_date = ""
+
+    # 找到包含“观看次数”的那一段文本再解析, 避免匹配到无关数字
+    idx = page_html.find("观看次数")
+    if idx != -1:
+        segment = _clean_text(page_html[idx: idx + 200])
+        vm = _VIEWS_RE.search(segment)
+        if vm:
+            views_text = vm.group(1).strip()
+            play_count = _parse_views(views_text)
+        dm = _DATE_RE.search(segment)
+        if dm:
+            upload_date = dm.group(1)
+
+    return {
+        "views_text": views_text,
+        "play_count": play_count,
+        "upload_date": upload_date,
+    }
 
 
 def _parse_sources(page_html: str) -> List[Dict[str, Any]]:
@@ -200,12 +246,17 @@ def parse_watch(page_html: str) -> Dict[str, Any]:
     title_match = _DETAIL_TITLE_RE.search(page_html)
     title = _clean_text(title_match.group("title")) if title_match else ""
 
+    views = parse_views_and_date(page_html)
+
     return {
         "title": title,
         "sources": sorted(sources, key=lambda s: s["quality"], reverse=True),
         "best_quality": best["quality"] if best else None,
         "video_url": best["url"] if best else None,
         "tags": tags,
+        "views_text": views["views_text"],
+        "play_count": views["play_count"],
+        "upload_date": views["upload_date"],
     }
 
 
@@ -270,6 +321,9 @@ class HanimeScraper:
                                 "best_quality": detail["best_quality"],
                                 "sources": detail["sources"],
                                 "tags": detail["tags"],
+                                "views_text": detail["views_text"],
+                                "play_count": detail["play_count"],
+                                "upload_date": detail["upload_date"],
                             }
                         )
                         # 详情页标题更完整时优先使用
@@ -294,16 +348,17 @@ class HanimeScraper:
 def _to_video_record(item: Dict[str, Any], genre: str) -> Dict[str, Any]:
     """把采集结果转换为 VideoDatabase.insert_video 需要的字段。"""
     tags = item.get("tags") or []
-    # video_category 存分类(genre); 标签用逗号拼接一并存入分类字段末尾便于检索。
-    category = genre
-    if tags:
-        category = f"{genre},{','.join(tags)}"
     return {
         "video_id": item["video_id"],
         "video_url": item.get("video_url") or item["watch_url"],
         "video_image": item.get("video_image", ""),
         "video_title": item.get("video_title", ""),
-        "video_category": category[:100],
+        # 分类存 genre(裏番); 标签单独存 video_tags 列
+        "video_category": genre[:100],
+        "video_tags": ",".join(tags),
+        # 观看次数 -> play_count(整数), 上传日期 -> upload_time
+        "play_count": item.get("play_count", 0) or 0,
+        "upload_time": item.get("upload_date", "") or "",
     }
 
 
@@ -386,6 +441,9 @@ def main(argv: Optional[List[str]] = None) -> int:
                 "best_quality": detail.get("best_quality"),
                 "sources": detail.get("sources"),
                 "tags": detail.get("tags"),
+                "views_text": detail.get("views_text"),
+                "play_count": detail.get("play_count"),
+                "upload_date": detail.get("upload_date"),
             }
         ]
     else:
